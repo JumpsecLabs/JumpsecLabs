@@ -1,158 +1,1199 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<html lang="en"><head>
+	<meta name="generator" content="Hugo 0.147.0"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon shortcut" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
+
+    <title>JUMPSEC</title>
+    <meta name="description" content="The JUMPSEC Lab is a place where the the technical team get creative and showcase their latest security research, publications, interesting news and general thoughts!" />
+
     
-    <title>Ananke</title>
-    <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="description" content="The last theme you&#39;ll ever need. Maybe.">
-    <meta name="generator" content="Hugo 0.147.0">
-    
-    
-    
-    
-      <meta name="robots" content="noindex, nofollow">
-    
+    <link rel="canonical" href="//localhost:1313/" itemprop="url" />
     
 
     
-<link rel="stylesheet" href="/ananke/css/main.min.css" >
 
-
-
-    
-
-    
-      
+<meta property="og:title" content="" />
+<meta property="og:description" content="The JUMPSEC Lab is a place where the the technical team get creative and showcase their latest security research, publications, interesting news and general thoughts!" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="//localhost:1313/" />
 
     
-
-    
-    
-      <link href="/index.xml" rel="alternate" type="application/rss+xml" title="Ananke" />
-      <link href="/index.xml" rel="feed" type="application/rss+xml" title="Ananke" />
-      
-    
-
-    
-      <link rel="canonical" href="https://labs.jumpsec.com/">
-    
-
-    <meta property="og:url" content="https://labs.jumpsec.com/">
-  <meta property="og:site_name" content="Ananke">
-  <meta property="og:title" content="Ananke">
-  <meta property="og:description" content="The last theme you&#39;ll ever need. Maybe.">
-  <meta property="og:locale" content="en">
-  <meta property="og:type" content="website">
-
-  <meta itemprop="name" content="Ananke">
-  <meta itemprop="description" content="The last theme you&#39;ll ever need. Maybe.">
+  <meta itemprop="name" content="JUMPSEC">
+  <meta itemprop="description" content="For more information, visit JUMPSEC.">
+  <meta itemprop="datePublished" content="2024-10-15T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2024-10-15T00:00:00+00:00">
+  <meta itemprop="wordCount" content="5">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Ananke">
-  <meta name="twitter:description" content="The last theme you&#39;ll ever need. Maybe.">
+  <meta name="twitter:title" content="JUMPSEC">
+  <meta name="twitter:description" content="For more information, visit JUMPSEC.">
 
-	
-  </head>
+    <link href="/css/compiled/main.css" rel="stylesheet" />
 
-  <body class="ma0 avenir bg-near-white">
+
+
+  <link href="/css/custom.css" rel="stylesheet" />
+
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-445609549"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-445609549');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+    
+    <script type="text/javascript" id="hs-script-loader" async defer src="//js-eu1.hs-scripts.com/26015867.js"></script>
+    
 
     
 
-  <header>
-    <div class="pb3-m pb6-l bg-black">
-      <nav class="pv3 ph3 ph4-ns" role="navigation">
-  <div class="flex-l justify-between items-center center">
-    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
-      
-        Ananke
-      
+
+    <script>
+         
+        const defaultTheme = 'system';
+
+        const setDarkTheme = () => {
+            document.documentElement.classList.add("dark");
+            document.documentElement.style.colorScheme = "dark";
+        }
+        const setLightTheme = () => {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.style.colorScheme = "light";
+        }
+
+        if ("color-theme" in localStorage) {
+            localStorage.getItem("color-theme") === "dark" ? setDarkTheme() : setLightTheme();
+        } else {
+            defaultTheme === "dark" ? setDarkTheme() : setLightTheme();
+            if (defaultTheme === "system") {
+                window.matchMedia("(prefers-color-scheme: dark)").matches ? setDarkTheme() : setLightTheme();
+            }
+        }
+    </script>
+
+    
+</head>
+<body dir="ltr"><div class="nav-container sticky top-0 z-20 w-full bg-transparent print:hidden">
+    <div class="nav-container-blur pointer-events-none absolute z-[-1] h-full w-full bg-white dark:bg-dark shadow-[0_2px_4px_rgba(0,0,0,.02),0_1px_0_rgba(0,0,0,.06)] contrast-more:shadow-[0_0_0_1px_#000] dark:shadow-[0_-1px_0_rgba(255,255,255,.1)_inset] contrast-more:dark:shadow-[0_0_0_1px_#fff]"></div>
+
+    <nav class="mx-auto flex items-center justify-end gap-2 h-16 px-6 max-w-[90rem]">
+        <a class="flex items-center hover:opacity-75 ltr:mr-auto rtl:ml-auto logo" href="/">
+            <img class="block dark:hidden logo-first" src="/images/jumpsec_full_logo_white_indexed_transparent_bg_hi-res_with_bar.png" alt="JUMPSEC" height="35" width="275" />
+            <img class="hidden dark:block logo-second" src="/images/jumpsec_full_logo_white_indexed_transparent_bg_hi-res_with_bar.png" alt="JUMPSEC" height="35" width="275" />
+        </a><a
+                title="Articles"
+                href="/articles"
+                
+                class="text-sm contrast-more:text-gray-700 contrast-more:dark:text-gray-100 relative -ml-2 hidden whitespace-nowrap p-2 md:inline-block text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+            <span class="text-center">Articles</span>
+        </a><a
+                title="Contact ↗"
+                href="https://www.jumpsec.com/contact/"
+                target="_blank" rel="noreferer"
+                class="text-sm contrast-more:text-gray-700 contrast-more:dark:text-gray-100 relative -ml-2 hidden whitespace-nowrap p-2 md:inline-block text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+            <span class="text-center">Contact ↗</span>
+        </a><div class="search-wrapper relative md:w-64">
+  <div class="relative flex items-center text-gray-900 contrast-more:text-gray-800 dark:text-gray-300 contrast-more:dark:text-gray-300">
+    <input
+      placeholder="Search..."
+      class="search-input block w-full appearance-none rounded-lg px-3 py-2 transition-colors text-base leading-tight md:text-sm bg-black/[.05] dark:bg-gray-50/10 focus:bg-white dark:focus:bg-dark placeholder:text-gray-500 dark:placeholder:text-gray-400 contrast-more:border contrast-more:border-current"
+      type="search"
+      value=""
+      spellcheck="false"
+    />
+    <kbd
+      class="absolute my-1.5 select-none ltr:right-1.5 rtl:left-1.5 h-5 rounded bg-white px-1.5 font-mono text-[10px] font-medium text-gray-500 border dark:border-gray-100/20 dark:bg-dark/50 contrast-more:border-current contrast-more:text-current contrast-more:dark:border-current items-center gap-1 transition-opacity pointer-events-none hidden sm:flex"
+    >
+      CTRL K
+    </kbd>
+  </div>
+
+  <div>
+    <ul
+      class="search-results hextra-scrollbar hidden border border-gray-200 bg-white text-gray-100 dark:border-neutral-800 dark:bg-neutral-900 absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-xl py-2.5 shadow-xl max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)] md:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)] inset-x-0 ltr:md:left-auto rtl:md:right-auto contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50 w-screen min-h-[100px] max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      style="transition: max-height 0.2s ease 0s;"
+    ></ul>
+  </div>
+</div>
+<button
+        title="Change theme"
+        data-theme="light"
+        class="theme-toggle group h-7 rounded-md px-2 text-left text-xs font-medium text-gray-600 transition-colors dark:text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-primary-100/5 dark:hover:text-gray-50"
+        type="button"
+        aria-label="Change theme"
+>
+    <div class="flex items-center gap-2 capitalize slider-container"><span class="group-data-[theme=light]:hidden ball-left"></span><span class="group-data-[theme=dark]:hidden ball-right"></span></div>
+</button>
+
+        <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://twitter.com/JumpsecLabs" title="Twitter"><svg height=24 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg><span class="sr-only">Twitter</span>
+        </a>
+        <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.linkedin.com/company/jumpsec/" title="LinkedIn"><svg height=24 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037c-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85c3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065a2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg><span class="sr-only">LinkedIn</span>
+        </a>
+        <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.youtube.com/channel/UCXSbS5DNUZA2LNidrb67tvw" title="YouTube"><svg height=24 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104l.022.26l.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105l-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006l-.087-.004l-.171-.007l-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103l.003-.052l.008-.104l.022-.26l.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007l.172-.006l.086-.003l.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/></svg><span class="sr-only">YouTube</span>
+        </a>
+        <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.github.com/JUMPSECLabs" title="GitHub"><svg height=24 fill="currentColor" viewBox="3 3 18 18">
+  <path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path>
+</svg>
+<span class="sr-only">GitHub</span>
+        </a><button type="button" aria-label="Menu" class="hamburger-menu -mr-2 rounded p-2 active:bg-gray-400/20 md:hidden"><svg height=24 fill="none" viewBox="0 0 24 24" stroke="currentColor"><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8H20"></path></g><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16H20"></path></g></svg></button>
+    </nav>
+</div>
+<div class='mx-auto flex max-w-screen-xl'>
+    <div class="mobile-menu-overlay [transition:background-color_1.5s_ease] fixed inset-0 z-10 bg-black/80 dark:bg-black/60 hidden"></div>
+<aside class="sidebar-container flex flex-col print:hidden md:top-16 md:shrink-0 md:w-64 md:self-start max-md:[transform:translate3d(0,-100%,0)] md:sticky">
+    
+    <div class="px-4 pt-4 md:hidden">
+        <div class="search-wrapper relative md:w-64">
+  <div class="relative flex items-center text-gray-900 contrast-more:text-gray-800 dark:text-gray-300 contrast-more:dark:text-gray-300">
+    <input
+      placeholder="Search..."
+      class="search-input block w-full appearance-none rounded-lg px-3 py-2 transition-colors text-base leading-tight md:text-sm bg-black/[.05] dark:bg-gray-50/10 focus:bg-white dark:focus:bg-dark placeholder:text-gray-500 dark:placeholder:text-gray-400 contrast-more:border contrast-more:border-current"
+      type="search"
+      value=""
+      spellcheck="false"
+    />
+    <kbd
+      class="absolute my-1.5 select-none ltr:right-1.5 rtl:left-1.5 h-5 rounded bg-white px-1.5 font-mono text-[10px] font-medium text-gray-500 border dark:border-gray-100/20 dark:bg-dark/50 contrast-more:border-current contrast-more:text-current contrast-more:dark:border-current items-center gap-1 transition-opacity pointer-events-none hidden sm:flex"
+    >
+      CTRL K
+    </kbd>
+  </div>
+
+  <div>
+    <ul
+      class="search-results hextra-scrollbar hidden border border-gray-200 bg-white text-gray-100 dark:border-neutral-800 dark:bg-neutral-900 absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-xl py-2.5 shadow-xl max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)] md:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)] inset-x-0 ltr:md:left-auto rtl:md:right-auto contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50 w-screen min-h-[100px] max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      style="transition: max-height 0.2s ease 0s;"
+    ></ul>
+  </div>
+</div>
+
+    </div>
+    <div class="hextra-scrollbar overflow-y-auto overflow-x-hidden p-4 grow md:h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
+        <ul class="flex flex-col gap-1 md:hidden">
+            
+            
+<li class="open"><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/" title="Latest Articles">
+    <strong>Latest LABS posts</strong>
     </a>
-    <div class="flex-l items-center">
-      
-<h4></h4>
-<ul class="pl0 mr3">
     
-    <li class="list f5 f4-ns fw4 dib pr3">
-        <a class="hover-white no-underline white-90" href="/fr/">fr</a>
-    </li>
-    
-</ul>
 
-
-      
-      
-<div class="ananke-socials">
-  
-    
-    <a href="https://x.com/JumpsecLabs" target="_blank" rel="noopener" class="twitter ananke-social-link link-transition stackoverflow link dib z-999 pt3 pt0-l mr1" title="Twitter link" aria-label="follow on Twitter——Opens in a new window">
-      
-        <span class="icon"><svg style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
-</span>
-      
-<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
-<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
-</svg>
-</span></a>
-  
-</div>
-
-    </div>
-  </div>
-</nav>
-
-      <div class="tc-l pv3 ph3 ph4-ns">
-        <h1 class="f2 f-subheadline-l fw2 light-silver mb0 lh-title">
-          Ananke
-        </h1>
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/"
+            
+    >
         
-      </div>
-    </div>
-  </header>
+        Explore LABS posts
+        
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="origin-center transition-transform rtl:-rotate-180"></path></svg></span>
+        </a>
+</span><div class="jumpsec-categories-list"><div class="ltr:pr-0 overflow-hidden">
+    <ul class='relative flex flex-col before:absolute before:w-px before:bg-gray-200 before:content-[""] ltr:ml-3 ltr:before:left-0 rtl:mr-3 rtl:pr-3 rtl:before:right-0 dark:before:bg-neutral-800'><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">
+        <span class="inner-medium-weight">Active Cyber Defence - Taking back control</span>
+    </a>
+    
 
-
-    <main class="pb7" role="main">
-      
-  <article class="cf ph3 ph5-l pv3 pv4-l f4 tc-l center measure-wide lh-copy mid-gray">
-      
-    </article>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-  
-
-    </main>
-    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
-  <div class="flex justify-between">
-  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://labs.jumpsec.com/" >
-    &copy;  Ananke 2025 
-  </a>
-    <div>
-<div class="ananke-socials">
-  
-    
-    <a href="https://x.com/JumpsecLabs" target="_blank" rel="noopener" class="twitter ananke-social-link link-transition stackoverflow link dib z-999 pt3 pt0-l mr1" title="Twitter link" aria-label="follow on Twitter——Opens in a new window">
-      
-        <span class="icon"><svg style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/"
+            
+    >
+        
+        Read more
+        
+        </a>
 </span>
-      
-<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
-<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;"/>
-</svg>
-</span></a>
-  
-</div>
-</div>
-  </div>
-</footer>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/" title="NTLM Relaying - Making the Old New Again">
+        <span class="inner-medium-weight">NTLM Relaying - Making the Old New Again</span>
+    </a>
+    
 
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu">
+        <span class="inner-medium-weight">Adversary at the Door - Initial Access and what&#39;s currently on the menu</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs">
+        <span class="inner-medium-weight">SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li></ul>
+</div></div>
+</li>
+        </ul>
+
+        <ul class="flex flex-col gap-1 max-md:hidden jumpsec-categories home">
+            
+<li class="open"><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/" title="Latest Articles">
+    <strong>Latest LABS posts</strong>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/"
+            
+    >
+        
+        Explore LABS posts
+        
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="origin-center transition-transform rtl:-rotate-180"></path></svg></span>
+        </a>
+</span><div class="jumpsec-categories-list"><div class="ltr:pr-0 overflow-hidden">
+    <ul class='relative flex flex-col before:absolute before:w-px before:bg-gray-200 before:content-[""] ltr:ml-3 ltr:before:left-0 rtl:mr-3 rtl:pr-3 rtl:before:right-0 dark:before:bg-neutral-800'><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">
+        <span class="inner-medium-weight">Active Cyber Defence - Taking back control</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/" title="NTLM Relaying - Making the Old New Again">
+        <span class="inner-medium-weight">NTLM Relaying - Making the Old New Again</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu">
+        <span class="inner-medium-weight">Adversary at the Door - Initial Access and what&#39;s currently on the menu</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs">
+        <span class="inner-medium-weight">SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li></ul>
+</div></div>
+</li>
+            
+            
+        </ul>
+        </div>
+    
+    </aside>
+
+    <article class="w-full break-words flex min-h-[calc(100vh-var(--navbar-height))] min-w-0 justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)]">
+        <main class="w-full min-w-0 max-w-6xl px-6 pt-4 md:px-12 home">
+            <h1 class="text-center mt-2 text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100"></h1>
+            <div class="content">
+                <img class="black-header" src="/images/banner_JS_new_dark-mode_animated.gif" alt="JUMPSEC Labs" />
+                <img class="white-header" src="/images/banner_JS_new_red_on_light-grey_not_animated.png" alt="JUMPSEC Labs" />
+                <p style="display: none">The JUMPSEC Lab is a place where the the technical team get creative and showcase their latest security research, publications, interesting news and general thoughts!  We love what we do and are passionate about security, with some great upcoming projects planned, bookmark our site and stick around to see what we are working on.</p>
+                <div class="latest-labs-post-container">
+                    <h4>Latest LABS post...</h4>
+                    
+                    <h1>Active Cyber Defence - Taking back control</h1>
+                    <p>Every good cybersecurity article needs a Sun Tzu quote, here is one lesser known quote from Sun Tzu to start us off.</p>
+<p><figure>
+    <img src="images/1.png" title="1" alt="Yeah getting a Domain Admin is cool but have you ever caught a Red Team using a Honeypot? Sun Tzu" loading="lazy" />
+    <figcaption>1</figcaption>
+  </figure></p>
+<p> </p>
+<h2>What Happened?<span class="absolute -mt-20" id="what-happened"></span>
+    <a href="#what-happened" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Recently, JUMPSEC’s Detection and Response Team (DART) caught a Red Team  inside one of our MxDR clients&rsquo; networks using a honeypot server. The honeypot server was set up using Thinkst Applied Research’s project called <a href="https://github.com/thinkst/opencanary" target="_blank" rel="noopener">OpenCanary</a>. This open-source project from Thinkst emulates different network protocols and when interacted with, creates an alert providing information to the defensive team, such as the source of the request.</p>
+                    <a class="continue-reading" href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">
+                        <strong>Continue reading</strong>
+                    </a>
+                    
+                </div>
+                <h4>Latest LABS posts...</h4>
+                <div class="list home-list">
+                    <ul class="publication-homepage-list">
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <li>
+                            
+                            <a style="color: red" href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">
+                                <img class="homepage-image" src="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/images/11.png" title="Active Cyber Defence - Taking back control" style="text-align: left"/>
+                            </a>
+                            
+                            <a href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">
+                                <strong>Active Cyber Defence - Taking back control</strong>
+                            </a>
+                            <br/>
+                            <a class="homepage-link" style="color: red" href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">Read more ></a>
+                        </li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <li>
+                            
+                            <a style="color: red" href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/" title="NTLM Relaying - Making the Old New Again">
+                                <img class="homepage-image" src="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/images/1.png" title="NTLM Relaying - Making the Old New Again" style="text-align: left"/>
+                            </a>
+                            
+                            <a href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/" title="NTLM Relaying - Making the Old New Again">
+                                <strong>NTLM Relaying - Making the Old New Again</strong>
+                            </a>
+                            <br/>
+                            <a class="homepage-link" style="color: red" href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/" title="NTLM Relaying - Making the Old New Again">Read more ></a>
+                        </li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <li>
+                            
+                            <a style="color: red" href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)">
+                                <img class="homepage-image" src="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/images/1.gif" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)" style="text-align: left"/>
+                            </a>
+                            
+                            <a href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)">
+                                <strong>Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)</strong>
+                            </a>
+                            <br/>
+                            <a class="homepage-link" style="color: red" href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)">Read more ></a>
+                        </li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <li>
+                            
+                            <a style="color: red" href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)">
+                                <img class="homepage-image" src="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/images/1png.png" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)" style="text-align: left"/>
+                            </a>
+                            
+                            <a href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)">
+                                <strong>Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)</strong>
+                            </a>
+                            <br/>
+                            <a class="homepage-link" style="color: red" href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)">Read more ></a>
+                        </li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <li>
+                            
+                            <a style="color: red" href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu">
+                                <img class="homepage-image" src="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/images/wolf-in-sheep-clothes-1.png" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu" style="text-align: left"/>
+                            </a>
+                            
+                            <a href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu">
+                                <strong>Adversary at the Door - Initial Access and what&#39;s currently on the menu</strong>
+                            </a>
+                            <br/>
+                            <a class="homepage-link" style="color: red" href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu">Read more ></a>
+                        </li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <li>
+                            
+                            <a style="color: red" href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs">
+                                <img class="homepage-image" src="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/images/ezgif-7-4b7e7cf968.gif" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs" style="text-align: left"/>
+                            </a>
+                            
+                            <a href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs">
+                                <strong>SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs</strong>
+                            </a>
+                            <br/>
+                            <a class="homepage-link" style="color: red" href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs">Read more ></a>
+                        </li>
+                        
+                        
+                    </ul>
+                </div>
+                <h4>Featured Tools</h4>
+                <div class="list">
+                    <div class="lurecrafter">
+                        <h4>Lure Krafter</h4>
+                        <img src="/images/lurekrafter.png" title="Lure Krafter" style="max-height: 300px"/>
+                        <div class="description">A tool designed to build a standalone WASM payload smuggling lure.</div>
+                        <div class="link-container">
+                            <a href="https://github.com/JumpsecLabs/TokenSmith" title="Lure Krafter on GitHub" target="_blank" rel="noreferrer">Get Web Assembly Lure Krafter on Github</a>
+                        </div>
+                    </div>
+                    <div class="tokensmith">
+                        <h4>Token Smith</h4>
+                        <img src="/images/tokensmith-banner.png" title="Token Smith" />
+                        <div class="description">TokenSmith generates Entra ID access & refresh tokens on offensive engagements. Built with OpSec in mind it is suitable for both covert adversary simulations, penetration tests or sysadmin tasks. The tokens generated works out of the box with many popular Azure offensive tools.</div>
+                        <div class="link-container">
+                            <a href="https://github.com/JumpsecLabs/TokenSmith" title="Token Smith on GitHub" target="_blank" rel="noreferrer">Get TokenSmith on Github</a>
+                        </div>
+                    </div>
+                    <div class="ahhzure">
+                        <h4>Ahhzure</h4>
+                        <img src="/images/ahhzure.png" title="Ahhzure" />
+                        <div class="description">AHHHZURE is an automated vulnerable Azure deployment script designed for offensive security practitioners and enthusiasts to brush up their cloud sec skills.</div>
+                        <div class="link-container">
+                            <a href="https://github.com/gladstomych/AHHHZURE" title="Ahhhzure on GitHub" target="_blank" rel="noreferrer">Get Ahhzure on Github</a>
+                        </div>
+                    </div>
+                </div>
+                <h4>Scan our QR codes!</h4>
+                <div class="list qr-list">
+                    <div class="qr-code-container">
+                        <div class="image-container">
+                            <img class="qr-code" src="/images/gundam.png" alt="QR Code" />
+                        </div>
+                        <div class="image-container">
+                            <img class="qr-code" src="/images/winterLabs.png" alt="QR Code" />
+                        </div>
+                        <div class="image-container">
+                            <img class="qr-code" src="/images/tokensmith.png" alt="QR Code" />
+                        </div>
+                    </div>
+                </div>
+                <p>For more information, visit <a href="https://www.jumpsec.com" target="_blank" rel="noopener">JUMPSEC</a>.</p>
+
+            </div>
+        </main>
+    </article>
+    <div class="mobile-menu-overlay [transition:background-color_1.5s_ease] fixed inset-0 z-10 bg-black/80 dark:bg-black/60 hidden"></div>
+<aside class="sidebar-container flex flex-col print:hidden md:top-16 md:shrink-0 md:w-64 md:self-start max-md:[transform:translate3d(0,-100%,0)] md:sticky">
+    
+    <div class="px-4 pt-4 md:hidden">
+        <div class="search-wrapper relative md:w-64">
+  <div class="relative flex items-center text-gray-900 contrast-more:text-gray-800 dark:text-gray-300 contrast-more:dark:text-gray-300">
+    <input
+      placeholder="Search..."
+      class="search-input block w-full appearance-none rounded-lg px-3 py-2 transition-colors text-base leading-tight md:text-sm bg-black/[.05] dark:bg-gray-50/10 focus:bg-white dark:focus:bg-dark placeholder:text-gray-500 dark:placeholder:text-gray-400 contrast-more:border contrast-more:border-current"
+      type="search"
+      value=""
+      spellcheck="false"
+    />
+    <kbd
+      class="absolute my-1.5 select-none ltr:right-1.5 rtl:left-1.5 h-5 rounded bg-white px-1.5 font-mono text-[10px] font-medium text-gray-500 border dark:border-gray-100/20 dark:bg-dark/50 contrast-more:border-current contrast-more:text-current contrast-more:dark:border-current items-center gap-1 transition-opacity pointer-events-none hidden sm:flex"
+    >
+      CTRL K
+    </kbd>
+  </div>
+
+  <div>
+    <ul
+      class="search-results hextra-scrollbar hidden border border-gray-200 bg-white text-gray-100 dark:border-neutral-800 dark:bg-neutral-900 absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-xl py-2.5 shadow-xl max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)] md:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)] inset-x-0 ltr:md:left-auto rtl:md:right-auto contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50 w-screen min-h-[100px] max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      style="transition: max-height 0.2s ease 0s;"
+    ></ul>
+  </div>
+</div>
+
+    </div>
+    <div class="hextra-scrollbar overflow-y-auto overflow-x-hidden p-4 grow md:h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
+        <ul class="flex flex-col gap-1 md:hidden">
+            
+            
+<li class="open"><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/" title="Latest Articles">
+    <strong>Latest LABS posts</strong>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/"
+            
+    >
+        
+        Explore LABS posts
+        
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="origin-center transition-transform rtl:-rotate-180"></path></svg></span>
+        </a>
+</span><div class="jumpsec-categories-list"><div class="ltr:pr-0 overflow-hidden">
+    <ul class='relative flex flex-col before:absolute before:w-px before:bg-gray-200 before:content-[""] ltr:ml-3 ltr:before:left-0 rtl:mr-3 rtl:pr-3 rtl:before:right-0 dark:before:bg-neutral-800'><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">
+        <span class="inner-medium-weight">Active Cyber Defence - Taking back control</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/" title="NTLM Relaying - Making the Old New Again">
+        <span class="inner-medium-weight">NTLM Relaying - Making the Old New Again</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu">
+        <span class="inner-medium-weight">Adversary at the Door - Initial Access and what&#39;s currently on the menu</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs">
+        <span class="inner-medium-weight">SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-gray-50 contrast-more:dark:text-gray-50 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li></ul>
+</div></div>
+</li>
+        </ul>
+
+        <ul class="flex flex-col gap-1 max-md:hidden jumpsec-categories home">
+            
+            <h2><strong>Categories:</strong></h2>
+            <ul class="jumpsec-categories-list-category">
+                
+                <li hugo-nav="/categories/adversary-infrastructure/"><a href="//localhost:1313/categories/adversary-infrastructure/" title="Adversary-Infrastructure"> Adversary-Infrastructure </a> </li>
+                
+                <li hugo-nav="/categories/application-security/"><a href="//localhost:1313/categories/application-security/" title="Application-Security"> Application-Security </a> </li>
+                
+                <li hugo-nav="/categories/azure-cloud/"><a href="//localhost:1313/categories/azure-cloud/" title="Azure-Cloud"> Azure-Cloud </a> </li>
+                
+                <li hugo-nav="/categories/azure-devops/"><a href="//localhost:1313/categories/azure-devops/" title="Azure-Devops"> Azure-Devops </a> </li>
+                
+                <li hugo-nav="/categories/binary-analysis/"><a href="//localhost:1313/categories/binary-analysis/" title="Binary-Analysis"> Binary-Analysis </a> </li>
+                
+                <li hugo-nav="/categories/burpsuite/"><a href="//localhost:1313/categories/burpsuite/" title="Burpsuite"> Burpsuite </a> </li>
+                
+                <li hugo-nav="/categories/cloud-red-team/"><a href="//localhost:1313/categories/cloud-red-team/" title="Cloud-Red-Team"> Cloud-Red-Team </a> </li>
+                
+                <li hugo-nav="/categories/ctfs/"><a href="//localhost:1313/categories/ctfs/" title="Ctfs"> Ctfs </a> </li>
+                
+                <li hugo-nav="/categories/detection/"><a href="//localhost:1313/categories/detection/" title="Detection"> Detection </a> </li>
+                
+                <li hugo-nav="/categories/exploitation/"><a href="//localhost:1313/categories/exploitation/" title="Exploitation"> Exploitation </a> </li>
+                
+                <li hugo-nav="/categories/forensics/"><a href="//localhost:1313/categories/forensics/" title="Forensics"> Forensics </a> </li>
+                
+                <li hugo-nav="/categories/hardening/"><a href="//localhost:1313/categories/hardening/" title="Hardening"> Hardening </a> </li>
+                
+                <li hugo-nav="/categories/incident-response/"><a href="//localhost:1313/categories/incident-response/" title="Incident-Response"> Incident-Response </a> </li>
+                
+                <li hugo-nav="/categories/initial-access/"><a href="//localhost:1313/categories/initial-access/" title="Initial-Access"> Initial-Access </a> </li>
+                
+                <li hugo-nav="/categories/jumpsec/"><a href="//localhost:1313/categories/jumpsec/" title="Jumpsec"> Jumpsec </a> </li>
+                
+                <li hugo-nav="/categories/mail-security/"><a href="//localhost:1313/categories/mail-security/" title="Mail-Security"> Mail-Security </a> </li>
+                
+                <li hugo-nav="/categories/monitoring/"><a href="//localhost:1313/categories/monitoring/" title="Monitoring"> Monitoring </a> </li>
+                
+                <li hugo-nav="/categories/network/"><a href="//localhost:1313/categories/network/" title="Network"> Network </a> </li>
+                
+                <li hugo-nav="/categories/network-forensics/"><a href="//localhost:1313/categories/network-forensics/" title="Network-Forensics"> Network-Forensics </a> </li>
+                
+                <li hugo-nav="/categories/network-tools/"><a href="//localhost:1313/categories/network-tools/" title="Network-Tools"> Network-Tools </a> </li>
+                
+                <li hugo-nav="/categories/obfuscation/"><a href="//localhost:1313/categories/obfuscation/" title="Obfuscation"> Obfuscation </a> </li>
+                
+                <li hugo-nav="/categories/password-cracking/"><a href="//localhost:1313/categories/password-cracking/" title="Password-Cracking"> Password-Cracking </a> </li>
+                
+                <li hugo-nav="/categories/pcap-analysis/"><a href="//localhost:1313/categories/pcap-analysis/" title="Pcap-Analysis"> Pcap-Analysis </a> </li>
+                
+                <li hugo-nav="/categories/red-teaming/"><a href="//localhost:1313/categories/red-teaming/" title="Red-Teaming"> Red-Teaming </a> </li>
+                
+                <li hugo-nav="/categories/research/"><a href="//localhost:1313/categories/research/" title="Research"> Research </a> </li>
+                
+                <li hugo-nav="/categories/security-bug/"><a href="//localhost:1313/categories/security-bug/" title="Security-Bug"> Security-Bug </a> </li>
+                
+                <li hugo-nav="/categories/social-engineering/"><a href="//localhost:1313/categories/social-engineering/" title="Social-Engineering"> Social-Engineering </a> </li>
+                
+                <li hugo-nav="/categories/vulnerability/"><a href="//localhost:1313/categories/vulnerability/" title="Vulnerability"> Vulnerability </a> </li>
+                
+                <li hugo-nav="/categories/windows/"><a href="//localhost:1313/categories/windows/" title="Windows"> Windows </a> </li>
+                
+            </ul>
+            
+            
+            
+        </ul>
+        </div>
+    
+    </aside>
+</div>
+
+      <footer class="hextra-footer bg-gray-100 pb-[env(safe-area-inset-bottom)] dark:bg-neutral-900 print:bg-transparent"><div
+            class="max-w-screen-xl mx-auto flex justify-center py-12 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)] text-gray-600 dark:text-gray-400 md:justify-start"
+    >
+        <div class="flex w-full flex-col items-center sm:items-start">
+            <div class="flex w-4 flex-col items-center sm:items-start">
+                <div class="social-links">
+                    <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://twitter.com/JumpsecLabs" title="Twitter"><svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"></path></svg><span class="sr-only">Twitter</span></a>
+                    <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.linkedin.com/company/jumpsec/" title="LinkedIn"><svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037c-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85c3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065a2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg><span class="sr-only">LinkedIn</span></a>
+                    <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.youtube.com/channel/UCXSbS5DNUZA2LNidrb67tvw" title="YouTube"><svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104l.022.26l.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105l-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006l-.087-.004l-.171-.007l-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103l.003-.052l.008-.104l.022-.26l.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007l.172-.006l.086-.003l.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"></path></svg><span class="sr-only">YouTube</span></a>
+                    <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.github.com/JUMPSECLabs" title="GitHub"><svg height="24" fill="currentColor" viewBox="3 3 18 18"><path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path></svg><span class="sr-only">GitHub</span></a>
+                </div>
+
+                JUMPSEC, Unit 3E - 3F, 33 - 34 Westpoint,<br>
+                Warple Way, Acton<br>
+                W3 ORG
+            </div>
+            <div class="flex w-4 flex-col items-center sm:items-start">
+            </div>
+            <div class="flex w-4 flex-col items-center sm:items-start">
+                To learn more about JUMPSEC's services please get in touch:
+                <br><br>
+                <span>Give us a call: <a href="tel:03339398080" title="0333 939 8080">0333 939 8080</a></span>
+                <br>
+                <span>Send us a message: <a href="mailto:hello@jumpsec.com">hello@jumpsec.com</a></span>
+                <br>
+                <span><a href="https://www.jumpsec.com/careers/" title="Careers">Careers</a></span>
+            </div>
+    </div>
+</footer>
+    
   </body>
+  <script defer src="/js/main.js" integrity=""></script>
+
+
+<script defer src="/lib/flexsearch/flexsearch.bundle.min.0425860527cc9968f9f049421c7a56b39327d475e2e3a8f550416be3a9134327.js" integrity="sha256-BCWGBSfMmWj58ElCHHpWs5Mn1HXi46j1UEFr46kTQyc="></script>
+    <script defer src="/en.search.js" integrity=""></script>
+
+
 </html>
