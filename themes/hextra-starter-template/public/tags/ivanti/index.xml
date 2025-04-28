@@ -1,0 +1,421 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Ivanti</title>
+    <link>//localhost:1313/tags/ivanti/</link>
+    <description>Recent content in Ivanti on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Fri, 13 Nov 2020 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/ivanti/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Advisory CVE-2020-13769 – Ivanti Unified Endpoint Manager SQL injection</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-13-advisory-cve-2020-13769-ivanti-uem-sql-injection/</link>
+      <pubDate>Fri, 13 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-13-advisory-cve-2020-13769-ivanti-uem-sql-injection/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1; &amp;lt;= 2019.1.3&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13769&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 13/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 7.4 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:L/A:L&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:L/A:L&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Remote, authenticated&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;A number of web components in Endpoint Manager do not properly sanitize user input when executing SQL queries, leaving the application vulnerable to injection attacks towards the underlying database.&lt;br&gt;
+On a standard installation with default options, the account used to query the database is database administrator.&lt;/p&gt;
+&lt;p&gt;Solution&lt;/p&gt;
+&lt;p&gt;The issue has been successfully resolved by the vendor in version 2020.1.1. Customers can install the latest available software update to fix the vulnerability. The vendor also reported this has also been fixed in version 2019.1.4, although this has not been verified by JUMPSEC.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The following endpoints and parameters are vulnerable and exploitable by any authenticated user:&lt;/p&gt;
+&lt;p&gt;POST /LDMS/alert_log.aspx?d=alert_log&amp;amp;tb=serverAlertLog.tb&lt;br&gt;
+&amp;ldquo;filterValue&amp;rdquo; parameter&lt;br&gt;
+Type: Stacked, time-based blind, boolean-based blind&lt;br&gt;
+Example: filterValue=&amp;rsquo;;injection_query_here&amp;ndash;&lt;/p&gt;
+&lt;p&gt;POST /remotecontrolauth/api/device&lt;br&gt;
+&amp;ldquo;global&amp;rdquo;, &amp;ldquo;displayname&amp;rdquo;, &amp;ldquo;ipaddress&amp;rdquo;, &amp;ldquo;owner&amp;rdquo; parameters&lt;br&gt;
+Type: Time-based blind, boolean-based blind&lt;br&gt;
+Example: &amp;ldquo;global&amp;rdquo;:&amp;quot;&amp;rsquo;+(injection_query_here)+&amp;rsquo;&amp;quot;&lt;br&gt;
+This instance also requires a valid &amp;ldquo;sessionid&amp;rdquo; in the request.&lt;/p&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+13/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13772 - Ivanti Unified Endpoint Manager system information disclosure</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-13-cve-2020-13772-ivanti-uem-system-information-disclosure/</link>
+      <pubDate>Fri, 13 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-13-cve-2020-13772-ivanti-uem-system-information-disclosure/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13772&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 13/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 5.3 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Remote, unauthenticated&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Ivanti Unified Endpoint Manager&amp;rsquo;s &amp;ldquo;ldcient&amp;rdquo; component expose information about the system that could be used in further attacks against the system.&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;There is currently no fix for this issue. The vendor has yet to release a patch to address the vulnerability; it is advised to review the host configuration and monitor for suspicious activity. If possible, consider disabling or whitelisting access to the affected URLs.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The following endpoint expose information about the system, such as environment variables, domain name, internal paths and CPU information:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;/ldclient/ldprov.cgi, HTTP 9595&lt;/li&gt;
+&lt;li&gt;/ldclient/ldprov.cgi, HTTPS 9594&lt;/li&gt;
+&lt;li&gt;/ldclient/ldprov.cgi, HTTPS 9593&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+13/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13773 - Ivanti Unified Endpoint Manager Reflected XSS</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-13-cve-2020-13773-ivanti-uem-reflected-xss/</link>
+      <pubDate>Fri, 13 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-13-cve-2020-13773-ivanti-uem-reflected-xss/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13773&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 13/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 5.5 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:N/AC:L/PR:L/UI:R/S:U/C:L/I:L/A:L&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:N/AC:L/PR:L/UI:R/S:U/C:L/I:L/A:L&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Remote, authenticated&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Various web pages on Ivanti Unified Endpoint Manager web management console lack proper input validation on parameters passed in HTTP request, leaving the application vulnerable to client-side attacks. An attacker able to cause the victim to open a malicious URL would obtain javascript code execution on the victim&amp;rsquo;s browser and potentially be able to obtain sensitive information and execute actions on their behalf.&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;There is currently no fix for this issue. The vendor has yet to release a patch to address the vulnerability; it is advised to review the host configuration and monitor for suspicious activity.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The following endpoints and parameter are vulnerable:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;/LDMS/frm_splitfrm.aspx &amp;ldquo;top&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_splitfrm.aspx &amp;ldquo;ttb&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_splitfrm.aspx &amp;ldquo;splittf&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/licensecheck.aspx &amp;ldquo;doc&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_splitcollapse.aspx &amp;ldquo;bottom&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/alert_log.aspx &amp;ldquo;sortdir&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/alert_log.aspx &amp;ldquo;sortcol&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/ServerList.aspx &amp;ldquo;sortdir&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_coremainfrm.aspx &amp;ldquo;bfn&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_findfrm.aspx &amp;ldquo;m&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_taskfrm.aspx any parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/query_browsecomp.aspx &amp;ldquo;t&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/sm_actionfrm.asp &amp;ldquo;bfn&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/sm_actionfrm.asp &amp;ldquo;d&amp;rdquo; parameter&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+13/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Detecting known DLL hijacking and named pipe token impersonation attacks with Sysmon</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-13-detecting-known-dll-hijacking-and-named-pipe-token-impersonation-attacks-with-sysmon/</link>
+      <pubDate>Fri, 13 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-13-detecting-known-dll-hijacking-and-named-pipe-token-impersonation-attacks-with-sysmon/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Background&lt;/p&gt;
+&lt;p&gt;Recently we posted a bunch of &lt;a href=&#34;https://labs.jumpsec.com/tag/ivanti/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;advisories&lt;/a&gt; relating to Ivanti Unified Endpoint Manager, a couple of which are for vulnerabilities which can be used to achieve local privilege escalation.&lt;/p&gt;
+&lt;p&gt;At JUMPSEC, whenever we find a new vulnerability, we like to challenge ourselves to write rules to detect it being exploited. We learn a lot doing this, it’s kind of fun tweaking the exploit to try and evade detection and really challenges us to write good detection rulesets.&lt;/p&gt;
+&lt;p&gt;Naturally, with the right signatures you can detect future exploitation of an issue, but it’s also fun/scary (delete as appropriate!) to run this on historical data and find out if someone else got there first and the vulnerability has been exploited in the wild already…&lt;/p&gt;
+&lt;p&gt;We enjoy doing it, we know it is valuable to our clients and we’d love to see more of it being done which is why we’re making an effort to share some detail relating to our recent Ivanti advisories.&lt;/p&gt;
+&lt;p&gt;Introduction&lt;/p&gt;
+&lt;p&gt;Because of the high number of components that make up an operating system, attackers with local access have a very wide array of possible ways to interact with the system in malicious ways, even when limited to low privileges. This corresponds to a greater effort required to properly monitor for suspicious behaviour and detect attacks.&lt;/p&gt;
+&lt;p&gt;In light of the recent vulnerabilities affecting Ivanti Unified Endpoint Manager we want to briefly touch on how it is possible to detect local privilege escalation attack, specifically addressing &lt;a href=&#34;https://labs.jumpsec.com/advisory-cve-2020-13770-ivanti-uem-named-pipe-token-impersonation/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CVE-2020-13770&lt;/a&gt; and &lt;a href=&#34;https://labs.jumpsec.com/advisory-cve-2020-13771-ivanti-uem-dll-hijacking/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CVE-2020-13771&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You have probably heard of Sysmon already, but in case you have not, it is a handy tool available in the Windows Sysinternals toolsuite which can track, record and store detailed system events. These events can then be viewed within Windows Event Viewer, and are usually collected by SIEM software for aggregation and analysis.&lt;/p&gt;
+&lt;p&gt;We’re focused on Sysmon in this writeup.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;In this section we give a brief explanation of the vulnerabilities and an example of Sysmon configuration rules to log exploitation attempts, along with the rationale behind them so you can adapt them to your existing configuration if needed. These will act as a solid first point of detection, and while the events thereby generated will be by themselves a confident indicator for malicious activity, they can be further correlated with other events for even more precise monitoring.&lt;/p&gt;
+&lt;p&gt;CVE-2020-13771 - DLL search order hijacking&lt;/p&gt;
+&lt;p&gt;To exploit this vulnerability a local attacker needs to create a malicious DLL library and place it in a particular path on the filesystem. This path is entirely dependent on the host configuration; the vulnerable software relies on Windows&amp;rsquo; &lt;a href=&#34;https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order#search-order-for-desktop-applications&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DLL Search Order for desktop applications&lt;/a&gt;, reported below, for locating and loading a DLL file.&lt;/p&gt;
+&lt;p&gt;With SafeDllSearchMode enabled:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The directory from which the application loaded.&lt;/li&gt;
+&lt;li&gt;The system directory. This is usually C:\Windows\System32\ and/or C:\Windows\SysWow64\ depending on the OS and process architecture.&lt;/li&gt;
+&lt;li&gt;The 16-bit system directory. This is usually C:\Windows\System\&lt;/li&gt;
+&lt;li&gt;The Windows directory. This is usually C:\Windows&lt;/li&gt;
+&lt;li&gt;The process&amp;rsquo; current directory.&lt;/li&gt;
+&lt;li&gt;The directories that are listed in the PATH environment variable. Note that this does not include the per-application path specified by the App Paths registry key. The App Paths key is not used when computing the DLL search path.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;With SafeDllSearchMode disabled:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The directory from which the application loaded.&lt;/li&gt;
+&lt;li&gt;The process&amp;rsquo; current directory.&lt;/li&gt;
+&lt;li&gt;The system directory. This is usually C:\Windows\System32\ and/or C:\Windows\SysWow64\ depending on the OS and process architecture.&lt;/li&gt;
+&lt;li&gt;The 16-bit system directory. This is usually C:\Windows\System\&lt;/li&gt;
+&lt;li&gt;The Windows directory. This is usually C:\Windows&lt;/li&gt;
+&lt;li&gt;The directories that are listed in the PATH environment variable. Note that this does not include the per-application path specified by the App Paths registry key. The App Paths key is not used when computing the DLL search path.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;SafeDllSearchMode is essentially a setting, enabled by default, which places the process&amp;rsquo; current directory later in the search order to try mitigate this type of vulnerabilities. Its value can be set to 1 (enabled) or 0 (disabled) in the following registry key:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\SafeDllSearchMode&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;In both circumstances the OS will look for a DLL file in the directories listed in the PATH environment variable, in the order as they appear, in case the library has not been not found yet. This variable needs particular attention, as it is easy to end up with directories writable by Everyone; moreover many software installers will silently append their directories to it.&lt;/p&gt;
+&lt;p&gt;If a local attacker - or a remote one with an arbitrary filesystem write primitive - is able to place the malicious library in one of these paths, taking precedence over the path where the legitimate library is found - or regardless of precedence, if the legitimate library is not found at all - the file will be loaded by the vulnerable process, which will execute its DllMain function in its own context.&lt;/p&gt;
+&lt;p&gt;Going back to the Ivanti Unified Endpoint Manager instance, the DLL files referenced in the advisory are not found by the processes, leaving the attacker a handful of possible paths to place his implant.&lt;/p&gt;
+&lt;p&gt;To log exploitation attempts we can instruct Sysmon to record ImageLoad events; as the DLL file needs to have the precise filename the process is looking for, or else it will not be loaded, the filename is a good attribute to set filters on. Since legitimate libraries usually are signed by the software vendor or publisher, we can filter on this criteria to only log unsigned or untrusted images. The following rules will record library loading events on any process for all unsigned/untrusted libraries with these specific filenames, found anywhere in the filesystem:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;&amp;lt;Sysmon schemaversion=&amp;#34;4.22&amp;#34;&amp;gt;
+    &amp;lt;EventFiltering&amp;gt;
+        &amp;lt;RuleGroup name=&amp;#34;CVE-2020-13771&amp;#34; groupRelation=&amp;#34;and&amp;#34;&amp;gt;
+            &amp;lt;ImageLoad onmatch=&amp;#34;include&amp;#34;&amp;gt;
+                &amp;lt;!-- Only log unsigned / invalid signature images --&amp;gt;
+                &amp;lt;SignatureStatus condition=&amp;#34;is not&amp;#34;&amp;gt;Valid&amp;lt;/SignatureStatus&amp;gt;
+                &amp;lt;!-- Only log these images --&amp;gt;
+                &amp;lt;ImageLoaded condition=&amp;#34;image&amp;#34;&amp;gt;ldprofileui.dll&amp;lt;/ImageLoaded&amp;gt;
+                &amp;lt;ImageLoaded condition=&amp;#34;image&amp;#34;&amp;gt;wfapi.dll&amp;lt;/ImageLoaded&amp;gt;
+                &amp;lt;ImageLoaded condition=&amp;#34;image&amp;#34;&amp;gt;DMIAPI32.DLL&amp;lt;/ImageLoaded&amp;gt;
+                &amp;lt;ImageLoaded condition=&amp;#34;image&amp;#34;&amp;gt;logonsrv.dll&amp;lt;/ImageLoaded&amp;gt;
+                &amp;lt;ImageLoaded condition=&amp;#34;image&amp;#34;&amp;gt;ldprofileui.dll&amp;lt;/ImageLoaded&amp;gt;
+                &amp;lt;ImageLoaded condition=&amp;#34;image&amp;#34;&amp;gt;OOBCredentials.dll&amp;lt;/ImageLoaded&amp;gt;
+            &amp;lt;/ImageLoad&amp;gt;
+        &amp;lt;/RuleGroup&amp;gt;
+    &amp;lt;/EventFiltering&amp;gt;
+&amp;lt;/Sysmon&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/17330_dll_hijacking_event-1024x593.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;DLL Hijacking event captured by Sysmon. The image will show up as unsigned if the certificate is not trusted.&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;CVE-2020-13770 - Named pipe token impersonation&lt;/p&gt;
+&lt;p&gt;This vulnerability is another classic in privilege escalation techniques; in fact, it is one of the methods meterpreter attempts when one runs &amp;ldquo;getsystem&amp;rdquo;. The issue takes place when a process opens a named pipe object without explicitly specifying proper security attributes. These security attributes can be specified when calling &lt;a href=&#34;https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CreateFile&lt;/a&gt; on the &amp;ldquo;dwFlagsAndAttributes&amp;rdquo; parameter; among them, the following two are interesting from an attacker&amp;rsquo;s perspective:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;SECURITY_DELEGATION - Impersonates a client at the Delegation impersonation level.&lt;/li&gt;
+&lt;li&gt;SECURITY_IMPERSONATION - Impersonate a client at the impersonation level. This is the default behavior if no other flags are specified along with the SECURITY_SQOS_PRESENT flag.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The first effectively allows for impersonation on remote hosts, while the second only allows that to happen locally. The problem relies on the fact that &amp;ldquo;SECURITY_IMPERSONATION&amp;rdquo; is the default value when no other attribute is specified, or when the &amp;ldquo;SECURITY_SQOS_PRESENT&amp;rdquo; flag is not set, which leads to this vulnerability being often introduced unwarily.&lt;/p&gt;
+&lt;p&gt;Upon opening a named pipe with one of these two security attributes, the server has the access to obtain the client&amp;rsquo;s token and use it during subsequent access checks; in cases where the client has higher privileges than the server, the server would effectively obtain elevation of privileges. Any process can open a new named pipe object, granted that one with the same name does not already exist, although the impersonation process requires the server process to hold the SeImpersonatePrivilege privilege. By default this is assigned to service users, such as &amp;ldquo;nt authority\network service&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;A further requirement for the privilege escalation process is that the client must write some data to the named pipe before the impersonation process can take place. It is therefore possible for a process to open the pipe with insecure security attributes but not be exploitable to achieve EoP.&lt;/p&gt;
+&lt;p&gt;With regards to detecting exploitation on Unified Endpoint Manager, having identified on which named pipe object the impersonation takes place, pipe creation events can be filtered on their name. Any process other than the legitimate pipe servers can be appended to the exclude rules to be filtered out. Since the pipe is specific to Ivanti software, such a configuration will be effective in giving no false positive. Further events can optionally be correlated to the one targeted here, such as process creations or file operation performed by the same process creating the named pipe object. Note that the exclude rule might need to be edited to the reader&amp;rsquo;s version of SQL Server.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;&amp;lt;Sysmon schemaversion=&amp;#34;4.22&amp;#34;&amp;gt;
+    &amp;lt;EventFiltering&amp;gt;
+        &amp;lt;RuleGroup name=&amp;#34;CVE-2020-13770&amp;#34; groupRelation=&amp;#34;and&amp;#34;&amp;gt;
+            &amp;lt;PipeEvent onmatch=&amp;#34;include&amp;#34;&amp;gt;
+                &amp;lt;!-- Monitor CreatePipe events --&amp;gt;
+                &amp;lt;EventType condition=&amp;#34;is&amp;#34;&amp;gt;CreatePipe&amp;lt;/EventType&amp;gt;
+                &amp;lt;!-- Only log these named pipes --&amp;gt;
+                &amp;lt;PipeName condition=&amp;#34;is&amp;#34;&amp;gt;\SQLLocal\ldmsdata&amp;lt;/PipeName&amp;gt;
+            &amp;lt;/PipeEvent&amp;gt;
+            &amp;lt;PipeEvent onmatch=&amp;#34;exclude&amp;#34;&amp;gt;
+                &amp;lt;!-- Only log if the pipe is not created by these (legitimate) processes --&amp;gt;
+                &amp;lt;Image condition=&amp;#34;is&amp;#34;&amp;gt;C:\Program Files\Microsoft SQL Server\MSSQL13.LDMSDATA\MSSQL\Binn\sqlservr.exe&amp;lt;/Image&amp;gt;
+            &amp;lt;/PipeEvent&amp;gt;
+        &amp;lt;/RuleGroup&amp;gt;
+    &amp;lt;/EventFiltering&amp;gt;
+&amp;lt;/Sysmon&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/17330_named_pipe-1024x609.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;CreatePipe event captured by Sysmon.&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13774 - Ivanti Unified Endpoint Manager authenticated RCE via file upload</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-12-advisory-cve-2020-13774-ivanti-uem-rce/</link>
+      <pubDate>Thu, 12 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-12-advisory-cve-2020-13774-ivanti-uem-rce/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1; &amp;lt;= 2019.1.3&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13774&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 12/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 9.9 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Remote, authenticated&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Improper validation on file upload functionality present in Ivanti Unified Endpoint Manager&amp;rsquo;s web management console permits an authenticated user to upload .aspx files and execute them on the MS IIS server&amp;rsquo;s context. The issue is caused by insufficient file extension validation and insecure file operations on the uploaded image, which upon failure will leave the temporarily created files in an accessible location on the server.&lt;/p&gt;
+&lt;p&gt;Solution&lt;/p&gt;
+&lt;p&gt;The issue has been successfully resolved by the vendor in version 2020.1.1. Customers can install the latest available software update to fix the vulnerability. The vendor also communicated this has also been fixed in version 2019.1.4, although this has not been verified by JUMPSEC.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The &amp;ldquo;/LDMS/softwaredistribution/EditLaunchPadDialog.aspx&amp;rdquo; URL permits the upload of an image file on the server. Security controls on the file extension are implemented client-side and can thus be easily bypassed. By crafting a proper .ico image file containing ASP code and uploading it with .aspx extension, it is later possible to access and execute the malicious file on &amp;ldquo;/landesk/files/&lt;filename&gt;.aspx&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;The user must be authenticated and either part of &amp;ldquo;LANDesk Admnistrators&amp;rdquo; group or both part of &amp;ldquo;Landesk Management Suite&amp;rdquo; group and be assigned to the &amp;ldquo;Software Distribution&amp;rdquo; role in order to access the vulnerable component.&lt;/p&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+12/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13770 - Ivanti Unified Endpoint Manager named pipe token impersonation privilege escalation</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13770-ivanti-uem-named-pipe-token-impersonation/</link>
+      <pubDate>Wed, 11 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13770-ivanti-uem-named-pipe-token-impersonation/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Unified Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13770&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 11/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 8.8 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Local&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Several services are accessing named pipes with default or overly permissive security attributes; as these services run as user &amp;lsquo;NT AUTHORITY\SYSTEM&amp;rsquo;, the issue can be used to escalate privileges from a local standard or service account having SeImpersonatePrivilege (eg. user &amp;lsquo;NT AUTHORITY\NETWORK SERVICE&amp;rsquo;).&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;There is currently no fix for this issue. The vendor has yet to release a patch to address the vulnerability; it is advised to review the host configuration and monitor for suspicious activity.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The process of exploiting the vulnerability consists in creating a named pipe server, waiting for the vulnerable service to connect to it as a client, extract the client&amp;rsquo;s token and use it to perform privileged actions as &amp;lsquo;NT AUTHORITY\SYSTEM&amp;rsquo;. As there can only be one server-side named pipe object, to exploit the vulnerability it might be required to create the named pipe object before the legitimate process does, or alternatively kill it or cause it to crash.&lt;/p&gt;
+&lt;p&gt;The following named pipe client processes and named pipe objects are affected on version &amp;lt;=2020.1.1:&lt;/p&gt;
+&lt;p&gt;Pipe name: \\.\pipe\SQLLocal\ldmsdata&lt;br&gt;
+Server process: C:\Program Files\Microsoft SQL Server\MSSQL13.LDMSDATA\MSSQL\Binn\sqlservr.exe&lt;br&gt;
+Client processes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;C:\PROGRA&lt;del&gt;1\LANDesk\MANAGE&lt;/del&gt;1\landesk\SAM\SamServer\bin\SAM.O365PS_Routines.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\LDClient\LDdevmon.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\AlertService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\BrokerService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.Core.Barcode.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\SchedQry.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\MDMManagementService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\commands.service.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\CoreSyncService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.RapidDeploy.Service.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\MPCore.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\LDInv32.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\SchedSvc.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.Common.DBMonitorService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.Common.SoftwareManager.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.DiscoveryServices.Core.exe&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;28/05/2020: Issue reported to the vendor&lt;br&gt;
+01/06/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+11/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13771 - Ivanti Unified Endpoint Manager DLL search order hijacking privilege escalation</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13771-ivanti-uem-dll-hijacking/</link>
+      <pubDate>Wed, 11 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13771-ivanti-uem-dll-hijacking/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Unified Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13771&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 11/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 8.1 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Local&lt;br&gt;
+&lt;strong&gt;Credit&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Various services running as user &amp;lsquo;NT AUTHORITY\SYSTEM&amp;rsquo; rely on Windows&amp;rsquo; DLL search order for loading DLL files that are not present on the filesystem. Under certain circumstances, a local attacker would be able to place a malicious DLL file to obtain code execution in the vulnerable service&amp;rsquo;s context to elevate privileges.&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;The vendor has released an update partially fixing the issue. 2019.1.4 and 2020.1.1 releases can be installed to remediate some of the instances; the remaining instances remain outstanding. It is advised to review the host configuration and monitor for suspicious activity.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;Affected services attempt to load DLL libraries which are not found on the filesystem relying on Windows&amp;rsquo; DLL search order. A local attacker able to place a purposely crafted library in one of the directories searched, such as one listed in the PATH system environment variable, would gain code execution in the context of the vulnerable service.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Vulnerable instances on version &amp;lt;= 2020.1.1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk Inventory Server&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ldprofileui.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Vulnerable instances on version &amp;lt;= 2020.1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk Inventory Server&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;wfapi.dll&lt;/li&gt;
+&lt;li&gt;DMIAPI32.DLL&lt;/li&gt;
+&lt;li&gt;logonsrv.dll&lt;/li&gt;
+&lt;li&gt;ldprofileui.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk(R) Console Redirection Service&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OOBCredentials.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+11/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

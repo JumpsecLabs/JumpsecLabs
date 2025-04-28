@@ -1,0 +1,65 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Logging</title>
+    <link>//localhost:1313/tags/logging/</link>
+    <description>Recent content in Logging on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Wed, 06 Feb 2019 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/logging/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Enhanced logging to detect common attacks on Active Directory– Part 1</title>
+      <link>//localhost:1313/articles/2019/02/2019-02-06-enhanced-logging-to-detect-common-attacks-on-active-directory-part-1/</link>
+      <pubDate>Wed, 06 Feb 2019 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2019/02/2019-02-06-enhanced-logging-to-detect-common-attacks-on-active-directory-part-1/</guid>
+      <description>
+        
+        
+        &lt;p&gt;In this blog post I am going to tackle the topic of detecting common attacks using Active Directory logs. It is important to understand the power of data in InfoSec world. Too much data means you’ll be spending rest of the week digging through millions of log entries to try and figure out what the adversary was up to. You can set filters to help you through this, however it can get computationally expensive very fast depending on how your filters operate. It also requires you to know what to specifically look out for! You need to have confidence in your filters and test them thoroughly from time to time to make sure they actually work.&lt;/p&gt;
+&lt;p&gt;On the other hand, too little data means you might not have enough log entries to investigate and provide full evidence of what malicious techniques were attempted. For this reason, it is a constant battle of finding the middle ground of having hard evidence and not overwhelming your SIEM. Another golden question to ask is: are we even logging the correct events?&lt;/p&gt;
+&lt;p&gt;One of the ways to get around this problem is configuring the correct Group Policies on the Domain Controllers. In this blog post I want to focus solely on command line logging because it is a quick win and it shows immense amount of detail into what processes and commands are executed. We start off by enabling the correct settings in the Group Policy using Group Policy Editor. The steps are detailed below:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Follow the path &lt;strong&gt;&lt;em&gt;Policies → Administrative Templates → System → Audit Process Creation. And enable “include command line in process creation events”&lt;/em&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;images/1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Follow the path &lt;strong&gt;&lt;em&gt;Policies → Windows Settings → Security Settings → Advanced Audit Policy Configuration → Audit Policies → System Audit Policies → Detailed Tracking&lt;/em&gt;&lt;/strong&gt;. And enable both &lt;strong&gt;&lt;em&gt;Successful&lt;/em&gt;&lt;/strong&gt; and &lt;strong&gt;&lt;em&gt;Failure&lt;/em&gt;&lt;/strong&gt; configuration for “&lt;strong&gt;&lt;em&gt;Audit Process Creation&lt;/em&gt;&lt;/strong&gt;” and “&lt;em&gt;&lt;strong&gt;Audit Process Termination&lt;/strong&gt;&lt;/em&gt;” as shown below.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;images/2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;After configuring these settings, run the good old group policy update on command prompt as administrator using the command &lt;strong&gt;&lt;em&gt;gpupdate /force&lt;/em&gt;&lt;/strong&gt;. At this point, you should be able to see all commands being executed via command prompt.&lt;/p&gt;
+&lt;p&gt;We can test this by running some commands and viewing the logs to verify as shown below by running some test commands. We can see that by running test commands &lt;strong&gt;event ID 4688&lt;/strong&gt; (New process created) event is generated showing what was typed in the command prompt.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/4.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/5-3.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;img src=&#34;images/6-2.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Now, we can move forward and test this with the psexec module from Metasploit using the &lt;em&gt;exploit/windows/smb/psexec&lt;/em&gt; module as shown below.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/7.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;After setting the correct parameters, we execute the exploit and observe the logs produced from this action.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/8.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Now this will generate a lot of events and keeping up with the incoming logs using Windows Event Viewer will be almost impossible. The best way to analyse these events is to parse these events through a SIEM solution for better log management. After everything is set up correctly, we can now begin the hunt! Monitoring the recent activity on the target machine, we see some interesting events:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Event ID 7045&lt;/strong&gt; – A service was installed in the system&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;images/9.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The details around this event shows that the service named &lt;strong&gt;&lt;em&gt;yReAMNiNjOyqeWQI&lt;/em&gt;&lt;/strong&gt; was installed by the user root (which we know is the user used for this exploit). There are some interesting parameters defined here such as &lt;strong&gt;-nop&lt;/strong&gt;, &lt;strong&gt;-hidden&lt;/strong&gt; and &lt;strong&gt;-noni&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Such parameters can be used for obfuscation purposes. However, it becomes harder to detect these obfuscation parameters with keyword matching when there are multiple valid execution argument aliases for them. For example, for &lt;strong&gt;-NoProfile&lt;/strong&gt; argument alone, argument substrings such as &lt;strong&gt;-NoP&lt;/strong&gt;, &lt;strong&gt;-NoPr&lt;/strong&gt; &lt;strong&gt;-NoPro&lt;/strong&gt;, &lt;strong&gt;-NoProf&lt;/strong&gt;, &lt;strong&gt;-NoProfi&lt;/strong&gt; and &lt;strong&gt;-NoProfil&lt;/strong&gt; are all valid! This is where we chuck keyword matching filters out of the window and look towards regular expressions for detection.&lt;/p&gt;
+&lt;p&gt;Focusing more on the name of the service being installed (&lt;em&gt;&lt;strong&gt;yReAMNiNjOyqeWQI&lt;/strong&gt;&lt;/em&gt;) looks like gibberish which is exactly what it is. Looking at the source code of the psexec module for Metasploit framework, we see that the display name is essentially 16 character long random text! We just found another possible filter that could help us detect these types of exploits.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/10.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Furthermore, we can also see a new process created (with &lt;strong&gt;event ID 4688&lt;/strong&gt;) which logs the actual command being executed during this attack!&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/11.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Do you remember the thing we did with the group policies earlier? It wasn’t just to fill this blog post with random text and screenshots…nope… instead setting those group policies accordingly will allow you to log what was executed in command prompt as shown above! This is very useful in monitoring what crazy things are being executed on your windows network.&lt;/p&gt;
+&lt;p&gt;That’s all for now, I hope you found this helpful as well as interesting. In the next part of this blog post series I will reveal more ingesting detection techniques.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

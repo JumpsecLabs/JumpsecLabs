@@ -1,0 +1,55 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Ghost-in-the-Shellcode-2015</title>
+    <link>//localhost:1313/tags/ghost-in-the-shellcode-2015/</link>
+    <description>Recent content in Ghost-in-the-Shellcode-2015 on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Mon, 19 Jan 2015 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/ghost-in-the-shellcode-2015/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Ghost In The Shellcode 2015 CTF: Write-up for cloudfs challenge</title>
+      <link>//localhost:1313/articles/2015/01/2015-01-19-ghost-shellcode-2015-ctf-write-cloudfs-challenge/</link>
+      <pubDate>Mon, 19 Jan 2015 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2015/01/2015-01-19-ghost-shellcode-2015-ctf-write-cloudfs-challenge/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Hello there, in this post I will describe how I solved the cloudfs challenge of Ghost In The Shellcode 2015. This challenge was under the Forensics category and was awarded 200 points (middle ground!). It wasn&amp;rsquo;t so hard, and someone could argue that shouldn&amp;rsquo;t award the same points with &amp;ldquo;the alpha molecular&amp;rdquo; or the similars from the crypto category but it&amp;rsquo;s okay (it&amp;rsquo;s very common actually in every CTF to argue about points etc..). The point of that challenge was that it was using ICMP (so there isn&amp;rsquo;t any TCP Follow Stream option&amp;hellip;) and that the file that was included was scattered across multiple packets.&lt;/p&gt;
+&lt;p&gt;So the file of the challenge was an .xz file meaning that we had to decompress it first.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/xz-file.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/xz-file.png&#34; alt=&#34;xz file awaits&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;xz file awaits&lt;/p&gt;
+&lt;p&gt;We open the pcap file with wireshark and we see all these ICMP ping requests/replies.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_70&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;1173&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/ICMP-traffic.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/ICMP-traffic.png&#34; alt=&#34;Lots of ICMP ping requests/replies&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; Lots of ICMP ping requests/replies[/caption]&lt;/p&gt;
+&lt;p&gt;By doing &lt;code&gt;tshark -r pcapfile -T fields -e data -w outputfilee ; strings outputfilee&lt;/code&gt; we can dump all the data from the pcap and search for ASCII characters. There is a bunch of delicious apples and ripe yellow bananas there (at some point I thought that the key is something related to that!).&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_83&amp;rdquo; align=&amp;ldquo;alignleft&amp;rdquo; width=&amp;ldquo;780&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/strings-of-data-1.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/strings-of-data-1.png&#34; alt=&#34;Exporting all data&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; Exporting all data[/caption]&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_71&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;300&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/apples-bananas-contentttttt.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/apples-bananas-contentttttt-300x196.png&#34; alt=&#34;strings show bananas and apples&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; strings show bananas and apples[/caption]&lt;/p&gt;
+&lt;p&gt;Since I was searching for the key I did the following filter initially &lt;code&gt;icmp contains key&lt;/code&gt; and manage to find a packet that was giving away the existence of a &lt;code&gt;key.tbz&lt;/code&gt; file. So I know that there is a tbz file somewhere around&amp;hellip;&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_69&amp;rdquo; align=&amp;ldquo;alignleft&amp;rdquo; width=&amp;ldquo;1111&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/icmp-contains-key.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/icmp-contains-key.png&#34; alt=&#34;icmp contains key filter saved half aday&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; icmp contains key filter saved half aday[/caption]&lt;/p&gt;
+&lt;p&gt;I created a file and make it .tbz to see the header and right after I updated my wireshark filter to &lt;code&gt;icmp contains 425a&lt;/code&gt; The data section of the first [No. 1041] packet ended with the bytes &amp;ldquo;da 61&amp;rdquo;. I saw that the replies where basically having the same data so I filtered em out.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_78&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;564&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/tbz-file.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/tbz-file.png&#34; alt=&#34;header of a random.tbz file&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; header of a random.tbz file[/caption]&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_77&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;1087&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/icmp-contains-425a.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/icmp-contains-425a.png&#34; alt=&#34;Updating filter for searching for the tbz file&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; Updating filter for searching for the tbz file[/caption]&lt;/p&gt;
+&lt;p&gt;Then the 2nd piece of the tbz file is in packet [No. 1051] ending with bytes &amp;ldquo;30 98&amp;rdquo;. The 3rd piece was in the next packet [No. 1052]. Then there is a series of packet exchanges with these 3 pieces and in packet [No. 1075] it is the last part of the .tbz file which ends with bytes &amp;ldquo;f0 c0&amp;rdquo;. I exported these 4 data sections of these packets and then I used the HxD editor for copy/paste the bytes (I had also to remove some bytes from the first packet&amp;rsquo;s data section)&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_67&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;621&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/2nd-packet-trailer.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/2nd-packet-trailer.png&#34; alt=&#34;2nd part of the file&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; 2nd part of the file[/caption]&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_68&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;823&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/3rd-piece.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/3rd-piece.png&#34; alt=&#34;3rd part of the file&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; 3rd part of the file[/caption]&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_76&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;644&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/header-of-final-file-.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/header-of-final-file-.png&#34; alt=&#34;Top of the final assembled file&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; Top of the final assembled file[/caption]&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_79&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;547&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/trailer-of-final-file.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/trailer-of-final-file.png&#34; alt=&#34;The end of the final file &#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; The end of the final file[/caption]&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_85&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;728&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/final-size1.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/final-size1.png&#34; alt=&#34;Size of the file&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; Size of the file[/caption]&lt;/p&gt;
+&lt;p&gt;I renamed the file to be able to extract it and then that was it. The ping.py was also included in that tbz file!&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_82&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;728&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/rename-the-file-for-extract.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/rename-the-file-for-extract.png&#34; alt=&#34;Renaming and extracting. Boom ;)&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; Renaming and extracting. Boom ;)[/caption]&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/01/boom.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/boom.png&#34; alt=&#34;boom&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

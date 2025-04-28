@@ -1,0 +1,85 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Machine-Learning</title>
+    <link>//localhost:1313/tags/machine-learning/</link>
+    <description>Recent content in Machine-Learning on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Mon, 12 Dec 2022 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Online Machine Learning: how to integrate user feedback</title>
+      <link>//localhost:1313/articles/2022/12/2022-12-12-online-machine-learning-how-to-integrate-user-feedback/</link>
+      <pubDate>Mon, 12 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2022/12/2022-12-12-online-machine-learning-how-to-integrate-user-feedback/</guid>
+      <description>
+        
+        
+        &lt;p&gt;When designing and implementing a machine learning model, ensuring it is continually updated is a challenge that all engineers encounter. &lt;/p&gt;
+&lt;p&gt;In this article, I explore the online machine learning technique that I used during a project and present how it was implemented for effective results.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Choosing a machine learning method&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;choosing-a-machine-learning-method&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#choosing-a-machine-learning-method&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Machine learning solutions can be mainly split into offline and online methods. &lt;strong&gt;Online&lt;/strong&gt; machine learning is a method in which data becomes available in a sequential order and is used to update the best predictor for future data at each step, as opposed to batch learning techniques which generate the best predictor by learning on the entire training data set at once. &lt;/p&gt;
+&lt;p&gt;From this concept, the core components are the &lt;strong&gt;data in a sequential order&lt;/strong&gt; and &lt;strong&gt;updating at each step&lt;/strong&gt;. Online machine learning is necessary is based on the following reasons:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Detection models need to be updated instantly, within a relatively short time&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Computation and storage costs need to be minimised for a large dataset&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;New types of patterns need to be integrated quickly&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;&lt;strong&gt;Using Apache Airflow&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;using-apache-airflow&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#using-apache-airflow&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;It’s important to have a solid UI to manage the pipelines so I can easily review the chain of pipelines. After much research, I found many engineers recommended Apache Airflow. &lt;/p&gt;
+&lt;p&gt;Some of the core concepts for Airflow are described below:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Directed Acyclic Graph (DAG)&lt;/strong&gt; – is a collection of all the tasks you want to run, organised in a way that reflects their relationships and dependencies.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Scheduler and Interval&lt;/strong&gt; - The Airflow scheduler monitors all tasks and DAGs, then triggers the task instances once their dependencies are complete. And the interval is used to set up the time period to rerun for a dag.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;While using Airflow, we encountered two key challenges: &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;No default option exists for user feedback to be provided based on the prediction result. &lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It is vital that storage requirements are kept to a manageable level, and that the task can be completed quickly enough to enable the business process to function on-time.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;&lt;strong&gt;How we structure different datasets&lt;/strong&gt;:&lt;span class=&#34;absolute -mt-20&#34; id=&#34;how-we-structure-different-datasets&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#how-we-structure-different-datasets&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In order to split train and update processes, we separate training, testing, and updating. The update folder is what we use to provide corrected predictions with csv format. The format is depicted as following:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/Picture.png&#34; alt=&#34;Pred and Corr&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Png1: pred and corr&lt;/p&gt;
+&lt;p&gt;The 1 in path_pred is the anomaly prediction. The path_corr is copied initially from path_pred and then corrected by the analyst.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;How to achieve online learning in Airflow&lt;/strong&gt;:&lt;span class=&#34;absolute -mt-20&#34; id=&#34;how-to-achieve-online-learning-in-airflow&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#how-to-achieve-online-learning-in-airflow&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In order to overcome the drawback without interactive mode in Airflow, I had to implement a custom offline solution. Thanks to the powerful automation of Airflow, I just need to set a location and input the corrected prediction result there. Then, the Airflow will read the data from the specific location as an update DAG.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Practicality and speed considerations in online learning&lt;/strong&gt;:&lt;span class=&#34;absolute -mt-20&#34; id=&#34;practicality-and-speed-considerations-in-online-learning&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#practicality-and-speed-considerations-in-online-learning&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;As we solved the online machine learning part, we now face the problem about time consumption, and storage. &lt;/p&gt;
+&lt;p&gt;As for time consumption, the prediction is made within every interval. The data is sent to the update folder to await reading by DAGs.  Every prediction with the timestamp as the filename can be treated as one batch. Instead of reading and extracting the whole batch of data, I chose only the wrong prediction (after correction) and subsequently extracted the sequence (use LSTM model) from that row in csv. &lt;/p&gt;
+&lt;p&gt;seq_array = df.query(&amp;ldquo;path_pred==&amp;lsquo;1&amp;rsquo; &amp;amp; path_corr in [0,&amp;lsquo;0&amp;rsquo;]&amp;rdquo;)[&amp;lsquo;seq_path&amp;rsquo;].values&lt;/p&gt;
+&lt;p&gt;Png2: read single prediction sequence&lt;/p&gt;
+&lt;p&gt;After splitting the sequences into multiple X and Y (number is less than the total data in a batch), I trained the model based on the chosen data, attempting to integrate the right prediction with certain attempts. &lt;/p&gt;
+&lt;table class=&#34;has-white-background-color has-background&#34;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;code&gt;&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt;for&lt;/mark&gt;&lt;/code&gt; i &lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt;in &lt;/mark&gt;range(len(batch_y)):&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; # extract the predict_proba for batch_y&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; pre_proba = pred_y[i][int(np.argmax(batch_y[i]))]&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; # set the exit condition&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; success_flag = &lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt;False&lt;/mark&gt;&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; no_of_attempts =&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt; 0&lt;/mark&gt;&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; # retrain on the single input and output&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt;&amp;nbsp; while&lt;/mark&gt; pre_proba &amp;lt;= desired_proba &lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt;and&lt;/mark&gt; (no_of_attempts&amp;lt;attempts):&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; exec_model.fit(np.reshape(batch_x[i],(&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt;1&lt;/mark&gt;,&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt;-1&lt;/mark&gt;)), np.reshape(batch_y[i],(&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt;1&lt;/mark&gt;,&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt;-1&lt;/mark&gt;)))&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; no_of_attempts +=&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt; 1&lt;/mark&gt;&lt;br&gt;&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; pred_one_y = exec_model.predict_proba(np.reshape(batch_x[i],(&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt;1&lt;/mark&gt;,&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt;-1&lt;/mark&gt;)), verbose=&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt;2&lt;/mark&gt;)&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; pre_proba = pred_one_y[&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-pale-pink-color&#34;&gt;0&lt;/mark&gt;][int(np.argmax(batch_y[i]))]&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; print(&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-vivid-green-cyan-color&#34;&gt;&#34;Attempt Number %d, Predicted Proba for this iteration %f&#34;&lt;/mark&gt; %(no_of_attempts, pre_proba))&lt;br&gt;&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt; if&lt;/mark&gt; pre_proba &amp;gt; desired_proba:&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; success_flag = &lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt;True&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; break&lt;/mark&gt;&lt;br&gt;&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt; if&lt;/mark&gt; (success_flag ==&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt; False&lt;/mark&gt;)&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt; and&lt;/mark&gt; (no_of_attempts &amp;gt;= attempts):&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; print(&#34;&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-vivid-green-cyan-color&#34;&gt;[-] Failed to incorporate this feedback&#34;&lt;/mark&gt;)&lt;br&gt;&lt;br&gt;&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; if&lt;/mark&gt; success_flag == &lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-luminous-vivid-amber-color&#34;&gt;True&lt;/mark&gt;:&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; print(&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-vivid-green-cyan-color&#34;&gt;&#34;[+] Feedback incorporated \n&#34;&lt;/mark&gt;)&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; print(&lt;mark style=&#34;background-color:rgba(0, 0, 0, 0)&#34; class=&#34;has-inline-color has-vivid-green-cyan-color&#34;&gt;&#34;Took %d iterations to learn!&#34;&lt;/mark&gt; %(no_of_attempts))&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;Png3: update based on single x and y array&lt;/p&gt;
+&lt;p&gt;By implementing this solution, the model can be trained much quicker and save time overall. To reduce storage requirements, every file in the update folder is unlinked after being processed. &lt;/p&gt;
+&lt;p&gt;Of course, it is not possible to ensure every model will be more accurate after retraining. To manage this risk, I apply A/B testing here as well. The updated model is saved to another location and only replaces the original after performing as expected in testing.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,67 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – External-Red-Team</title>
+    <link>//localhost:1313/tags/external-red-team/</link>
+    <description>Recent content in External-Red-Team on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Mon, 17 Apr 2023 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/external-red-team/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Butting Heads with a Threat Actor on an Engagement</title>
+      <link>//localhost:1313/articles/2023/04/2023-04-17-butting-heads-with-a-threat-actor-on-an-engagement/</link>
+      <pubDate>Mon, 17 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2023/04/2023-04-17-butting-heads-with-a-threat-actor-on-an-engagement/</guid>
+      <description>
+        
+        
+        &lt;p&gt;At the time of writing I am enjoying some non-billable time in the wake of a demanding engagement spanning across several months. As such, I thought it would be a good time to write up a war story from a recent project in which we came head to head against genuine and active threat actors whilst on an engagement.&lt;/p&gt;
+&lt;p&gt;To set the scene, I am working on a purple team project in which we are to cover both the external and internal estate. This tale comes from the external portion of the engagement and as such my colleague and I are going about our usual external red team attack methodology. During this external phase we identify several instances of servers running a software that will remain unnamed for confidentiality’s sake. I will say that this was a third-party software that is used for Identity Access Management, and it appeared to be used in several environments (pre-prod, production, etc) within the client’s estate.&lt;/p&gt;
+&lt;p&gt;We fingerprint the exact version of the technology in-use and find that it is in fact vulnerable and outdated. Specifically, it is vulnerable to an unrestricted file upload vulnerability. As is so often the case, metasploit had created a module for the automated exploitation of this vulnerability - great news! As this is not a covert red team, and therefore getting detected is not an issue, I attempt to exploit the file upload vulnerability using meterpreter and msfvenom. Alas, the exploit fails. Undeterred, I look to manually verify the vulnerability myself as I so often find myself doing when metasploit fails me.&lt;/p&gt;
+&lt;p&gt;I find a proof-of-concept script on Github and read through the code. It looks good so I quickly write (steal) a JSP webshell to accompany the script and point the pair at my client’s vulnerable servers. This time, it works. With what feels like ‘too good to be true’ ease I’ve got remote code execution on the production Single Sign On (SSO) and Identity Access Management (IAM) server! As always in these cases I let the client know immediately before digging a little bit deeper.&lt;/p&gt;
+&lt;p&gt;When landing on an unknown machine I want to immediately perform some situational awareness. From an external perspective this may look slightly different to internal. Some of the main questions include: What OS/distribution am I using? What user and permissions do I have? Am I domain-joined? Do I have visibility into the internal network?&lt;/p&gt;
+&lt;p&gt;I quickly determine these answers and find that I am running as a low-privileged user, on a unix machine, that is not domain-joined. Not as juicy as I originally thought, but this is still the production SSO and IAM box so I am hopeful. At this point I get my first inclination that maybe such a trivial exploit chain may have already been abused. I run an &lt;em&gt;ls&lt;/em&gt; to look for the existence of other webshells beyond just my own.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19445&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;663&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/1.png&#34; title=&#34;Figure 1&#34; alt=&#34;Output of ’ls’ command&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Figure 1&lt;/figcaption&gt;
+  &lt;/figure&gt; Output of &amp;rsquo;ls&amp;rsquo; command[/caption]&lt;/p&gt;
+&lt;p&gt;As you can see it appears that I am in the site root of the server. However, what I do not see is the name of my own webshell (cmd.jsp) meaning that my file must not have been uploaded to the site root, more likely it is in the webroot.&lt;/p&gt;
+&lt;p&gt;To find the location of the webroot I simply use my webshell to search for the location of my webshell file name to find where all files uploaded via this exploit would land on the file system. Sure enough, I found the appearance of my webshell in a folder that we will falsely call &lt;em&gt;/home/UserName/AppName/Authenticated.&lt;/em&gt; The natural next step is to list the contents of this directory as seen in the screenshot below.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19451&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;265&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/2-1.png&#34; title=&#34;Figure 2&#34; alt=&#34;2 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Figure 2&lt;/figcaption&gt;
+  &lt;/figure&gt; Contents of Webroot[/caption]&lt;/p&gt;
+&lt;p&gt;Whilst this was useful, it was listing the files in alphabetical order which made it difficult to process which file could be a malicious JSP file versus one naturally used for webserver installation. I do another &lt;em&gt;ls&lt;/em&gt; command but this time listing the contents of the directory in descending order of date modified. That helps clear things up!&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19452&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;556&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/3-1.png&#34; title=&#34;Figure 3&#34; alt=&#34;3 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Figure 3&lt;/figcaption&gt;
+  &lt;/figure&gt; Contents sorted by Date Modified[/caption]&lt;/p&gt;
+&lt;p&gt;I immediately notice the large number of files that have the exact same last modified date and time on Feb 9th. My assumption is that Feb 9th was when the webserver was installed, as all the installation files share this modification date. This leaves 8 files that have been uploaded in the 21 days since installation. The top entry (cmd.jsp) is my webshell and can be excluded. Judging by the time stamps and similar file names this still leaves several unaccounted for JSP files. Naturally, I did a &lt;em&gt;cat&lt;/em&gt; on those files and sure enough…they were also webshells.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19453&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;477&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/4-1.png&#34; title=&#34;Figure 4&#34; alt=&#34;4 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Figure 4&lt;/figcaption&gt;
+  &lt;/figure&gt; Threat Actor Webshells[/caption]&lt;/p&gt;
+&lt;p&gt;At this point I know we have stumbled upon something bad. I phone the client and let them know the news whilst I continue trying to attribute some of the webshells. Due to the fact that some of the files had very similar names and were uploaded consecutively I can safely assume that they belong to the same threat actor. When grouping as such, I arrive at the conclusion that there have been 4 threat actors who have exploited this in the last 5 days!&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/5-1.png&#34; title=&#34;5 1&#34; alt=&#34;5 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;5 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;This is, of course, not counting any threat actors who had deleted their webshells when not in use like I had done. In the same vein, it is important to bear in mind that this was only one of several appearances of this vulnerable server in the estate.&lt;/p&gt;
+&lt;p&gt;I reach out to the client to ask permission to repeat the same process on the other vulnerable instances, but by this point the client has engaged their Managed Detection and Response (MDR) provider who has already begun the digital forensics work of identifying the extent of the damage,  whilst the client’s security team begin working on a patch. I write up a professional document containing all my findings, remediation steps, etc., and hand it over to both parties.&lt;/p&gt;
+&lt;p&gt;Later that evening I receive an email saying that the vulnerability has been patched and, thankfully, it appears it was caught before it became too much of an issue. However, the MDR provider did see attempts to jump from the external box to the internal network, and confirmed that the box had been enrolled in a crypto mining bot network to use its resources for crypto mining. All things considered this was a pretty good outcome after the initial shock of compromising such a sensitive system.&lt;/p&gt;
+&lt;p&gt;And with that quick turnaround my brief headbutt with a genuine and active threat actor(s) came to an end. It is not every day that you get findings like this but it lit the fire in me to get more exposure to the Incident Response side of things, and the client was happy we’d found and fixed a critical vulnerability in just a handful of hours. Wins all round!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

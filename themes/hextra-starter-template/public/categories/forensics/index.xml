@@ -1,0 +1,541 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Forensics</title>
+    <link>//localhost:1313/categories/forensics/</link>
+    <description>Recent content in Forensics on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Wed, 11 Sep 2024 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/categories/forensics/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)</title>
+      <link>//localhost:1313/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/</link>
+      <pubDate>Wed, 11 Sep 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/</guid>
+      <description>
+        
+        
+        &lt;p&gt;In this part 2, we&amp;rsquo;ll walk you through the step-by-step process of setting up and conducting a Digital Forensics and Incident Response (DFIR) investigation using a virtual machine (VM). We’ll cover everything from configuring the VM to ensure it’s completely isolated to tackling the challenges of USB passthrough with a write blocker. You&amp;rsquo;ll also learn about the risks of using public threat intelligence platforms like VirusTotal and discover alternative methods for secure file analysis.&lt;/p&gt;
+&lt;p&gt;Our goal is to share practical experiences and lessons learned from our investigation, offering useful insights and tips for anyone new to the field or looking to refine their DFIR skills. Whether you&amp;rsquo;re a seasoned pro or just starting out, this article provides a clear and detailed look at best practices and important considerations in digital forensics and incident response.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/1.gif&#34; title=&#34;1&#34; alt=&#34;1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Setting Up the Virtual Machine&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;setting-up-the-virtual-machine&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#setting-up-the-virtual-machine&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Muhammad&lt;/strong&gt; was responsible for continuing the investigation by extracting data from the USB stick using a write blocker and a virtual machine.&lt;/p&gt;
+&lt;p&gt;Setting up the VM for this DFIR investigation is mostly straightforward, thanks to prior experience with virtual machines. We used VMware Workstation Pro with a Windows 11 environment. However, there were some challenges.&lt;/p&gt;
+&lt;p&gt;We configured the VM to block data transfer between the VM and the host system with the detailed steps below. This step is crucial for preventing data leaks, preventing malware from spreading. It protects against accidental data leaks and tampering of the evidence, ensuring the integrity of the investigation by segregation the Virtual Machine environment from the host environment.&lt;/p&gt;
+&lt;p&gt;To achieve this, disable shared folders and other options that could potentially allow data exchange between the VM and the host. Here’s how to do it:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;1. Disable Shared Folders:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;Go to the VM settings.
+&lt;ul&gt;
+&lt;li&gt;Navigate to the &amp;ldquo;Options&amp;rdquo; tab.&lt;/li&gt;
+&lt;li&gt;Select &amp;ldquo;Shared Folders&amp;rdquo; and set it to &amp;ldquo;Disabled.&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/2.png&#34; title=&#34;2&#34; alt=&#34;2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;2&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2. Disable Drag-and-Drop and Copy-Paste:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;Still under the &amp;ldquo;Options&amp;rdquo; tab, select &amp;ldquo;Guest Isolation.&amp;rdquo;
+&lt;ul&gt;
+&lt;li&gt;Uncheck both &amp;ldquo;Enable drag and drop&amp;rdquo; and &amp;ldquo;Enable copy and paste.&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/3.png&#34; title=&#34;3&#34; alt=&#34;3&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;3&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Additionally, disable the VM&amp;rsquo;s internet connection to ensure the VM is not connected to the internet. This precaution was necessary since the contents of the USB were unknown, and wanted to prevent any potential malicious activity from communicating with external networks. To achieve this the following steps should be followed&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;3. Disable the internet in VMware Workstation&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;Right-click the VM and select Settings.
+&lt;ul&gt;
+&lt;li&gt;Go to the Hardware tab and select Network Adapter.&lt;/li&gt;
+&lt;li&gt;Uncheck “Connected” and “Connect at power on”.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/4.png&#34; title=&#34;4&#34; alt=&#34;4&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;4&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;USB Passthrough and Write Blocker Integration&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;usb-passthrough-and-write-blocker-integration&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#usb-passthrough-and-write-blocker-integration&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Getting USB passthrough to work with the write blocker presented its own set of challenges. Initially, when we connected the USB to the write blocker and passed it through to the VM, there was no response from the virtual machine. After some troubleshooting, discovered that we needed to adjust the USB settings within VMware Workstation Pro to ensure proper recognition of the device.&lt;/p&gt;
+&lt;p&gt;Here&amp;rsquo;s how to do it:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Adjust USB Compatibility:&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;In the VM settings, navigate to the &amp;ldquo;USB Controller&amp;rdquo; option.
+&lt;ul&gt;
+&lt;li&gt;Set the &amp;ldquo;USB compatibility&amp;rdquo; to USB 2.0 or 3.0, depending on the write blocker’s compatibility.&lt;/li&gt;
+&lt;li&gt;Enable &amp;ldquo;Show all USB input devices&amp;rdquo; to ensure the VM detects the write blocker.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Manually Connect the USB Device:&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;ul&gt;
+&lt;li&gt;After booting the VM, go to the &amp;ldquo;VM&amp;rdquo; menu in VMware Workstation.
+&lt;ul&gt;
+&lt;li&gt;Select &amp;ldquo;Removable Devices,&amp;rdquo; then find the USB device, and click &amp;ldquo;Connect (Disconnect from Host).&amp;rdquo; This action passes the USB device directly to the VM, bypassing the host system.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;These steps were essential in ensuring that the USB device was correctly recognized by the VM through the write blocker, allowing us to proceed with the forensic analysis.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/5.png&#34; title=&#34;5&#34; alt=&#34;5&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;5&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Integrating the Write Blocker&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;integrating-the-write-blocker&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#integrating-the-write-blocker&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The integration of the write blocker was a critical step in ensuring that the data on the USB drive remained unaltered during the investigation. We used AccessData FTK Imager for this task, a trusted tool in the DFIR community for acquiring and analysing digital evidence. The write blocker was necessary to prevent any accidental writes or modifications to the USB drive, which could compromise the integrity of the evidence.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/6.png&#34; title=&#34;6&#34; alt=&#34;6&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;6&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;A challenge that we faced was ensuring that the write blocker was properly connected and recognized by both the VM and FTK Imager. This required carefully following the correct sequence of connections: first plugging the USB into the write blocker, then connecting the write blocker to the host machine, and finally configuring the VM to recognize the USB device as described earlier.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Threat Intelligence Research&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;threat-intelligence-research&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#threat-intelligence-research&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Marin&lt;/strong&gt; was responsible for researching the data collected from the USB (file hashes) through various threat intelligence platforms.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/7.png&#34; title=&#34;7&#34; alt=&#34;7&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;7&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Here, we’ll learn about the risks of uploading files to VirusTotal and explore alternative analysis methods. Uploading files to VirusTotal can be risky because this popular threat intelligence platform is public, meaning that any files you upload and their analysis results can be seen and downloaded by users with premium VT subscriptions - from cybersecurity professionals to researchers and even malicious threat actors. This visibility could unintentionally expose sensitive information or proprietary data. If the files are unique to your organisation, uploading them could alert adversaries to potential vulnerabilities or ongoing investigations, compromising your security measures.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Potential Risks:&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Exposure of Sensitive Data:&lt;/strong&gt; Uploading files with confidential information to VirusTotal can lead to unintended disclosure.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Intellectual Property Theft:&lt;/strong&gt; Other companies or competitors might reverse-engineer proprietary software or unique data structures.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Targeted Attacks:&lt;/strong&gt; Malicious threat actors monitoring VirusTotal could use the information to launch targeted attacks against your organisation.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Legal and Compliance Issues:&lt;/strong&gt; Uploading certain files might breach data protection regulations and policies.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;To avoid these risks, we considered alternative methods for analysing files. One effective approach is using private sandbox environments. Sandboxing means running files in an isolated, controlled setting to observe their behaviour without risking the security of your broader network. This method allows for a thorough analysis of potential threats while keeping sensitive data secure and under control.&lt;/p&gt;
+&lt;p&gt;One sandboxing option is &lt;a href=&#34;https://github.com/mandiant/flare-vm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;FLARE VM&lt;/a&gt;, a collection of software installed on top of Windows VM. Once running some flare vm script to install tools, it will allow you to maintain a reverse engineering environment on a VM, for malware analysis, incident response, and forensic analysis.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/8.png&#34; title=&#34;8&#34; alt=&#34;8&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;8&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Importance of Private Sandboxing:&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Confidentiality:&lt;/strong&gt; Keeps sensitive files and analysis results within your organisation.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Customization:&lt;/strong&gt; You can tailor the sandbox environment to closely mimic your actual network, providing more relevant insights.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;In-Depth Analysis:&lt;/strong&gt; Allows for detailed behavioural analysis of files, uncovering sophisticated or previously unknown threats that simple hash comparisons might miss.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Another way to mitigate risk is by testing the hash of a file instead of uploading the entire file. A hash generates a unique identifier representing the file’s contents without revealing the actual data, allowing for secure and private verification against known threat databases.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Benefits of Testing Hashes:&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Privacy Preservation:&lt;/strong&gt; Hashes don’t expose the actual file content, maintaining confidentiality.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Efficiency:&lt;/strong&gt; Comparing hashes is less computationally intensive than analysing full files.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Integrity Verification:&lt;/strong&gt; Hashes confirm that files haven’t been altered, ensuring data integrity.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;SHA-256&lt;/strong&gt;, which stands for Secure Hash Algorithm 256-bit, is a cryptographic hash function that produces a fixed-size, 256-bit hash value from an input of any size. The use of a hash varies depending on the scenario; it can be used to confirm whether the content of two files is identical, or in this case, whether the file the hash belongs to has been reported as malicious previously, and to check the file’s originality by comparing the hash against threat intelligence platforms, such as VirusTotal.&lt;/p&gt;
+&lt;p&gt;The good news was that the SHA-256 hashes did not match any known malicious files in VirusTotal’s extensive database, but we still couldn’t determine its origin. Despite this initial relief, we conducted further analysis to ensure the files were safe.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Further Investigation: Antivirus Scan&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;further-investigation-antivirus-scan&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#further-investigation-antivirus-scan&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Next, we ran an antivirus scan and a static analysis on the files. Both analyses aimed to ensure the files were not malicious. Antivirus scans look for patterns based on the signatures or definitions of known malware, while static analysis involves examining the code without executing the program. This method helps identify potential threats by analysing the file structure and content.&lt;/p&gt;
+&lt;p&gt;The antivirus scan didn’t discover any indications of infection and confirmed that the files did not contain any malicious features. The results of the static analysis echoed that.&lt;/p&gt;
+&lt;p&gt;By now, the files appeared to be non-malicious, so we could finally open them to see what they actually were!&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Final Investigation: Examining the Files&amp;rsquo; Content&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;final-investigation-examining-the-files&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#final-investigation-examining-the-files&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Voila! Guess what the content of the files was? They were… two different files! :)&lt;/p&gt;
+&lt;p&gt;Since we aim to share knowledge applicable to general scenarios, we won’t dive into specifics here. However, a general rule of thumb to determine if the content is malicious (especially after running scans like antivirus and static analysis with no concerning results) is to understand what might be expected or unexpected for the client, and whether phishing could be a possible threat based on the content. That was the approach we used for examining the files&amp;rsquo; content.&lt;/p&gt;
+&lt;p&gt;For example, a company might expect an email with remittance details from its supplier. This is relevant to the company and involves potential risks, such as when someone impersonating the supplier sends an email that appears to be remittance-related, embedding a link that supposedly directs you to a remittance document, but instead leads to a phishing page designed to deceive you into entering your credentials.&lt;/p&gt;
+&lt;p&gt;The two files appeared to be related to a project the client was working on at that moment. The information and tone of language used in the files suggested the sender was purely offering their advice on the project. Although it wasn’t something the client was expecting, we believed we had identified the origin and purpose of the USB drive.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/9-ezgif.com-crop.gif&#34; title=&#34;9&#34; alt=&#34;9 ezgif.com crop&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;9&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;Verdict: A Clean Bill of Health&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;verdict-a-clean-bill-of-health&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#verdict-a-clean-bill-of-health&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;At this point, we’d conducted several analyses, and by piecing all the results together, we concluded that the USB drive was not malicious. If it had been a computer that needed investigating, we would have also analysed unusual registry entries or network connections to known malicious servers.&lt;/p&gt;
+&lt;p&gt;Throughout the entire investigation, we kept the client in the loop, informing them of the process at each stage. Clear communication is essential in any DFIR investigation, and clients might also provide valuable information that could assist the investigation.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Key Takeaways and Lessons Learned&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Although the files on the USB drive were not malicious—which was definitely a relief—we still gained valuable experience by conducting an incident investigation from start to finish, all under the guidance of an experienced team. As rookies, we learned how to preserve evidence in line with best practices, utilise various tools, leverage threat intelligence, and maintain a proper chain of custody to draw meaningful conclusions.&lt;/p&gt;
+&lt;p&gt;Through this process, we discovered several critical lessons:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Importance of Isolation&lt;/strong&gt;: Isolating the VM from the host system and external networks is crucial when handling unknown devices. This step prevents potential contamination or compromise of the main system.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Attention to Detail in Settings&lt;/strong&gt;: Correctly configuring the VM and USB passthrough settings is essential. Small oversights can lead to significant delays or even jeopardise the investigation.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Familiarity with Tools&lt;/strong&gt;: Being well-versed with forensic tools like FTK Imager and knowing how to use a write blocker properly can significantly enhance the efficiency and accuracy of the investigation.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;&lt;strong&gt;Advice for Beginners&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;advice-for-beginners&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#advice-for-beginners&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;For anyone attempting this process for the first time, here are some tips:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Double-Check VM Settings:&lt;/strong&gt; Before starting your investigation, make sure to disable any features that allow data exchange between your VM and the host system, and disconnect the VM from the internet.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;USB Passthrough Troubleshooting:&lt;/strong&gt; If your USB device isn’t being recognized, check the USB compatibility settings in your VM. Also, manually connect the USB device through the VMware menu to ensure proper passthrough.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Understand Your Tools:&lt;/strong&gt; Take the time to familiarise yourself with both the write blocker and the forensic tools you’re using. This knowledge will help you avoid mistakes that could compromise your investigation.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Stay Patient and Methodical:&lt;/strong&gt; DFIR work requires a lot of patience and attention to detail. Rushing through steps or skipping checks can lead to errors that are difficult to correct later on.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;All of these experiences broadened our horizons and provided a better understanding of the DFIR world, which will definitely benefit us in the long term. We hope this article provided some insights, especially for those interested in cybersecurity or someone who, like us, is just starting their career in the field. We also hope you enjoyed the read as much as we enjoyed our first investigation! :)&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Disclaimer: The incident response case described in this blog is based on a real event. However, specific details, including the names, locations, and other identifying information of the organisation involved, have been altered to protect their privacy and confidentiality. Any resemblance to actual events or entities is purely coincidental.&lt;/em&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)</title>
+      <link>//localhost:1313/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/</link>
+      <pubDate>Wed, 28 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/</guid>
+      <description>
+        
+        
+        &lt;p&gt;JUMPSEC believes heavily in learning and developing through real world experience. The incident described in this blog post presented a fantastic opportunity for 3 junior team members to learn first hand how to conduct, report and respond to an incident investigation. This blog post is split into two parts: Part I focuses on the prerequisites and preparation work done before kicking off the investigation, such as explaining the forensic principles used in the investigation, how the evidence is preserved and introducing tools deployed. Part 2 emphasises on how we utilise the tools to conduct the investigation and how we assemble all the available evidence to conclude the investigation.&lt;/p&gt;
+&lt;p&gt;Imagine, you come into work one morning to find a mysterious USB drive on your desk. It’s not addressed to anyone in particular and no note is left to explain its origin. What would you do?&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/1png.png&#34; title=&#34;1&#34; alt=&#34;1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/2.png&#34; title=&#34;2&#34; alt=&#34;2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;2&lt;/figcaption&gt;
+  &lt;/figure&gt; The suspicious USB&lt;/p&gt;
+&lt;p&gt;This is what happened to an organisation early this year. To conduct an investigation into the mystery USB drive they contacted JUMPSEC!&lt;/p&gt;
+&lt;p&gt;In this blogpost, we walk you through a real case of an unexpected USB drive mailed in to an organisation, showing the step-by-step process of how a Digital Forensics and Incident Response (DFIR) investigation was carried out, what principles and tools were used, and the perspectives from three rookies in the cyber security field doing their first investigation!&lt;/p&gt;
+&lt;p&gt;This is how it all began….&lt;/p&gt;
+&lt;h3&gt;Preparation&lt;span class=&#34;absolute -mt-20&#34; id=&#34;preparation&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#preparation&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;h3&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/3.gif&#34; title=&#34;3&#34; alt=&#34;3&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;3&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;3&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#3&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Before the start of the investigation, we caught up on the Association of Chief Police Officers (ACPO) Principles of Digital Based Evidence[1]. It provides guidance not only to assist law enforcement but anyone performing forensic investigations involving digital evidence. It’s widely used by practitioners operating in the digital forensics field in England and Wales.&lt;/p&gt;
+&lt;p&gt;There are 4 principles:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Principle 1:&lt;/strong&gt; No action taken by law enforcement agencies, persons employed within those agencies or their agents should change data which may subsequently be relied upon in court.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Principle 2:&lt;/strong&gt; In circumstances where a person finds it necessary to access original data, that person must be competent to do so and be able to give evidence explaining the relevance and the implications of their actions.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Principle 3:&lt;/strong&gt; An audit trail or other record of all processes applied to digital evidence should be created and preserved. An independent third party should be able to examine those processes and achieve the same result.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Principle 4:&lt;/strong&gt; The person in charge of the investigation has overall responsibility for ensuring that the law and these principles are adhered to.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Initially we did not grasp how these were practically applied in performing the investigation. To put them into a more practical perspective, these are actions we took that directly relate to each of the principles:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/4.png&#34; title=&#34;4&#34; alt=&#34;4&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;4&lt;/figcaption&gt;
+  &lt;/figure&gt; Write Blocker&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Obtained a Write Blocker. Write Blocker is a tool that prevents all computer storage media connected to a computer from being written to or modified, allowing us to make a bit-by-bit copy of the data in the USB drive without tempering it (Principle 1)&lt;/li&gt;
+&lt;li&gt;Organised an investigation team where senior members with extensive experience handling DFIR investigations would be participate in the investigation (Principle 2)&lt;/li&gt;
+&lt;li&gt;Assigned a designated place to store the USB drive and relevant evidence securely where only authorised people can access, and prepared the necessary tools for recording all processes (Principle 3)&lt;/li&gt;
+&lt;li&gt;Assigned a lead investigator to be in charge of the investigation and ensured that the investigation would be carried out in accordance to the principles. (Principle 4)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Emilia was appointed to be the lead investigator. A lead investigator is an important role, they coordinate evidence acquisition, making sure the investigation is progressing, and ensuring the stakeholders involved are kept informed.&lt;/p&gt;
+&lt;p&gt;As the lead investigator learnt a great deal and the responsibilities included:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Keeping an audit trail of and preserving evidence&lt;/li&gt;
+&lt;li&gt;Ensuring the analysis was documented appropriately&lt;/li&gt;
+&lt;li&gt;Sending out updates to inform the client the process of the investigation and make sure everyone in the team was updated with the current status&lt;/li&gt;
+&lt;li&gt;Producing the final investigation report&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Despite she’d only recently started doing investigation training exercises, the lead responder was very excited to take on a new challenge of being the lead investigator. As the team knew more about how an investigation was supposed to carry out with the help of other more experienced team members, the investigation became more and more enjoyable.&lt;/p&gt;
+&lt;p&gt;Now everything was ready and we were set to begin our first ever journey of an incident investigation!&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/5.gif&#34; title=&#34;5&#34; alt=&#34;5&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;5&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h3&gt;Preserving Evidence: Documentation and Isolation&lt;span class=&#34;absolute -mt-20&#34; id=&#34;preserving-evidence-documentation-and-isolation&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#preserving-evidence-documentation-and-isolation&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Once we’d completed scoping the incident and verified we had the appropriate equipment we waited patiently for the USB drive to arrive. Once the USB arrived we were so excited and couldn’t wait to start plugging the USB drive into the Write Blocker to see what was inside, but we held off  in order to document everything from the moment we received it as it is important to leave an audit trail for any DFIR investigations. Otherwise the integrity of the evidence cannot be guaranteed and as a result, the evidence will not be accepted in court in occasions where legal involvement is required. (Principal 3)&lt;/p&gt;
+&lt;p&gt;So we documented everything. By everything, we meant everything. This involved taking close-up photographs of the envelope the USB drive arrived in and the letter attached, capturing any markings or labels on the drive itself, and noting details like its brand and size. The reason for doing so is because every piece of information, despite seemingly insignificant, could hold value later in the investigation.&lt;/p&gt;
+&lt;p&gt;We also started building a chain of custody, by recording every individual who handled the USB drive, the date, time and location of each transfer, and the purpose for the transfer. (Principal 3)&lt;/p&gt;
+&lt;h3&gt;Configuring a Safe Investigation Environment&lt;span class=&#34;absolute -mt-20&#34; id=&#34;configuring-a-safe-investigation-environment&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#configuring-a-safe-investigation-environment&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Before dissecting what was inside the USB drive, since we assumed the USB drive was malicious as its origin was unknown and we defintely didn’t want to perform another incident investigation later on on one of our own devices as well. So instead of analysing the USB drive in an actual device and risking our device to get infected by the potentially malicious content, we decided to carry out the analysis in a virtual machine.&lt;/p&gt;
+&lt;p&gt;Virtual machine (VMware in this case) is an emulation of a computer system and provides the functionality of a physical computer. It creates an isolated environment and ensures any malicious content on the USB drive is contained within the virtual machine, safeguarding our primary system from potential infection.&lt;/p&gt;
+&lt;p&gt;In the next part, we will show how to set up a virtual machine and what details need particular attention, and we will continue the investigation from there!&lt;/p&gt;
+&lt;h3&gt;Reference&lt;span class=&#34;absolute -mt-20&#34; id=&#34;reference&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#reference&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;[1] ACPO, ACPO Good Practice Guide for Digital Evidence Available at: &lt;a href=&#34;https://www.digital-detective.net/digital-forensics-documents/ACPO_Good_Practice_Guide_for_Digital_Evidence&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.digital-detective.net/digital-forensics-documents/ACPO_Good_Practice_Guide_for_Digital_Evidence&lt;/a&gt;_v5.pdf (Accessed: 6 August2024), (2012) .&lt;/p&gt;
+&lt;h4&gt;Disclaimer&lt;span class=&#34;absolute -mt-20&#34; id=&#34;disclaimer&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#disclaimer&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h4&gt;&lt;p&gt;The incident response case described in this blog is based on a real event. However, specific details, including the names, locations, and other identifying information of the organisation involved, have been altered to protect their privacy and confidentiality. Any resemblance to actual events or entities is purely coincidental.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>No Logs? No Problem! Incident Response without Windows Event Logs</title>
+      <link>//localhost:1313/articles/2021/11/2021-11-22-no-logs-no-problem-incident-response-without-windows-event-logs/</link>
+      <pubDate>Mon, 22 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2021/11/2021-11-22-no-logs-no-problem-incident-response-without-windows-event-logs/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://twitter.com/Purp1eW0lf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;By Dray Agha&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/Jumpsec_icons_Incident-Response.png&#34; alt=&#34;Jumpsec icons Incident Response&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;In this article, we discuss some Digital Forensics and Incident Response (DFIR) techniques you can leverage when you encounter an environment &lt;strong&gt;without Windows event logs&lt;/strong&gt;.&lt;/p&gt;
+&lt;h1&gt;Where are the logs?&lt;/h1&gt;&lt;p&gt;At JUMPSEC, we regularly respond to security &lt;strong&gt;incidents with ineffective logging&lt;/strong&gt; and auditing for the purposes of a cyber incident. In some cases, organisations we encounter don’t have any recognisable SIEM or centralised log repository. In others, organisations with otherwise sufficient logging have seen &lt;strong&gt;adversaries intentionally manipulate the logs on an endpoint to prevent analysis&lt;/strong&gt; - sometimes even wiping them entirely. &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Clearing the event logs on a Windows machine &lt;a href=&#34;https://www.youtube.com/watch?v=00EwvDKaKyQ&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;is trivial&lt;/a&gt;. It is a recognised behaviour of adversaries [&lt;a href=&#34;https://attack.mitre.org/techniques/T1070/001/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;T1070.001&lt;/a&gt;] who wish to evade and frustrate investigators’ efforts to unravel the TTPs of a malicious campaign. Without the event logs on a machine, you cannot use beautiful tools &lt;a href=&#34;https://github.com/countercept/chainsaw&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;like Chainsaw&lt;/a&gt; to easily piece together the story for your client. &lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Thankfully, our guidance is relevant to all situations where logs are unavailable to support an investigation. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/bat.png&#34; alt=&#34;bat&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h1&gt;Log-less investigations&lt;/h1&gt;&lt;p&gt;For the rest of this article, I would like us to &lt;strong&gt;operate under a log-free paradigm - where the event logs cannot be utilised in an investigation&lt;/strong&gt;. I’d like us to discuss &lt;strong&gt;three&lt;/strong&gt; DFIR techniques that you can easily deploy when next conducting analysis on a machine that an adversary has tampered with. The machine may or may not have the required logs, or you may not trust the evidence - meaning we must verify past events through other means.  &lt;/p&gt;
+&lt;p&gt;As we do not have the permanency that event logs offer, we are left with volatile forensic data. Simply put, &lt;strong&gt;if you do not get to most forensic data as quickly as possible then it may be gone forever&lt;/strong&gt;. If the machine is rebooted, the data can be lost; if the machine is left on and is used, many pieces of forensic evidence may be overwritten and lost forever.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.hackingarticles.in/comprehensive-guide-on-ftk-imager/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Taking a forensic image&lt;/a&gt; is out of scope for this article, however it may be advisable to do it as quickly as possible to ensure you can access the volatile, capricious data consistently throughout an investigation. &lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;There are many techniques for digital forensics. To understand and deploy the more advanced tools, there are many wise sages who I would recommend, such as &lt;a href=&#34;https://www.youtube.com/channel/UCy8ntxFEudOCRZYT1f7ya9Q&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Richard Davis’ 13Cubed&lt;/a&gt;. In particular, there are three (or &lt;strong&gt;four, if you’re feeling brave&lt;/strong&gt;) post-log techniques I consider to have a &lt;strong&gt;low barrier&lt;/strong&gt; to entry in terms of technical capability, have general &lt;strong&gt;resiliency&lt;/strong&gt; to adversarial manipulation, and are &lt;strong&gt;relevant&lt;/strong&gt; to Windows endpoints and servers:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#PSReadLine&#34; &gt;&lt;strong&gt;PSReadLine&lt;/strong&gt;&lt;/a&gt; (PowerShell History)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#prefetch&#34; &gt;&lt;strong&gt;Prefetch&lt;/strong&gt;&lt;/a&gt; (PEcmd)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#shimcache&#34; &gt;&lt;strong&gt;Shimcache&lt;/strong&gt;&lt;/a&gt; (AppCompatcache)&lt;/li&gt;
+&lt;li&gt;BONUS: &lt;a href=&#34;#usn-journal&#34; &gt;&lt;strong&gt;USN Journal&lt;/strong&gt;&lt;/a&gt; (via Velociraptor)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1&gt;PSReadLine&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;This first one is a technique I do not see discussed that much&lt;/strong&gt;. And I’m not sure why. It has definitely illuminated parts of an attack that were once a mystery to me in the early stages of an investigation. The only detailed post I can find is &lt;a href=&#34;https://community.sophos.com/sophos-labs/b/blog/posts/powershell-command-history-forensics&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;a blog by Sophos&lt;/a&gt;, but I find it lacks some of the operational guidance that an investigator needs. &lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.microsoft.com/en-us/powershell/module/psreadline/?view=powershell-7.2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PsReadLine is a PowerShell module&lt;/a&gt; that can do lots of cool things. Most pertinent for our conversation is its ability to &lt;strong&gt;offer insight into the history of the PowerShell&lt;/strong&gt; commands previously run.&lt;/p&gt;
+&lt;p&gt;If we run some commands, we can instantly recall them via &lt;code&gt;history&lt;/code&gt; (this isn’t the DFIR part, I promise).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/unnamed-file-1024x330.png&#34; alt=&#34;unnamed file&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;However, if the machine is rebooted (&lt;code&gt;`Restart-Computer`&lt;/code&gt;), or the history cleared (&lt;code&gt;`Clear-History`&lt;/code&gt;) then that history is lost. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2.png&#34; alt=&#34;2&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/3.png&#34; alt=&#34;3&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Moreover, running the &lt;code&gt;history&lt;/code&gt; command &lt;strong&gt;will only return the history of the current user and session&lt;/strong&gt; - so other users who sign into the machine and run commands will remain a mystery… &lt;em&gt;Or maybe not?&lt;/em&gt;&lt;/p&gt;
+&lt;h3&gt;PSReadLine: Retrieve PowerShell History&lt;span class=&#34;absolute -mt-20&#34; id=&#34;psreadline-retrieve-powershell-history&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#psreadline-retrieve-powershell-history&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;PSReadLine will save the &lt;a href=&#34;https://social.technet.microsoft.com/Forums/en-US/7c3cd614-f793-4b99-b826-3dff917ebe88/powershell-commands-history-windows-10-1809-psreadline?forum=win10itprogeneral#:~:text=By%20default%2C%20the%20PowerShell%20in,separately%20for%20PowerShell%20and%20ISE.&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;last four thousand commands&lt;/a&gt; a user has run into a particular file. &lt;strong&gt;If you query each users’ &lt;em&gt;ConsoleHost_history.txt&lt;/em&gt;, you can retrieve these commands.&lt;/strong&gt; &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;get-content&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Users&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\*\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;AppData&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Roaming&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Windows&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PSReadline&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ConsoleHost_history&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;txt&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/4-edited.png&#34; alt=&#34;4&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Here, we can see the commands I ran above. These were &lt;strong&gt;previously lost&lt;/strong&gt; to us when the machine was rebooted and/or the history wiped… &lt;strong&gt;but here they are available for us&lt;/strong&gt; to piece together what the adversary did!&lt;/p&gt;
+&lt;p&gt;I wouldn’t want you to have to manually do this for every user’s history - that would waste your precious time! On an endpoint, we can &lt;strong&gt;run a quick loop&lt;/strong&gt; that will print every user &lt;em&gt;ConsoleHost_history&lt;/em&gt; file:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$Users&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;Gci &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Users&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\*\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;AppData&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Roaming&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Microsoft&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Windows&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PowerShell&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PSReadline&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ConsoleHost_history&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;txt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;).&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;FullName&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$Pasts&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;vm&#34;&gt;@&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$Users&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;foreach&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$Past&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$Pasts&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nb&#34;&gt;write-host&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;`n&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;----User Pwsh History Path &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$Past&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;---&amp;#34;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-ForegroundColor&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Magenta&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nb&#34;&gt;get-content&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$Past&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/5-edited-1.png&#34; alt=&#34;5&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;From our short script, in the pink text we&amp;rsquo;ve printed the users’ Console History file. This will snitch on last four thousand commands from each &lt;strong&gt;user account&lt;/strong&gt;. We can also see that in the red arrow and box &lt;strong&gt;Frank’s account&lt;/strong&gt; is highlighted for &lt;strong&gt;deploying Mimikatz!&lt;/strong&gt; Below Frank’s commands, we can see the IEUser’s PowerShell history begins to also be printed. &lt;/p&gt;
+&lt;p&gt;This was the first technique to trace the steps of the adversary. But keep in mind some caveats: &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;First, an attacker may just delete this file as part of their clean up operation; &lt;/li&gt;
+&lt;li&gt;Second, it will only record PowerShell - not cmd or wmic; &lt;/li&gt;
+&lt;li&gt;Third, it will only record up to 4096 PowerShell commands; &lt;/li&gt;
+&lt;li&gt;and finally, &lt;strong&gt;the console host history text file will &lt;a href=&#34;https://www.cloudsavvyit.com/8722/using-psreadline-in-powershell/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;not be available on all Windows OS’ and builds&lt;/a&gt;&lt;/strong&gt;&lt;a href=&#34;https://www.cloudsavvyit.com/8722/using-psreadline-in-powershell/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;.&lt;/strong&gt;&lt;/a&gt;  &lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1&gt;Prefetch&lt;/h1&gt;&lt;p&gt;If you go to the directory &lt;code&gt;C:\Windows\Prefetch&lt;/code&gt; on a Windows &lt;strong&gt;endpoint&lt;/strong&gt;, you&amp;rsquo;re in for a treat. &lt;/p&gt;
+&lt;p&gt;Prefetch (also known as prefetcher) is &lt;strong&gt;a caching technique&lt;/strong&gt; whereby an application is monitored and catalogued for the first few seconds it is launched, to make &lt;strong&gt;re-launching more efficient.&lt;/strong&gt; &lt;/p&gt;
+&lt;p&gt;If this sounds like something awesome for &lt;a href=&#34;https://www.youtube.com/watch?v=f4RAtR_3zcs&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;a log-less investigation&lt;/a&gt;, then you’re right!&lt;/p&gt;
+&lt;p&gt;If you sort by the prefetch files recently written to, &lt;strong&gt;you can see the executables recently deployed by both the user and the computer itself.&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;dir &lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;C:\Windows\Prefetch&amp;#39;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;sort &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;LastWriteTime&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-desc&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/6-1024x683.png&#34; alt=&#34;6&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;If we look very closely at the prefetch files (.PF), we can see that &lt;strong&gt;Mimikatz&lt;/strong&gt; makes a special guest appearance!! This &lt;strong&gt;evidences that Mimikatz has been executed&lt;/strong&gt;, but we don&amp;rsquo;t get any more context from the name of the prefetch file.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/7-edited-1.png&#34; alt=&#34;7&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;Prefetch: PECmd&lt;span class=&#34;absolute -mt-20&#34; id=&#34;prefetch-pecmd&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#prefetch-pecmd&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The contents of a prefetch file cannot be simply read to gather more execution context! This is where &lt;a href=&#34;https://github.com/EricZimmerman/PECmd&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Eric Zimmerman’s PEcmd&lt;/a&gt; comes to save the day. &lt;strong&gt;This tool will carve through the prefetch directory or a prefetch file&lt;/strong&gt;, and &lt;strong&gt;make it easier for investigators&lt;/strong&gt; to see the discrete info about the prefetched data. &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;# I’d advise picking the -f flag, and picking on one of the prefetch files you see in the directory
+.\PECmd .exe -f &amp;#39;C:\Windows\prefetch\MIMIKATZ.EXE-599C44B5.pf&amp;#39; 
+
+#get granular timestamps by adding -mp flag
+.\PECmd .exe -f &amp;#39;C:\Windows\prefetch\MIMIKATZ.EXE-599C44B5.pf&amp;#39; -mp
+
+# If you don’t know what file you want to process, get the whole directory. Will be noisy though and I wouldn’t recommend
+.\PECmd .exe -d &amp;#39;C:\Windows\Prefetch&amp;#39; --csv . #dot at the end means write in current directory&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/8-edited.png&#34; alt=&#34;8&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;You get a whole load more with PECmd. Let’s look in more detail at what you’re given. &lt;/p&gt;
+&lt;p&gt;First, we can see the various times associated with this executable (creation, modification etc). We’re also told about the executable name and file size. Interestingly, on the last line &lt;strong&gt;we can see the amount of times the executable has been run&lt;/strong&gt; (once, on our instance) as well as the time it was last run.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/9.png&#34; alt=&#34;9&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Next, we are given &lt;strong&gt;insight into the directories and then the files that were involved in this execution&lt;/strong&gt; - this is again another excellent way to better map the granular behaviour the adversary had during their attack. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/10.png&#34; alt=&#34;10&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Note that Eric Zimmerman is kind enough to highlight the offending executable. PEcmd can do even more if you want to &lt;a href=&#34;https://binaryforay.blogspot.com/2016/01/introducing-pecmd.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;check out some other blog posts and docs&lt;/a&gt;. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/11-1024x433.png&#34; alt=&#34;11&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There are some caveats for this second technique:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;First, prefetch exists from Windows XP onwards, but PEcmd &lt;strong&gt;will only work from Windows 8 above;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Second, &lt;strong&gt;you don’t retrieve the arguments or parameters used&lt;/strong&gt; and so can only know the base executable that the adversary leveraged;&lt;/li&gt;
+&lt;li&gt;Third, the relevancy of prefetch is &lt;strong&gt;time-based&lt;/strong&gt; - so if you do not collect it after an incident and the machine continues to be used then you may lose the evidence;&lt;/li&gt;
+&lt;li&gt;Fourth and most important, &lt;strong&gt;prefetch has to be enabled on servers, as &lt;a href=&#34;https://www.forensicfocus.com/forums/mobile-forensics/prefetch-on-windows-servers/#:~:text=1.-,Is%20there%20a%20technical%20reason%20that%20this%20is%20off%3F,like%2C%20well%E2%80%A6running%20applications.&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Microsoft disables recording prefetch on Windows servers by default&lt;/a&gt;. It is enabled on normal Windows endpoints.&lt;/strong&gt; You can &lt;strong&gt;&lt;a href=&#34;https://truesecdev.wordpress.com/2015/11/25/how-to-enable-prefetch-in-windows-server/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;enable prefetch recording&lt;/a&gt;&lt;/strong&gt; with the following on a Windows Server:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;reg&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;add&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;v&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;EnablePrefetcher&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;REG_DWORD&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;d&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;3&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;reg&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;add&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Prefetcher&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;v&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;MaxPrefetchFiles&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;t&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;REG_DWORD&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;d&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;8192&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;f&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Enable-MMAgent&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;–&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;OperationAPI&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;net&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;start &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sysmain&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;h1&gt;Shimcache&lt;/h1&gt;&lt;p&gt;&lt;a href=&#34;https://www.fireeye.com/content/dam/fireeye-www/services/freeware/shimcache-whitepaper.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Shimcache&lt;/a&gt; analysis is our third technique to gather insight into an attacker’s past activities. &lt;/p&gt;
+&lt;p&gt;Shimcache - called AppCompatCache on a Windows machine - was originally made to determine interoperability issues between Windows versions and applications.  Like prefetch, &lt;a href=&#34;https://www.youtube.com/watch?v=7byz1dR_CLg&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;we can leverage shimcache to identify evidence of execution&lt;/a&gt; on a machine when we do not have event logs. &lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://ericzimmerman.github.io/#!index.md&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Another Eric Zimmerman tool&lt;/a&gt; called &lt;strong&gt;AppCompatCacheParser&lt;/strong&gt; can give us insight into what was run on the system. &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;.\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;AppCompatCacheParser&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;exe&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-t&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-csv&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-csvf&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;shimcache&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;csv&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/12-edited.png&#34; alt=&#34;12&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This will create a CSV, which you could import to your spreadsheet of choice… but some quick PowerShell can give you some visibility. There will be a lot of noise here, but if we filter through we can find something quite interesting.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;import-csv&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;shimcache&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;csv&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;sort &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;lastmodified&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Descending&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;fl &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;path&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;last&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/13-edited.png&#34; alt=&#34;13&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Despite not having access to the event logs, if we query &lt;strong&gt;shimcache we can see proof of Mimikatz’ execution&lt;/strong&gt;, once again. Shimcache is a relatively straightforward artefact to query. It does however have &lt;strong&gt;some complications&lt;/strong&gt;, as its implementation varies in Windows versions over the years. And again, if an investigator is not quick enough to gather the shimcache data then it may be lost!&lt;/p&gt;
+&lt;h1&gt;BONUS: USN Journal&lt;/h1&gt;&lt;p&gt;The USN journal isn’t as easy an artefact to investigate as it is &lt;strong&gt;extremely&lt;/strong&gt; &lt;strong&gt;verbose.&lt;/strong&gt; I’ve included it as &lt;strong&gt;a bonus fourth tip&lt;/strong&gt;, in case the above three techniques fail to deliver you any insight for your log-less investigation. &lt;/p&gt;
+&lt;p&gt;The USN journal leverages some of the artefacts we have previously encountered (like prefetch). &lt;strong&gt;It also can reach much further back&lt;/strong&gt; into the past, compared to other volatile artefacts, and identify files that were long deleted - excellent for DFIR purposes [&lt;a href=&#34;https://www.youtube.com/watch?v=1mwiShxREm8&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;1&lt;/a&gt;, &lt;a href=&#34;https://www.youtube.com/watch?v=_qElVZJqlGY&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;2&lt;/a&gt;].&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/Velocidex/velociraptor&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Dr Michael Cohen’s Velociraptor&lt;/a&gt; is an excellent tool to help us leverage the USN journal to see what an adversary did. Fortunately, there is &lt;a href=&#34;https://velociraptor.velocidex.com/carving-usn-journal-entries-72d5c66971da&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;a dedicated blog&lt;/a&gt; that offers step-by-step advice on how best to leverage Velociraptor to hunt USN details.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;I’d recommend Velociraptor for its low technical barrier&lt;/strong&gt; to &lt;a href=&#34;https://www.hackingarticles.in/threat-hunting-velociraptor-for-endpoint-monitoring/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;deploy many other advanced forensic techniques&lt;/a&gt;, including prefetch hunts.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;h3&gt;USN Journal: Velociraptor&lt;span class=&#34;absolute -mt-20&#34; id=&#34;usn-journal-velociraptor&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#usn-journal-velociraptor&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We can download Velociraptor on a machine we are investigating and launch it straight there - n&lt;strong&gt;o need to set up any server-client infrastructure&lt;/strong&gt;, when in an emergency: &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;velociraptor&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;exe&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;gui&lt;/span&gt;  &lt;span class=&#34;c&#34;&gt;#spin this up as admin&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/14-1024x395.png&#34; alt=&#34;14&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The web browser will pop up, and we will be met with Velociraptor&amp;rsquo;s GUI. We can traverse to the main hunting page and name our hunt. We can then pick the &lt;strong&gt;USN&lt;/strong&gt; &lt;strong&gt;forensic&lt;/strong&gt; &lt;strong&gt;hunt&lt;/strong&gt;, and fire it off.&lt;/p&gt;
+&lt;p&gt;Whilst the results are being collected and parsed, we can write some VQL (&lt;a href=&#34;https://velociraptor.velocidex.com/the-velociraptor-query-language-pt-1-d721bff100bf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Velociraptor Query Language&lt;/a&gt;) to &lt;strong&gt;sort the results by timestamp&lt;/strong&gt;, and filter out some other headers we don’t care about: &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sql&#34; data-lang=&#34;sql&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;SELECT&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Usn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;Timestamp&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Filename&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Fullpath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;FileAttributes&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Reason&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SourceInfo&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;FROM&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;source&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;ORDER&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;BY&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;Timestamp&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;desc&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;In our USN journal results, we can see &lt;strong&gt;the relics of a Mimikatz&lt;/strong&gt; execution, along with the timestamp that we can use to map the adversaries timeline. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/15-edited-1.png&#34; alt=&#34;15&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Unfortunately, the USN journal is often &lt;strong&gt;challenging to navigate when used in a real life incident.&lt;/strong&gt; My arbitrary example with Mimikatz doesn’t quite convey the &lt;strong&gt;complexity&lt;/strong&gt; and &lt;strong&gt;verbosity&lt;/strong&gt; that you will face when leveraging the USN journal in a real investigation. For example, in our artificial scenario, just &lt;strong&gt;a few runs&lt;/strong&gt; of Mimikatz resulted in near &lt;strong&gt;97 rows&lt;/strong&gt; in the USN journal, via Velociraptor.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/16.png&#34; alt=&#34;16&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h1&gt;Burn the logs, see if I care!&lt;/h1&gt;&lt;p&gt;This has been an overview into a number of &lt;strong&gt;easy to use, highly-reliable, rapid digital forensics techniques&lt;/strong&gt;. I have found these techniques &lt;strong&gt;useful in investigations where the event logs can no longer be trusted or accessed&lt;/strong&gt; due to adversarial tampering, or perhaps where &lt;strong&gt;logging was not set up&lt;/strong&gt; in the first place by the client. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/elmo.png&#34; alt=&#34;elmo&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We have barely scratched the surface of digital forensics and incident response. There are still a whole load of techniques you can deploy when you find that Windows event logs cannot deliver you the puzzle pieces you need:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If you want to read about &lt;strong&gt;amcache,&lt;/strong&gt; I can recommend this &lt;a href=&#34;https://www.ssi.gouv.fr/uploads/2019/01/anssi-coriin_2019-analysis_amcache.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;excellent paper&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Checkout the rest of &lt;a href=&#34;https://ericzimmerman.github.io/#!index.md&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Eric Zimmerman’s awesome tools!&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;If you need to explore a &lt;strong&gt;forensic&lt;/strong&gt; &lt;strong&gt;image&lt;/strong&gt; or &lt;strong&gt;memory dump&lt;/strong&gt;, I can recommend some &lt;a href=&#34;https://github.com/Purp1eW0lf/Blue-Team-Notes#Digital-Forensics&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;cheat sheets&lt;/a&gt; (shameless plug) on leveraging tools like &lt;a href=&#34;https://github.com/volatilityfoundation/volatility/wiki&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Volatility&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;For more information on DFIR techniques, &lt;a href=&#34;https://www.youtube.com/c/13cubed/videos&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Richard Davis 13Cubed videos&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/c/13cubed/videos&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;/a&gt;are essential educational resources&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;When you’re next tasked with &lt;strong&gt;a log-less investigation&lt;/strong&gt;, see if you can leverage &lt;strong&gt;PowerShell history, prefetch, shimcache, and the USN journal&lt;/strong&gt; to identify any undiscovered nuance to your adversaries’ campaign. &lt;/p&gt;
+&lt;p&gt;Any questions, comments, or criticisms please drop me a line&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://twitter.com/Purp1eW0lf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Twitter&lt;/a&gt; &lt;a href=&#34;https://github.com/Purp1eW0lf/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Dray Agha,&lt;/strong&gt; Security Researcher&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,570 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Application-Security</title>
+    <link>//localhost:1313/categories/application-security/</link>
+    <description>Recent content in Application-Security on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Thu, 04 Jul 2024 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/categories/application-security/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>How Cloud Migration is Affecting AppSec - A Red Teamer&#39;s Perspective</title>
+      <link>//localhost:1313/articles/2024/07/2024-07-04-how-cloud-migration-is-affecting-appsec-a-red-teamers-perspective/</link>
+      <pubDate>Thu, 04 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/07/2024-07-04-how-cloud-migration-is-affecting-appsec-a-red-teamers-perspective/</guid>
+      <description>
+        
+        
+        &lt;h2&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;introduction&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;I’ve recently spoken at several conferences about the changes that are underway within red teaming as a result of cloud migration. My team and I have been delivering majority cloud red team work over the last year and the differences are becoming more apparent by the day. One point I’ve mentioned as ‘controversial’ at several of these events is that cloud migration has actually made AppSec more important than ever. I went some way to trying to explain why I think this is during my talks, but it was something that I felt deserved its own blog post to explore in more detail, with clear examples of how compromise of an on-prem application can look different to a cloud-hosted one.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Disclaimer&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;disclaimer&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#disclaimer&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;AppSec is a huge domain and one that I will not try to pretend I am currently in a position to speak with authority on as I’ve been focused almost entirely on red teaming over the last few years. Whilst I was an application pentester many moons ago I will be discussing this topic from the perspective of a red teamer / threat actor looking to achieve notable impact from the compromise of an application, namely initial access into an organisation. &lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;The Traditional Approach&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;the-traditional-approach&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#the-traditional-approach&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;So, before jumping into the cloud-hosted application side of things, let’s briefly discuss the ‘traditional’ approach with which I will be comparing it to. Whilst there are countless ways of hosting a web application, let’s simplify it with a common setup looking something like the below image. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image8.png&#34; title=&#34;image8&#34; alt=&#34;image8&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image8&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;&lt;em&gt;Reference: &lt;a href=&#34;https://www.wallarm.com/what/what-is-a-dmz&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.wallarm.com/what/what-is-a-dmz&lt;/a&gt;&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;reference&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#reference&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;In the above image we can see that the application is being hosted in the ‘demilitarised zone’ or DMZ as would be typical of an on-premise application. This means that the application is effectively firewalled off from the public internet and enterprise (I usually use the term ‘corporate’) networks except for connections that are strictly necessary. Overall, the intention here is to limit the potential impact that could come from compromising said application, crucially preventing it from having unfettered access into the corporate network. This makes sense, as many applications hosted as such are internet-facing and therefore face a considerable risk of compromise. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;In traditional setups, you also have a few common additional layers of security to bypass if you wanted to truly weaponise an application you had compromised. Firstly, you will often be using a dedicated ‘service account’ to run the web server. This account is often only used for running this one web server, and as such has next-to-no permissions to do or access anything else. Finally, you may also find that your exploit (for example a malicious file upload vulnerability) lands in what is called the ‘web root’. This is the directory on the web server in which you store all the contents used for hosting the web server such as config files, images, etc. In these scenarios you may find that the service account you have now compromised cannot even explore the web server’s file system, and instead is strictly limited to the web root. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;When you add all of this up, you may find instances where your super awesome remote code execution vulnerability actually has very limited impact in terms of progressing an attack path towards the internal estate and / or critical assets. This exact scenario happened to me on a purple team engagement last year, in which I exploited a vulnerability to get remote code execution on a web server, only to find that it was firewalled off from the corporate network, restricted to the web root, was not domain-joined, and my account had very little permissions. Ultimately this meant that its ‘usefulness’ to me was limited. In fact, one interesting tidbit about that story is that by listing the contents of the web root by ‘time modified’ I was able to discern that several genuine threat actors had also compromised that web server the same way within the last 5 days or so. Naturally this kicked off an IR engagement, which ultimately discovered that the threat actors, like myself, had found limited impact from the compromise of the web server so had installed crypto miners and called it a day. A full write up of this story was posted last year and can be found &lt;a href=&#34;https://labs.jumpsec.com/butting-heads-with-a-threat-actor-on-an-engagement/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Cloud-Hosted&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;cloud-hosted&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#cloud-hosted&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;So, how do things change when we are discussing a cloud-hosted web application? Well, let me start by saying that achieving the same level of defence in depth is certainly possible with a cloud-hosted web application. However, it is our experience that, just like we see overly permissive IAM roles and abusable default settings in every cloud environment we work in, this is rarely as well locked down when it comes to the far less understood world of cloud. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Additionally, beyond the access control and ‘identities’ belonging to these cloud-hosted applications generally not undergoing the same level of scrutiny as on-premise (partly due to ‘least privilege access’ being a mire in the complex world of cloud permissions) we are also able to leverage a nice feature that all cloud providers have implemented in different ways, called the Metadata Service. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image10.png&#34; title=&#34;image10&#34; alt=&#34;image10&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image10&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;To understand why the metadata service exists I am going to directly quote a great video on the topic from risk3sixty which I urge you to watch &lt;a href=&#34;https://www.youtube.com/watch?v=OaG6wHlhbCQ&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;em&gt;“It is an internal IP address that is attached to any given EC2 instance by default, that provides a set of information that can be used by application developers who need their application to automatically perform some tasks”&lt;/em&gt; - Risk3Sixty&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Here, AWS-specific terminology can be interchangeably used with Azure or GCP terminology, as the same features exist for the same reasons across them all. They even all use the same IP address for this &lt;a href=&#34;http://169.254.169.254&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;http://169.254.169.254&lt;/a&gt;, meaning you do not need to know the specific implementations. As risk3sixty put it, the ‘set of information’ which can be requested here is vast, but can include some very useful information to an attacker. Top of mind is the web application’s session token that it uses to authenticate to the cloud environment and perform actions. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;In order to access this service, we simply need the ability to issue requests as the web application to this specific endpoint. Once we know which endpoint houses the data that is of interest to us we can generate a request and receive back our information. Specifically, we need to coerce the application into sending a HTTP request to the specific metadata endpoint, and read the result. It should go without saying, therefore, that gaining remote code execution on the web server will in almost all cases be sufficient to retrieve that data. However, this could also be leveraged by less ‘impactful’ (in the traditional sense) vulnerabilities such as SSRF. As you might imagine, this could breathe entirely new life into the potential impact of SSRF vulnerabilities.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Cloud vendors realised that these vulnerabilities could potentially open doors to new attack vectors, and so introduced additional controls to protect against them. In all modern metadata services you are required to send additional HTTP headers with specific values, meaning that you are more likely back in the realm of remote code execution. However, in older versions you may find that this is not required, meaning that SSRF could still be sufficient.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;With the theory out of the way let’s look at some practical examples in Azure and AWS. Here are the steps I would take if I landed on an cloud-hosted web servers.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;AWS&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;aws&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#aws&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Firstly, check the version of the metadata service in use. As mentioned, older versions (IMDSv1) do not require additional headers, modern versions (IMDSv2) do.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image2.png&#34; title=&#34;image2&#34; alt=&#34;image2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image2&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 1:  401 response (missing headers) from main metadata endpoint, meaning IMDSv2 is in use&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-1-401-response-missing-headers-from-main-metadata-endpoint-meaning-imdsv2-is-in-use&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-1-401-response-missing-headers-from-main-metadata-endpoint-meaning-imdsv2-is-in-use&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;As we are working with IMDSv2 we will need to create a bash script or similar which will request the necessary headers, and then include them in subsequent requests which ask for metadata. The script below can be found &lt;a href=&#34;https://book.hacktricks.xyz/pentesting-web/ssrf-server-side-request-forgery/cloud-ssrf#abusing-ssrf-in-aws-ec2-environment&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image1.png&#34; title=&#34;image1&#34; alt=&#34;image1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 2: Bash script for gaining access to IMDSv2 &lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-2-bash-script-for-gaining-access-to-imdsv2&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-2-bash-script-for-gaining-access-to-imdsv2&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Towards the end we can see it requests the ‘credentials’ (think access keys) of the EC2 instance.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image4.png&#34; title=&#34;image4&#34; alt=&#34;image4&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image4&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 3: EC2 Security Credentials requested&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-3-ec2-security-credentials-requested&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-3-ec2-security-credentials-requested&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;We can then run the script and receive back a plethora of useful information, including the keys and tokens the VM uses. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image5.png&#34; title=&#34;image5&#34; alt=&#34;image5&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image5&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 4: Metadata of EC2 instance collected, with EC2 Security Credentials at the bottom.&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-4-metadata-of-ec2-instance-collected-with-ec2-security-credentials-at-the-bottom&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-4-metadata-of-ec2-instance-collected-with-ec2-security-credentials-at-the-bottom&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Azure&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;azure&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#azure&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In Azure, this looks similar. Firstly, we generate a generic request asking for information about the VM with the ‘Metadata:true’ HTTP header. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image3.png&#34; title=&#34;image3&#34; alt=&#34;image3&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image3&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 5: Metadata being returned from Azure Metadata Service endpoint&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-5-metadata-being-returned-from-azure-metadata-service-endpoint&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-5-metadata-being-returned-from-azure-metadata-service-endpoint&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;As the metadata service is returning information correctly we can request our session token of the managed identity assigned to the VM.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image7.png&#34; title=&#34;image7&#34; alt=&#34;image7&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image7&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 6: Session token returned for the VM&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-6-session-token-returned-for-the-vm&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-6-session-token-returned-for-the-vm&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;If you are working with an app ‘service’ as opposed to a VM the process is slightly different but still very much possible. In this case you should follow &lt;a href=&#34;https://book.hacktricks.xyz/pentesting-web/ssrf-server-side-request-forgery/cloud-ssrf#azure-app-service&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Now, we have these session tokens, so what? You may be thinking that we already had remote code execution on the virtual machine to get to this point so why do we care about the session token? Whilst you may try many of the same attack paths that you could with an on-premise application through this RCE, you now also have another angle of attack. With these session tokens you are able to ‘login’ to the cloud environment (usually without MFA as these are intended to be used by your non-human service accounts). From here, your attack vectors are far more extensive than in most traditional setups. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image9.png&#34; title=&#34;image9&#34; alt=&#34;image9&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image9&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 7: Authenticating to the cloud environment as the compromised Azure VM. &lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-7-authenticating-to-the-cloud-environment-as-the-compromised-azure-vm&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-7-authenticating-to-the-cloud-environment-as-the-compromised-azure-vm&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;For example, having authenticated to the cloud environment you now have an &lt;em&gt;incredibly&lt;/em&gt; rich API at your disposal to begin looking for further vulnerabilities. This could include simply running  ‘&lt;em&gt;Get-AzResource&lt;/em&gt;’ within Azure, which will reveal all resources that you (as the application) have access to. In the screenshot below we can see that in this case this was access to a KeyVault with app secrets within! &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image6.png&#34; title=&#34;image6&#34; alt=&#34;image6&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image6&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 8: The compromised application has access to a KeyVault&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-8-the-compromised-application-has-access-to-a-keyvault&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-8-the-compromised-application-has-access-to-a-keyvault&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Thanks for making that so nice and easy. No searching through config files to find SQL databases and connection strings, then manually crafting individual SQL queries to begin exploitation. Here, we have simply run a single API command and then can run a second to dump all the information that we have. This is just one example of several thousand that you have available to you once you authenticate with common cloud API tooling.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;But wait there&amp;rsquo;s more…now that we have the session token for the application we can begin using any number of enumeration, post-exploitation or privilege escalation tools that we want from the perspective of the application. No need to install tooling on the device and trip off those pesky EDR’s, we can simply fire up our preferred tooling (think Azurehound, GraphRunner, bf-aws-permissions, etc.) and load in your session token. Of course, this introduces different OPSEC concerns, but bypassing those detections is something we will discuss later this year (hopefully at a conf!).&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Cloud Permissions&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;cloud-permissions&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#cloud-permissions&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Now let’s rub salt in the wound. We’ve used our compromise to hit the metadata service and load up our favourite tooling with a session token. Access should be strictly limited, like it was on-premise right? Whilst this is true in theory, understanding and implementing fine-grained access controls and restrictions is a tall order in the modern world of highly complex cloud environments. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;I would like to call out here how many hundreds of IAM roles there are in most cloud environments, many of them with similar yet opposing permissions. Take a &lt;a href=&#34;https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;look&lt;/a&gt; at just the built-in Azure roles (not to mention any custom ones implemented to fill gaps) which already totals more than 130 options. You can see how reading each of these and understanding the nuanced permissions they have can be taxing, and goes some way to explaining why we so regularly see overly permissive accounts. We often see permissions being used without the full knowledge of what subsets of those permissions can introduce. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;To provide a very oversimplified example, we regularly see Global Administrator accounts being very well restricted and kept under lock and key. However, some lesser known roles like ‘Privileged Role Administrator’ and ‘Privileged Authentication Administrator’ both allow a threat actor to escalate privileges to Global Administrator through resetting passwords or assigning roles to attacker-controlled accounts. These permissions may have been assigned more liberally, and compromise of them may not trip off as many alerts. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Ultimately, what I am trying to get at here is that when you combine the complexities of modern cloud environments (which we believe to be largely less well understood than on-prem) with the ability to run a plethora of tooling to identify any misconfigurations or overly permissive accounts (including the application you have compromised!) you often introduce far greater security concerns than you might traditionally do on-premise. Don’t believe me? Read &lt;a href=&#34;https://posts.specterops.io/microsoft-breach-what-happened-what-should-azure-admins-do-da2b7e674ebc&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this&lt;/a&gt; great deep dive into the Microsoft breach which took place at the start of 2024 in which Microsoft themselves had inadvertently given a legacy app service permissions akin to Global Administrator…&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;The above also introduces an entirely new attack vector within Azure, of applications (service principals) that you compromise potentially having elevated permissions in &lt;em&gt;other&lt;/em&gt; cloud environments beyond just the tenant you are in…but that is a topic for another day.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Serverless Functions&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;serverless-functions&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#serverless-functions&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;A final point is that with the rise of serverless architecture (AWS Lambda, Azure Functions, etc.) we are starting to get our hands on these more often. Crucially, these can still be thought of as cloud-hosted web applications, and may be vulnerable to the same risks mentioned above depending on the implementation. For example, a member of our red team recently found a way to package and exfiltrate data over DNS from an AWS Lambda that had DENY ALL on all TCP and UDP ports to all ranges. For a write up on that check out &lt;a href=&#34;https://labs.jumpsec.com/whats-in-a-name-writing-custom-dns-tunnelling-protocol-on-the-fly-exploiting-unexpected-aws-lambda-misconfiguration-all-in-a-web-app-pen-test-part-1/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this&lt;/a&gt; recent labs article. The key point here is that whilst they might not look and feel like traditional web apps, these serverless functions present the same risk to an organisation as a web app and can be used to progress attack paths just as well. &lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Conclusion&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In conclusion, I am not suggesting that up until this point AppSec has not been of paramount importance. However, when looking at the arguments presented and the work we’ve been conducting as a team over the last year I feel that the migration to cloud might present yet another watershed moment in AppSec’s journey. Perhaps it will take a notable organisation to be breached via a cloud-hosted application entry point for this point to become salient, but in my eyes it is a matter of when, not if. Thanks for reading and I hope my internal monologue on the topic was of interest!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Burp Suite and Beyond: Exploring non-HTTP protocols using MITM_RELAY</title>
+      <link>//localhost:1313/articles/2021/08/2021-08-24-burpsuite-and-beyond/</link>
+      <pubDate>Tue, 24 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2021/08/2021-08-24-burpsuite-and-beyond/</guid>
+      <description>
+        
+        
+        &lt;p&gt;By &lt;a href=&#34;https://twitter.com/hit1t&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Muhammet Ali A&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt;&lt;a href=&#34;https://twitter.com/hit1t&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;rıtürk&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;In this article, Muhammet takes us on a deep technical journey to persevere beyond the limitations of the proxy tool Burp Suite, and explore non-HTTP, application-layer protocols using ‘MITM RELAY’.&lt;/p&gt;
+&lt;h1&gt;Introduction&lt;/h1&gt;&lt;p&gt;As an offensive security tester, we often rely on Burp Suite. While an excellent resource when penetration testing, it’s not without limitations, as we explored in our previous article on &lt;a href=&#34;https://labs.jumpsec.com/burp-suite-python-scripter/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;utilising custom python scripts.&lt;/strong&gt;&lt;/a&gt; &lt;/p&gt;
+&lt;p&gt;To get around some particular limitations in a recent case, I used a cool tool called &lt;a href=&#34;https://github.com/jrmdev/mitm_relay&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;MITM_RELAY&lt;/strong&gt;&lt;/a&gt; which is described as a “hackish way to intercept and modify non-HTTP protocols through Burp &amp;amp; others”. &lt;/p&gt;
+&lt;p&gt;This tool allows us to compensate for Burp Suite’s limitations and extend it’s proxying capabilities for protocols beyond HTTP. Let’s explore why this is important when looking to secure an application. &lt;/p&gt;
+&lt;h1&gt;Simulating a man-in-the-middle&lt;/h1&gt;&lt;p&gt;Imagine &lt;strong&gt;a mobile application&lt;/strong&gt;. We’ll call it &lt;strong&gt;Alpaca App.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/alpaca_app.png&#34; alt=&#34;alpaca app&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;It has loads of great features that keep you connected with your favourite Alpaca friends. Besides being cool, the mobile app needs to be &lt;strong&gt;secure&lt;/strong&gt; when you’re using it to access the big bad internet. &lt;/p&gt;
+&lt;p&gt;Our task in this article is to understand if the app is broadcasting and transferring data securely or insecurely enough for an adversary to &lt;strong&gt;intercept&lt;/strong&gt; the traffic. This can also be understood as &lt;strong&gt;man-in-the-middle&lt;/strong&gt; (MITM) attack, whereby a malicious (and nosy) actor eavesdrops on the network traffic that a machine is innocently transmitting and steals or manipulates the data for their evil purposes. &lt;/p&gt;
+&lt;p&gt;An important tool for MITM research involves &lt;strong&gt;proxying&lt;/strong&gt;, which acts as an intermediate between two machines - and can be weaponized for evil purposes. &lt;a href=&#34;https://portswigger.net/burp/documentation/desktop/tools/proxy/getting-started&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Burp Suite&lt;/strong&gt;&lt;/a&gt; is a staple tool for studying web app and mobile app communications, as it proxies the information between the client and server so we can research exactly how the application works.&lt;/p&gt;
+&lt;p&gt;Definitions aside, let’s talk about the technical complications for proxying our specific mobile app. Take a big old sip of coffee, and let&amp;rsquo;s get to work.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/coffee.png&#34; alt=&#34;coffee&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h1&gt;The limits of Burp Suite&lt;/h1&gt;&lt;p&gt;Burp Suite is able to catch &lt;strong&gt;HTTP&lt;/strong&gt; &lt;strong&gt;communications.&lt;/strong&gt; This is a specific application-layer protocol. The diagram below shows the process by which Burp Suite proxies communications over HTTP protocol. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/burp.png&#34; alt=&#34;burp&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;However, Burp Suite is &lt;strong&gt;ONLY&lt;/strong&gt; able to proxy this specific protocol. &lt;strong&gt;Unfortunately, Alpaca App doesn’t use HTTP to communicate. It uses XMPP instead.&lt;/strong&gt; So what now? &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The Extensible Messaging and Presence Protocol (XMPP for short) is another application-layer protocol that is some decades old now, and originally went by the name &lt;strong&gt;Jabber.&lt;/strong&gt; &lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Thankfully, we can use our new tool to intercept anything we want.&lt;/strong&gt; &lt;/p&gt;
+&lt;h1&gt;Proxying XMPP traffic using MITM Relay&lt;/h1&gt;&lt;p&gt;As mentioned earlier, we are trying to understand whether &lt;strong&gt;Alpaca App is communicating securely.&lt;/strong&gt; Because it communicates via XMPP, we need to intercept that traffic and then study it. Let’s explain that again through a diagram: &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/xmpp.png&#34; alt=&#34;xmpp&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Not bad. So now we have a limited tool (Burp Suite) and we have a tool that can upgrade it (MITM_RELAY), so let’s get to work combining this so Burp Suite can understand Alpaca App’s XMPP!&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Burp Suite has &lt;a href=&#34;https://portswigger.net/burp/documentation/desktop/tools/extender&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;its own extension&lt;/strong&gt;&lt;/a&gt; for &lt;a href=&#34;https://portswigger.net/bappstore/1d0986521ace4b2dbf0b70836efa999d&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;XMPP protocol interception&lt;/strong&gt;&lt;/a&gt;, but I didn’t find this to be as effective as the MITM_RELAY tool. &lt;/p&gt;
+&lt;p&gt;The Burp XMPP extension would occasionally drop packets, which is obviously not ideal when trying to build a robust picture of the security of the app. The Burp extension, while having some good features, needed quite a bit of tinkering to make it work. &lt;/p&gt;
+&lt;p&gt;In contrast, I found the MITM_RELAY tool easier to use, but really, you can use anything that you feel comfortable with!&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;The &lt;a href=&#34;https://github.com/jrmdev/mitm_relay&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;creators&lt;/strong&gt;&lt;/a&gt; of the tool made a nice diagram below about how the tool works, and how to intercept different types of traffic via HTTP (Burp Suite) Proxy.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/mitm.png&#34; alt=&#34;mitm&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Digging deeper, the relay server has &lt;strong&gt;three&lt;/strong&gt; &lt;strong&gt;key&lt;/strong&gt; functions:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Relay Listener&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;A &lt;strong&gt;listener&lt;/strong&gt; for a specific protocol and a specific source port will &lt;strong&gt;forward&lt;/strong&gt; the traffic to our &lt;strong&gt;target IP and target PORT&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Packet Wrapper and Unwrapper&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;This component will wrap all traffic into HTTP form and deliver it to the proxy tool. When the proxy tool forwards the traffic on, it will unwrap the traffic to it’s original protocol)&lt;/li&gt;
+&lt;li&gt;So XMPP &amp;mdash;&amp;raquo; HTTP &amp;mdash;&amp;raquo; XMPP&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Echo Web Server&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;This web server is a required part of this. As we’re sending the request over out proxy tool there will need to be a response after we finish sending the request&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;images/1.png&#34; alt=&#34;1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Let’s go through this step by step. Assume our first XMPP packet has left &lt;strong&gt;Alpaca App,&lt;/strong&gt; and was intending to reach &lt;strong&gt;Alpaca Inc.’s servers&lt;/strong&gt; out in the big internet. &lt;/p&gt;
+&lt;p&gt;1. It will pass through our relay server, be wrapped in HTTP, and sent to the Proxy server (Burp Suite)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2.png&#34; alt=&#34;2&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;2. After completing the wrapping-modification of the initial request, we will send it to the &lt;strong&gt;Echo Web server.&lt;/strong&gt; This will forward it to the upper level to unwrap it to the original protocol (XMPP) readying it to send to the Alpaca Inc. Server as originally intended:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/3.png&#34; alt=&#34;3&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;3. So far we have managed to successfully send Alpaca App’s XMPP traffic to the Alpaca Inc. server, situated on the internet. It is now the Alpaca Inc. server’s turn to answer us. Lets see how that works in return:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/4.png&#34; alt=&#34;4&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The application server then answers in the Alpaca app. We now have the ability to modify our requests to change the information we receive. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/5.png&#34; alt=&#34;5&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;4. When we are done examining Alpaca Inc.’s server response, we will let the XMPP packet go back to the client-side, (the Alpaca App). The same wrapping, unwrapping, and echo repeating occurs here to deliver the traffic back. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/6.png&#34; alt=&#34;6&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;So far, so good? Are you doing alright? Here’s an alpaca meme to lighten things up.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/bags.png&#34; alt=&#34;bags&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We have followed the process from the first XMPP traffic from Alpaca App on our mobile phone, through our Burp Suite-MITM_RELAY that wraps it up in HTTP, and then when it unwraps it back to XMPP and gives it the Alpaca Inc. Server - and then back again through this whole apparatus.&lt;/p&gt;
+&lt;p&gt;I hope you enjoyed the visuals, and they provided some benefit. &lt;strong&gt;Let’s open up the command-line, so you can replicate this and set this up too!&lt;/strong&gt;&lt;/p&gt;
+&lt;h1&gt;Getting hands-on!&lt;/h1&gt;&lt;p&gt;Are you ready to do this yourself? You’ll need:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://github.com/jrmdev/mitm_relay&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;MITM_RELAY script&lt;/a&gt;&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;A proxy tool&lt;/strong&gt; (Burp, in our case)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Two mobile clients:&lt;/strong&gt; talking to each other using an the app’s XMPP protocol, &lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;A firewall rule:&lt;/strong&gt; needed to route the traffic from mobile client to relay server.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;Setting up the environment&lt;span class=&#34;absolute -mt-20&#34; id=&#34;setting-up-the-environment&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#setting-up-the-environment&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;h3&gt;MITM_RELAY&lt;span class=&#34;absolute -mt-20&#34; id=&#34;mitm_relay&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#mitm_relay&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;For our MITM_RELAY setup, let&amp;rsquo;s look at the parameters we need:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/params-1-1024x114.png&#34; alt=&#34;params 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-r&lt;/code&gt;:  Relaying settings. This parameter helps us to configure the relay
+&lt;ul&gt;
+&lt;li&gt;[local port] : [dest_host] : [dest_port]&lt;/li&gt;
+&lt;li&gt;Or adding protocol: [udp:|tcp:] lport: rhost : rport&lt;/li&gt;
+&lt;li&gt;Example: tcp:8083:142.250.187.238:443 &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-l&lt;/code&gt; &lt;strong&gt;:&lt;/strong&gt; Relay listener. This is the address the relays will listen on. 
+&lt;ul&gt;
+&lt;li&gt;Be careful when setting this address, your relay listening address must be reachable from the client of you.&lt;/li&gt;
+&lt;li&gt;And must be the same in  &amp;ndash;to&amp;ndash;destination  in iptables rule you use&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-p&lt;/code&gt;&lt;strong&gt;:&lt;/strong&gt; The proxy parameter, in this case our proxy server will be in place&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Our MITM relay is now ready&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/mitmready.png&#34; alt=&#34;mitmready&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;Proxy Setup&lt;span class=&#34;absolute -mt-20&#34; id=&#34;proxy-setup&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#proxy-setup&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We then can set up the rest of our proxy tooling and client-side Alpaca mobile app communication. &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Our proxy tool (Burp Suite) is listening on &lt;strong&gt;192.168.1.184:8083&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;I am using a XMPP based chat mobile application. You, however, can choose any kind of application you would like to test. &lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Firewall Setup&lt;span class=&#34;absolute -mt-20&#34; id=&#34;firewall-setup&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#firewall-setup&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We will need to manipulate the firewall for our task. Fortunately for us, my colleague SHD already talks about how to use &lt;a href=&#34;https://labs.jumpsec.com/obfuscating-c2-during-a-red-team-engagement/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;iptables&lt;/strong&gt;&lt;/a&gt; to create super specific firewall changes.&lt;/p&gt;
+&lt;p&gt;Lets leverage a visual to show what we’ll need our firewall to do: &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/firewall.png&#34; alt=&#34;firewall&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Our firewall will need to do some very specific port forwarding…there are two ways to utilise &lt;strong&gt;iptables&lt;/strong&gt; to achieve this task.&lt;/p&gt;
+&lt;p&gt;You can either forward one specific port on TCP/UDP for all destinations to the relay: &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;iptables -t nat -A OUTPUT -p tcp --dport &lt;span class=&#34;m&#34;&gt;5222&lt;/span&gt; -j DNAT --to-destination 192.168.1.184:9876&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Or you can forward one specific port on TCP/UDP for one specific destination to the relay:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;iptables -t nat -A OUTPUT -p tcp -s DEST_IP--dport &lt;span class=&#34;m&#34;&gt;5222&lt;/span&gt; -j DNAT --to-destination 192.168.1.184:9876&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;For the application you are researching, you have the task of identifying which ports to use and forward to - I unfortunately do not have the answers for your application. But I do have the answers for the Alpaca App, so let’s keep going. &lt;/p&gt;
+&lt;h2&gt;Ready to start testing? &lt;span class=&#34;absolute -mt-20&#34; id=&#34;ready-to-start-testing&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#ready-to-start-testing&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Now that our environment is set up, let&amp;rsquo;s fire up our mobile application (Alpaca App) and see where the packets go.&lt;/p&gt;
+&lt;h3&gt;Client to Server&lt;span class=&#34;absolute -mt-20&#34; id=&#34;client-to-server&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#client-to-server&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;In the top half of the screenshot (below), we can see MITM_RELAY confirm its listening configuration and then confirm it has received the new client (new connection)  that it will forward on. &lt;/p&gt;
+&lt;p&gt;The lower half of the screenshot is our Burp Suite proxy tool that is receiving relay’s forwarded information.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/client_to_server.png&#34; alt=&#34;client to server&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;Server to Client&lt;span class=&#34;absolute -mt-20&#34; id=&#34;server-to-client&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#server-to-client&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;And on return from the Alpaca Inc. servers, Burp Suite intercepts the communication destined for the Alpaca mobile app.  &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;X-Mitm_Relay-to&lt;/strong&gt; and &lt;strong&gt;X-Mitm_Relay-From&lt;/strong&gt; indicates the changes between &lt;strong&gt;thick&lt;/strong&gt; &lt;strong&gt;client&lt;/strong&gt; and &lt;strong&gt;application&lt;/strong&gt; &lt;strong&gt;server&lt;/strong&gt; addresses dynamically, based on the where the packets come from.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/server_to_client.png&#34; alt=&#34;server to client&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;Alpaca App chat&lt;span class=&#34;absolute -mt-20&#34; id=&#34;alpaca-app-chat&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#alpaca-app-chat&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Let’s use the cool chat in the Alpaca App to send our best buddy a message.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/buddy.png&#34; alt=&#34;buddy&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This message goes from Alpaca App &amp;mdash;&amp;raquo; MITM_RELAY &amp;mdash;&amp;raquo; Burp Suite proxy. If we recall, this converts the original XMPP into HTTP, which Burp Suite can understand.&lt;/p&gt;
+&lt;p&gt;We can see the intercepted contents in Burp Suite:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/intercepte.png&#34; alt=&#34;intercepte&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Now we have intercepted the message in the Alpaca App chat, we can drop or forward the message further. Let’s make sure it gets through.&lt;/p&gt;
+&lt;p&gt;Here we can see the actual conversation between the two mobile devices. Both are using the Alpaca App and communicating through XMPP. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/comms.png&#34; alt=&#34;comms&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h1&gt;There and back again&lt;/h1&gt;&lt;p&gt;The moral of this story is that we do not have to give up on our security tooling if it has default limitations. On the contrary, we can layer up the tools we use and extend the capability of the tools that we are comfortable with. &lt;/p&gt;
+&lt;p&gt;In our example, we extended Burp Suite’s HTTP-default capabilities with MITM_RELAY so we could assess the Alpaca App that uses the XMPP protocol. &lt;/p&gt;
+&lt;p&gt;I hope you found this useful, and remember it next time you need to research TEXT-based traffic in Non-HTTP protocols. &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Intercept everything and enjoy my friends!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/alpaca_cool.png&#34; alt=&#34;alpaca cool&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Muhammet Ali Arıtürk&lt;/strong&gt; is a Security Researcher @ JUMPSEC. &lt;/p&gt;
+&lt;p&gt;You can &lt;a href=&#34;https://twitter.com/hit1t&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;follow him on Twitter&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt;.&lt;/strong&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Overcoming Issues Using Custom Python Scripts with Burp Suite Professional</title>
+      <link>//localhost:1313/articles/2021/04/2021-04-28-burp-suite-python-scripter/</link>
+      <pubDate>Wed, 28 Apr 2021 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2021/04/2021-04-28-burp-suite-python-scripter/</guid>
+      <description>
+        
+        
+        &lt;h3&gt;Summary / TL:DR&lt;span class=&#34;absolute -mt-20&#34; id=&#34;summary--tldr&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#summary--tldr&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;I recently encountered some issues when using Burp Suite Professional which led me to playing around with the Python Scripter extension. The extension allows running custom Python scripts on every request/response processed by Burp, including those generated by functionality such as Burp&amp;rsquo;s active scanner. This has a number of potential use cases, but I found it particularly useful to re-implement client-side functions that prevented the active scanner from identifying vulnerabilities it would normally detect. The extension is quite simple to use but has a somewhat steep learning curve, so I have shared some of my processes, findings and code samples which may be useful for others in similar situations.&lt;/p&gt;
+&lt;h3&gt;Background&lt;span class=&#34;absolute -mt-20&#34; id=&#34;background&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#background&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;When working on a recent client project I encountered an issue where the login functionality base64 encoded the username and password before sending it in a JSON request to the server. An example of this is shown below.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;{
+	&amp;#34;payload&amp;#34;:&amp;#34;eyJ1c2VybmFtZSI6InRlc3R1c2VyIiwicGFzc3dvcmQiOiJ0ZXN0cGFzcyJ9&amp;#34;
+}&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;The base64 encoded string decodes to {&amp;ldquo;username&amp;rdquo;:&amp;ldquo;testuser&amp;rdquo;,&amp;ldquo;password&amp;rdquo;:&amp;ldquo;testpass&amp;rdquo;} which is another JSON body with the input username and password. Unfortunately, at the time this format caused a lot of issues with fuzzing tools such as Burp Suite Professional’s active scanner. When scanning the endpoint Burp wasn’t quite smart enough to handle the encoding and decoding and didn’t fuzz the inner parameters inside the base64 encode input. Knowing that the web server logic wouldn’t correctly decode the fuzzed input, I set out to find a way to scan the parameters before they are encoded and have Burp automatically encode the input before it’s sent to the server.&lt;/p&gt;
+&lt;p&gt;I found a number of extensions which appeared to work with base64 encoded values. However, none of these worked when the request to the server was sent in a JSON format. Eventually, I came across the Python Scripter extension [&lt;a href=&#34;https://portswigger.net/bappstore/eb563ada801346e6bdb7a7d7c5c52583&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;1&lt;/a&gt;] which claimed to allow the execution of custom Python scripts on every request/response processed by Burp. As someone who enjoys writing Python scripts this sounded perfect for me and I decided to learn how to use it. Unfortunately, there was very little documentation about the extension and the user interface was simply an empty text box with no additional information.&lt;/p&gt;
+&lt;p&gt;At this point I spent time googling and finding any existing code samples online to try and figure out how to actually use the extension. A particularly useful resource I found was lanmaster53’s pyscripter-er github repo [&lt;a href=&#34;https://github.com/lanmaster53/pyscripter-er&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;2&lt;/a&gt;] which is worth checking out if you want to learn more advanced usage. Eventually, I managed to get a good enough understanding to be able to make a python script that would take a normal request with a username and password parameter and format it as a base64 encoded string sent in a JSON request. Since carrying out the test and writing this blog post, Burp has been updated and the active scanner now performs fuzzing of base64 encoded input. However, I thought I’d still write this up to provide a resource for understanding how to actually use the Python Scripter extension as base64 encoding was just one example of where it could be useful.&lt;/p&gt;
+&lt;h3&gt;Basic Setup&lt;span class=&#34;absolute -mt-20&#34; id=&#34;basic-setup&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#basic-setup&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Along with installing the extension, I recommend installing the logger++ extension [&lt;a href=&#34;https://portswigger.net/bappstore/470b7057b86f41c396a97903377f3d81&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;3&lt;/a&gt;] as this is useful for viewing the request after it has been modified by the python script. Overall, the basic setup involves three areas:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The extension script window – For writing the python code&lt;/li&gt;
+&lt;li&gt;The extension output/error window – For debugging the python code&lt;/li&gt;
+&lt;li&gt;Logger++ – Seeing the transformed request as it is sent to the server&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscript_1b.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Print statements or other python console output will be displayed here, with errors shown in the “Errors” tab.&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h3&gt;Intercepting and Viewing Requests&lt;span class=&#34;absolute -mt-20&#34; id=&#34;intercepting-and-viewing-requests&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#intercepting-and-viewing-requests&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Perhaps the most difficult part when using the extension is figuring out how to actually intercept the requests sent so that you can begin modifying it. As mentioned previously, there isn’t much in the way of documentation, but as the extension makes use of the Burp Suite extender API [&lt;a href=&#34;https://portswigger.net/burp/extender/api/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;4&lt;/a&gt;] we can use the documentation for that to learn a bit more about how to interact with requests. We know the extension implements the following variables and after reviewing the extender API documentation we can get a rough estimate of what class or value they correspond to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;extender – IBurpExtender class&lt;/li&gt;
+&lt;li&gt;callbacks – IBurpExtenderCallbacks class&lt;/li&gt;
+&lt;li&gt;helpers – IExtensionHelpers class&lt;/li&gt;
+&lt;li&gt;toolFlag – Integer value defining which Burp tool created the request&lt;/li&gt;
+&lt;li&gt;messageIsRequest – Boolean value indicating whether the current message being processed is a request&lt;/li&gt;
+&lt;li&gt;messageInfo – IHttpRequestResponse class&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;After reviewing the documentation of these classes, we can make a simple script to print out core information about the request such as the HTTP request headers and the body of a POST request. This includes all the information we likely want to modify such as any request parameters.&lt;/p&gt;
+&lt;p&gt;GET Request:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;if messageIsRequest:
+	reqbytes = messageInfo.getRequest()
+	req = helpers.bytesToString(reqbytes)
+	print(req)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;POST Request:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;if messageIsRequest:
+	reqbytes = messageInfo.getRequest()
+	req = helpers.analyzeRequest(reqbytes)
+	headers = req.getHeaders()
+	parameters = reqbytes[(req.getBodyOffset()):].tostring()
+	print(parameters)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_2a.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_2b.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;With the script included the request headers are stored in the req variable and can be printed to the output window.&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_3a.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_3b.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Similarly, using a script we can access the POST request parameters.&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h3&gt;Modifying a Request&lt;span class=&#34;absolute -mt-20&#34; id=&#34;modifying-a-request&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#modifying-a-request&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Now that we can get core information about the request, we can write whatever Python code we want to start extracting specific information from the request and change it. This could be using regular expressions or simply functions such as split and strip to process the input and combine it with specific functions based on the context of the application, e.g. base64 encoding the input.&lt;/p&gt;
+&lt;p&gt;After we have modified our input value the request will need to be recreated using the new modified input. For GET requests this process is simple, we simply need to convert the modified request back to byte format and then set the message as the new request. For POST requests we will need to build a new request that combines the previous HTTP headers with the modified body and then set this as the new request.&lt;/p&gt;
+&lt;p&gt;GET Request:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;newreq_bytes = helpers.stringToBytes(modified_req)
+messageInfo.setRequest(newreq_bytes)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;POST Request:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;newreq_bytes = helpers.buildHttpMessage(headers,output_body)
+messageInfo.setRequest(newreq_bytes)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Putting it together with the previous code an example GET request where we want to base64 encode an input we could use the following code.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;import re
+import base64
+
+if messageIsRequest:
+	reqbytes = messageInfo.getRequest()
+	req = helpers.bytesToString(reqbytes)
+	
+	input_val = re.findall(r&amp;#39;input=[^\s]*&amp;#39;, req)[0].split(&amp;#39;&amp;amp;&amp;#39;)[0].split(&amp;#39;=&amp;#39;)[1]
+	output_val = base64.b64encode(input_val)
+	
+	output_param = r&amp;#39;input=%s&amp;#39; % (output_val)
+	output_req = req.replace(input_param, output_param)
+	
+	newreq = helpers.stringToBytes(output_req)
+	messageInfo.setRequest(newreq)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;There isn’t really much more required to use the extension and whilst there is a lot more that can be done with it, this blog is only intended to help understand how to get started with it by providing some basic usage examples. In the final section of this blog, I’ve added an example showing how to use it to bypass a simple request signing implementation.&lt;/p&gt;
+&lt;h3&gt;Practical Example – Message Request Signing&lt;span class=&#34;absolute -mt-20&#34; id=&#34;practical-example--message-request-signing&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#practical-example--message-request-signing&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;As I mentioned previously, Burp is now smart enough to recognise the base64 encoded input and inject payloads into the body before its encoded – the original reason I had for using the extension. However, there are a number of potential use cases for the extension. As such, I thought I’d provide an example of another use for it.&lt;/p&gt;
+&lt;p&gt;Another penetration test I conducted featured an application that implemented request signing, where every request sent to the server sent a signature generated from the request. As the signing was carried out by client-side code, it was possible to review the implementation and sign any request we make to the server. However, the signature would break a lot of Burp functionality, including the active scanner, as this isn’t automatically updated for every new request. To overcome this, once the signing implementation is understood, we can then use the Python Scripter extension to carry out the signing process on each request that Burp processes.&lt;/p&gt;
+&lt;p&gt;As an example, I’ve created a very basic PHP web app that simply takes a base64 JSON encoded string containing two user input values and reflects those inputs in the web response. The application also requires a “Signature” header to be sent which contains a SHA256 hash of the length of the body of the POST request. This application is obviously vulnerable to reflected cross-site scripting, but if we try to use Burp’s active scanner to identify this it will fail. This happens as the request signature isn’t updated when fuzzing with XSS payloads, so Burp won’t detect the payloads in the response.&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_5a-1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Simple PHP web app vulnerable to cross-site scripting.&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_5b.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Base64 string sent as input along with the signature header. Input is reflected in the web response&lt;/strong&gt;&lt;/em&gt;.&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_5c-1.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Using&lt;/em&gt; B_urp&amp;rsquo;s_ a_ctive scanner fails to pick up any cross-site scripting issues_&lt;/strong&gt;&lt;em&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;We want our python script to do a number of things including:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Extract two input values (input1 and input2) from the starting request.&lt;/li&gt;
+&lt;li&gt;Format them in to a JSON request body.&lt;/li&gt;
+&lt;li&gt;Base64 encode the JSON request body.&lt;/li&gt;
+&lt;li&gt;Use the base64 encoded value as the value of the input parameter.&lt;/li&gt;
+&lt;li&gt;Create a SHA256 hash of the length of the POST request body.&lt;/li&gt;
+&lt;li&gt;Add the hash as a HTTP request header.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The following snippet of python code can be used to carry out all of this. We can then copy this into the extension script window, and it will automatically update a basic request with input1 and input2 parameters to the desired format. This will happen for all requests Burp Suite processes including those generated by functionality such as the active scanner, meaning the scanner should now pick up any vulnerabilities.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;import re
+import base64
+import hashlib
+
+if messageIsRequest:
+	reqbytes = messageInfo.getRequest()
+	req = helpers.analyzeRequest(reqbytes)
+	parameters = reqbytes[(req.getBodyOffset()):].tostring()
+	headers = req.getHeaders()
+
+	val_1 = re.findall(r&amp;#39;input1=[^\s]*&amp;#39;, parameters)[0].split(&amp;#39;&amp;amp;&amp;#39;)[0].split(&amp;#39;=&amp;#39;)[1]
+	val_2 = re.findall(r&amp;#39;input2=[^\s]*&amp;#39;, parameters)[0].split(&amp;#39;&amp;amp;&amp;#39;)[0].split(&amp;#39;=&amp;#39;)[1]
+	
+	input_val = &amp;#39;{&amp;#34;input1&amp;#34;:&amp;#34;%s&amp;#34;,&amp;#34;input2&amp;#34;:&amp;#34;%s&amp;#34;}&amp;#39; % (val_1, val_2)
+	base64_val = base64.b64encode(input_val)
+	output_body = r&amp;#39;input=%s&amp;#39; % base64_val
+	
+	hash_body_len = hashlib.sha256(str(len(output_body)).encode(&amp;#39;utf-8&amp;#39;)).hexdigest()
+	sig = &amp;#34;Signature: &amp;#34; &amp;#43; hash_body_len
+	headers.add(sig)
+	
+	newreq = helpers.buildHttpMessage(headers, output_body)
+	messageInfo.setRequest(newreq)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_5e.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;With the script, we can now send a valid request without the signature and without the base64 encoding.&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_5f.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Using logger++ we can see that the script automatically modifies the request and adds the signature as well as converts the input into a base64 encoded string.&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/pyscripter_5g.png&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;&lt;em&gt;&lt;strong&gt;Now if we active scan the request the scanner will instantly pick up cross-site scripting vulnerabilities.&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h3&gt;Conclusion&lt;span class=&#34;absolute -mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;There are a vast number of potential use cases for the Python Scripter extension when conducting testing using Burp Suite Professional. In particular, it is useful for any scenario where client-side code disrupts the function of automated tools by heavily modifying user input or the request before it is sent to the server. Some potential examples include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Encoding / encrypting user input (where keys and algorithms are known)&lt;/li&gt;
+&lt;li&gt;HTTP request signature algorithms&lt;/li&gt;
+&lt;li&gt;Weak captcha implementations&lt;/li&gt;
+&lt;li&gt;Functionality which requires a unique value per request to the server&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;By following the processes outlined in this blog, you should be able to write your own Python scripts which can be executed on any request sent through Burp Suite and use this to overcome application specific complications that interfere with automated testing tools.&lt;/p&gt;
+&lt;p&gt;Sample scripts for using the Python Scripter extension can be found at the JumpsecLabs GitHub repository [&lt;a href=&#34;https://github.com/JumpsecLabs/python-burp&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;5&lt;/a&gt;].&lt;/p&gt;
+&lt;h3&gt;References&lt;span class=&#34;absolute -mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;[1] &lt;a href=&#34;https://portswigger.net/bappstore/eb563ada801346e6bdb7a7d7c5c52583&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://portswigger.net/bappstore/eb563ada801346e6bdb7a7d7c5c52583&lt;/a&gt;&lt;br&gt;
+[2] &lt;a href=&#34;https://github.com/lanmaster53/pyscripter-er&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/lanmaster53/pyscripter-er&lt;/a&gt;&lt;br&gt;
+[3] &lt;a href=&#34;https://portswigger.net/bappstore/470b7057b86f41c396a97903377f3d81&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://portswigger.net/bappstore/470b7057b86f41c396a97903377f3d81&lt;/a&gt;&lt;br&gt;
+[4] &lt;a href=&#34;https://portswigger.net/burp/extender/api/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://portswigger.net/burp/extender/api/&lt;/a&gt;&lt;br&gt;
+[5] &lt;a href=&#34;https://github.com/JumpsecLabs/python-burp&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/JumpsecLabs/python-burp&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

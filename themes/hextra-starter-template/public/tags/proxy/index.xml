@@ -1,0 +1,80 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Proxy</title>
+    <link>//localhost:1313/tags/proxy/</link>
+    <description>Recent content in Proxy on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Fri, 09 Jun 2023 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/proxy/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Ligolo: Quality of Life on Red Team Engagements</title>
+      <link>//localhost:1313/articles/2023/06/2023-06-09-ligolo-quality-of-life-on-red-team-engagements/</link>
+      <pubDate>Fri, 09 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2023/06/2023-06-09-ligolo-quality-of-life-on-red-team-engagements/</guid>
+      <description>
+        
+        
+        &lt;p&gt;**&lt;figure&gt;
+    &lt;img src=&#34;images/ligolo-bugsbunny-2023-06-09_12-50-300x267.png&#34; title=&#34;ligolo bugsbunny 2023 06 09 12 50&#34; alt=&#34;ligolo bugsbunny 2023 06 09 12 50&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;ligolo bugsbunny 2023 06 09 12 50&lt;/figcaption&gt;
+  &lt;/figure&gt;**In recent months we, JUMPSEC’s red team, have been using a nifty little tool that we would like to share with you in this blog post. Ligolo-ng is a versatile tool that has been aiding our covert, and slightly-less-covert, engagements with regards to tunnelling, exfiltration, persistence, and widely improving the operators’ “quality of life” when carrying out assessments involving beaconing from within an internal network.&lt;/p&gt;
+&lt;p&gt;This highly-useful tool is developed by Nicolas Chatelain and can be found on Github at &lt;a href=&#34;https://github.com/nicocha30/ligolo-ng&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/nicocha30/ligolo-ng&lt;/a&gt;. Ligolo can be described as a modern tunnelling tool, similar to the likes of chisel, sshuttle or SSH, with the advantage of being written in GO and behaving just like a VPN. That is to say, when setup correctly operators can enjoy connections to a target network of up to 100 Mbits/sec, utilising various protocols such as ICMP (ping), UDP scans, SYN stealth scan, OS detection and DNS Resolution, which are commonly not allowed through proxychains or “standard” tunnelling tooling.&lt;/p&gt;
+&lt;p&gt;The tool uses agents on the compromised machine which connect to a publicly-facing proxy server to route traffic through a tun interface that is created on the host. In simple terms, Ligolo offers red teamers an alternative C2 channel that supports far more than traditional SSH or SOCKS proxies, allowing you to run a wider variety of tooling, much faster, and with what feels like too-good-to-be-true quality of life.&lt;/p&gt;
+&lt;p&gt;The gif below shows how quick it is to setup the proxy server on a linux host machine after downloading the proxy executable from the releases’ page on Github.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/latest_ligolo_demo_setup5.gif&#34; title=&#34;latest ligolo demo setup5&#34; alt=&#34;latest ligolo demo setup5&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;latest ligolo demo setup5&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;More and more, when using this tool, we discover features applicable to new use-cases. For example, beside its ease of use, things like using ping and private domain name resolution during a red team engagement are invaluable and can definitely improve the turnaround time and efficiency of an assessment. Once the necessary steps have been taken, as detailed below, operators can enjoy their entire suite of red team tooling on their linux server, with full name resolution, and speeds that are incomparable with that of traditional tunnelling on red team engagements. We have jokingly referred to Ligolo as allowing you to move your C2 into the target network!&lt;/p&gt;
+&lt;p&gt;Furthermore, it is possible to set up listeners on deployed agents to welcome connections coming from agents deployed somewhere else in the target environment. Crucially, the agents do not require any privileged permissions to be executed on the compromised hosts, because of its “gvisor” implementation, which works by virtualising sandboxed containers that translate traffic reaching the central proxy server deployed on our host.&lt;/p&gt;
+&lt;p&gt;As previously mentioned, GO makes it highly versatile and flexible, allowing operators to customise the proxy as well as the agents, and compile them to bypass defences or implement additional capabilities that are not there by default.&lt;/p&gt;
+&lt;p&gt;For example, we found ourselves able to bypass common endpoint detection and response (EDR) mechanisms employed in a Windows environment by simply either packing the agent executable (something like Nimcrypt will do), removing unimportant pieces of code, restructuring the source-code, or by compiling the agents beforehand and adding extra flags to the syntax, such as the following:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;GOOS=windows GOARCH=amd64 go build -ldflags=&amp;quot;-s -w&amp;quot;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Researchers at JUMPSEC have also recently determined that, in at least several mature client environments, the creation of new network interfaces is not monitored. Therefore, should you find yourself wanting to deploy a Ligolo proxy server on a compromised machine (remember you don’t need admin permissions to deploy an agent but you do need it to deploy a proxy server!), and that it does not appear that monitoring is in place for tunnelling tools such as Ligolo by default, which makes it an attractive target when compared to existing C2 payloads. A note of caution however, EDRs may flag the “tunnelling” functionality when traffic is exchanged between the agent and the proxy.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/fry-takemymoney-300x300.png&#34; title=&#34;fry takemymoney&#34; alt=&#34;fry takemymoney&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;fry takemymoney&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Once a successful connection has been established packets will be automatically (read automagically) routed to the intended target network, making it a seamless experience, and one that compares with the ease of which you would carry out operations in your own local network.&lt;/p&gt;
+&lt;p&gt;The agents can be easily modified and trivially executed by a Scheduled Task or a Cron Job for backdoor purposes or to establish persistence. When trying to achieve domain dominance on an engagement we found we were having to spend far less time in fixing or maintaining our foothold when compared to the usual routines of dealing with beacons, port forwarding and SSH tunnelling. Furthermore, we found that generally there are less restrictions in regards to the traffic we are allowed to generate and forward through.&lt;/p&gt;
+&lt;p&gt;As previously mentioned, another interesting capability of this tool is the possibility to create listeners on the agent themselves to chain connections as shown in the code block below.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;[Agent : domain\Administrator@VICTIM] &amp;gt;&amp;gt; listener_add --addr &amp;lt;agent_ip&amp;gt;:11601 --to &amp;lt;proxyserver_ip&amp;gt;:11601
+INFO[0326] Listener created on remote agent!&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;This behaviour is particularly useful when the proxy server’s IP address is out of reach for the last deployed agent, but connection can be established from the final pivoted box to the adjacent network running a previously deployed ligolo’s agent, allowing a pass-through connection back to our proxy server leveraged by the agent listener/forwarder.&lt;/p&gt;
+&lt;p&gt;Finally, some caveats to keep in consideration…Ligolo does not automatically recognise the subnets where traffic needs to be redirected to, therefore you will need to add your routes as you discover or need them, using something like “sudo ip route add 192.168.0.0/24 dev ligolo” on the proxy server’s host, and target’s nameservers to /etc/resolv.conf to use DNS instead of IP addresses in an internal network. Furthermore, do not expect your agents to automatically establish a tunnel when reconnecting to the proxy…an auto-connect feature needs to be developed in-house or wait for the feature to be released by the author. Finally, remember that when using it for client networks, you will need a publicly facing box reachable by the agents to listen for connections and execute commands from.&lt;/p&gt;
+&lt;p&gt;All in all, Ligolo enabled us to speed up our engagements, made our shells more stable and reliable, allowed for a larger and more comprehensive gathering of our targets data, and helped us spend less time maintaining an important part of our persistent operational infrastructure. Most importantly, it avoids the use of tooling on-disk or even in memory, as only the raw traffic leaves the compromised machine.&lt;/p&gt;
+&lt;p&gt;To conclude this blogpost, I just want to say (write) that we love Ligolo and we are very grateful to Nicolas Chatelain for creating this amazing instrument that we are proud to have in our day-to-day operational tool suite.&lt;/p&gt;
+&lt;p&gt;References&lt;/p&gt;
+&lt;p&gt;● The Cyber Plumber&amp;rsquo;s Handbook - &lt;a href=&#34;https://github.com/opsdisk/the&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/opsdisk/the&lt;/a&gt;_cyber_plumbers_handbook&lt;/p&gt;
+&lt;p&gt;● Ligolo-ng - &lt;a href=&#34;https://github.com/nicocha30/ligolo-ng&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/nicocha30/ligolo-ng&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;● Gvisor - &lt;a href=&#34;https://gvisor.dev/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://gvisor.dev/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Alternatives to Ligolo-ng:&lt;/p&gt;
+&lt;p&gt;● Proxychains - &lt;a href=&#34;https://github.com/haad/proxychains&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/haad/proxychains&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;● Proxychains-ng - &lt;a href=&#34;https://github.com/rofl0r/proxychains-ng&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/rofl0r/proxychains-ng&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;● Chisel - &lt;a href=&#34;https://github.com/jpillora/chisel&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/jpillora/chisel&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;● SSHuttle - &lt;a href=&#34;https://github.com/sshuttle/sshuttle&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/sshuttle/sshuttle&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
