@@ -1,5 +1,5 @@
 title = "JUMPSEC"
-baseURL = "https://local.jumpsec"
+baseURL = "https://labs.jumpsec.com"
 languageCode = "en-us"
 theme = ["ananke"]
 resourceDir = "../resources"
@@ -38,7 +38,7 @@ enableRobotsTXT = true
 
 [[params.ananke_socials]]
 name = "twitter"
-url = "https://twitter.com/GoHugoIO"
+url = "https://x.com/JumpsecLabs"
 
 [taxonomies]
 tag = "tags"
@@ -46,4 +46,4 @@ category = "categories"
 
 [permalinks]
     categories =  "/:section/:slug"
-    tags: "/:section/:slug"
+    tags = "/:section/:slug"

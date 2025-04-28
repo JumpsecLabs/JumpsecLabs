@@ -1,7 +1,7 @@
 {
 	"version": 3,
 	"file": "main.css",
-	"sourceRoot": "/home/adam/Development/bighat-clients/jumpsec/hugo",
+	"sourceRoot": "E:/Development/Jumpsec/JumpsecLabs",
 	"sources": [
 		"ananke/css/main.css"
 	],
