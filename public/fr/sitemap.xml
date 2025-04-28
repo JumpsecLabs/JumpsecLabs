@@ -2,46 +2,46 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://local.jumpsec/fr/</loc>
+    <loc>https://labs.jumpsec.com/fr/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="https://local.jumpsec/"
+                href="https://labs.jumpsec.com/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="fr"
-                href="https://local.jumpsec/fr/"
+                href="https://labs.jumpsec.com/fr/"
                 />
   </url><url>
-    <loc>https://local.jumpsec/fr/categories/</loc>
+    <loc>https://labs.jumpsec.com/fr/categories/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="https://local.jumpsec/categories/"
+                href="https://labs.jumpsec.com/categories/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="fr"
-                href="https://local.jumpsec/fr/categories/"
+                href="https://labs.jumpsec.com/fr/categories/"
                 />
   </url><url>
-    <loc>https://local.jumpsec/fr/tags/</loc>
+    <loc>https://labs.jumpsec.com/fr/tags/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="https://local.jumpsec/tags/"
+                href="https://labs.jumpsec.com/tags/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="fr"
-                href="https://local.jumpsec/fr/tags/"
+                href="https://labs.jumpsec.com/fr/tags/"
                 />
   </url>
 </urlset>

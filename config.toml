@@ -1,4 +1,4 @@
-title = "JUMPSEC"
+title = "JUMPSEC LABS"
 baseURL = "https://labs.jumpsec.com"
 languageCode = "en-us"
 theme = ["ananke"]
@@ -6,7 +6,6 @@ resourceDir = "../resources"
 
 DefaultContentLanguage = "en"
 SectionPagesMenu = "main"
-Paginate = 3 # this is set low for demonstrating with dummy content. Set to a higher number
 googleAnalytics = ""
 enableRobotsTXT = true
 
@@ -47,3 +46,11 @@ category = "categories"
 [permalinks]
     categories =  "/:section/:slug"
     tags = "/:section/:slug"
+
+[pagination]
+  pagerSize = 10
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
