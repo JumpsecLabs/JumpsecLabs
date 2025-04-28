@@ -29,7 +29,7 @@ I have to give credit to the GhostInTheShellcode 2015 for “borrowing” the id
 <meta property="og:type" content="article" />
 <meta property="og:url" content="//localhost:1313/articles/2015/04/2015-04-24-covert-channels-misusing-icmp-protocol-for-file-transfers-with-scapy/" /><meta property="article:section" content="articles" />
 <meta property="article:published_time" content="2015-04-24T00:00:00+00:00" />
-<meta property="article:modified_time" content="2015-04-24T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-04-28T17:05:32+03:00" />
 
     
   <meta itemprop="name" content="Covert channels - (Mis)Using ICMP protocol for file transfers with scapy">
@@ -37,7 +37,7 @@ I have to give credit to the GhostInTheShellcode 2015 for “borrowing” the id
 “In computer security, a covert channel is a type of computer security attack that creates a capability to transfer information objects between processes that are not supposed to be allowed to communicate by the computer security policy.” Source: Wikipedia
 I have to give credit to the GhostInTheShellcode 2015 for “borrowing” the idea from the forensics challenge (see my previous post!). It is quite tricky to achieve, but the effort is worth it for the result. Network filtering restricts the traversal of specific packets or all the traffic of a kind. A firewall (pseudo)entry might be similar to “allow src dst http” “allow src dst icmp” and the (invisible usually) implicit deny restrict all other traffic. In cases like this there are 2 solutions; either use the existing “allow” for transferring data or switch to a different protocol which is allowed. ICMP is usually allowed because it was created for network troubleshooting mainly. More over messages like ICMP timestamps are blocked but echo requests/responses are not. A network admin that denies ICMP traffic will have troubleshooting difficulties when problems arise. The idea is not new, and according to the wish list of metasploit we should expect to see ICMP/UDP file transfers add-ons/functionalities to be introduced soon.">
   <meta itemprop="datePublished" content="2015-04-24T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2015-04-24T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-28T17:05:32+03:00">
   <meta itemprop="wordCount" content="1583">
   <meta itemprop="keywords" content="Covert-Channels,File-Transfer,Icmp,Scapy">
   <meta name="twitter:card" content="summary">

@@ -27,14 +27,14 @@ In the past I have released a method to evade this logging by loading a maliciou
 <meta property="og:type" content="article" />
 <meta property="og:url" content="//localhost:1313/articles/2020/09/2020-09-04-pwning-windows-event-logging-with-yara-rules/" /><meta property="article:section" content="articles" />
 <meta property="article:published_time" content="2020-09-04T00:00:00+00:00" />
-<meta property="article:modified_time" content="2020-09-04T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-04-28T17:05:32+03:00" />
 
     
   <meta itemprop="name" content="Pwning Windows Event Logging with YARA rules">
   <meta itemprop="description" content="The Event Log coupled with Windows Event Forwarding and Sysmon can be extremely powerful in the hands of defenders, allowing them to detect attackers every step of the way. Obviously this is an issue for the attackers. Before privilege escalation it is limited what we can do to evade event logging, but once privileges have been elevated it is an equal playing field.
 In the past I have released a method to evade this logging by loading a malicious kernel driver and hooking the NtTraceEvent syscall. This method is effective but has two issues. The main issue is the risk associated with loading a kernel driver and patching syscalls as there is the potential to cause a BSOD on the machine which for obvious reasons a very bad thing. The other issue is that it will simply stop all events from being reported, so while the hook is active that machine will no longer be sending events to the SOC or SIEM. Its a real possibility that defenders would notice this sudden lack of events. So is there a way to only filter out the events caused by an attacker while also remaining completely inside usermode? Yes.">
   <meta itemprop="datePublished" content="2020-09-04T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2020-09-04T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-28T17:05:32+03:00">
   <meta itemprop="wordCount" content="1928">
   <meta itemprop="keywords" content="Exploitation">
   <meta name="twitter:card" content="summary">

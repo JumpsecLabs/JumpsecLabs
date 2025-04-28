@@ -726,13 +726,13 @@ article .list h1 {
  article main h2,
  article main div,
  article main h3 {
-		color: black !important;
+		color: black ;
 }
 article main:not(.list, .single) p {
-		color: black !important;
+		color: black ;
 }
 article main:not(.single, .home) h3 a {
-	color: black !important;
+	color: black ;
 }
 
 .dark body .jumpsec-categories:not(.home) li,
@@ -766,19 +766,24 @@ article main:not(.single, .home) h3 a {
 	color: white !important;
 }
 .dark article main:not(.single, .home) h3 a {
-	color: black !important;
+	color: white;
 }
 .dark article main:not(.list, .home) h1,
 .dark article main h2,
 .dark article main div,
 .dark article main h3 {
-		color: black !important;
+		color: white;
 	}
 .dark aside strong {
 	color: white;
 }
 .dark main .home li strong {
 	color: black;
+}
+
+.dark .latest-labs-post-container,
+.dark .description{
+	color:white;
 }
 
 @media (prefers-color-scheme: dark) {
