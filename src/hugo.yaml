@@ -1,0 +1,129 @@
+# Hugo configuration file
+title: JUMPSEC
+languageCode: en-GB
+enableRobotsTXT: true
+enableGitInfo: true
+enableInlineShortcodes: true
+
+# import hextra as module
+module:
+  imports:
+  - path: github.com/imfing/hextra
+  mounts:
+    - source: content
+      target: content
+  hugoVersion:
+    extended: true
+
+markup:
+  # allow raw html
+  goldmark:
+    renderer:
+      unsafe: true
+
+  # enable hextra syntax highlight
+  highlight:
+    noClasses: false
+
+menu:
+  main:
+    - name: Articles
+      pageRef: /articles
+      weight: 1
+    - name: Contact ↗
+      url: "https://www.jumpsec.com/contact/"
+      weight: 4
+    - name: Search
+      weight: 5
+      params:
+        type: search
+    - name: Theme-toggle
+      params:
+        type: theme-toggle
+      weight: 5
+    - name: Twitter
+      weight: 6
+      url: "https://twitter.com/JumpsecLabs"
+      params:
+        icon: x-twitter
+    - name: LinkedIn
+      weight: 7
+      url: "https://www.linkedin.com/company/jumpsec/"
+      params:
+        icon: linkedin
+    - name: YouTube
+      weight: 8
+      url: "https://www.youtube.com/channel/UCXSbS5DNUZA2LNidrb67tvw"
+      params:
+        icon: youtube
+    - name: GitHub
+      weight: 9
+      url: "https://www.github.com/JUMPSECLabs"
+      params:
+        icon: github
+
+params:
+  description: The JUMPSEC Lab is a place where the the technical team get creative and showcase their latest security research, publications, interesting news and general thoughts!
+  navbar:
+    displayTitle: false
+    displayLogo: true
+    logo:
+      path: images/jumpsec_full_logo_white_indexed_transparent_bg_hi-res_with_bar.png
+      dark: images/jumpsec_full_logo_white_indexed_transparent_bg_hi-res_with_bar.png
+      link: /
+      width: 275
+      height: 35
+
+  footer:
+    displayCopyright: false
+    displayPoweredBy: false
+    width: normal
+    params:
+      - name: Twitter
+        weight: 6
+        url: "https://twitter.com/JumpsecLabs"
+        params:
+          icon: x-twitter
+      - name: LinkedIn
+        weight: 7
+        url: "https://www.linkedin.com/company/jumpsec/"
+        params:
+          icon: linkedin
+      - name: YouTube
+        weight: 8
+        url: "https://www.youtube.com/channel/UCXSbS5DNUZA2LNidrb67tvw"
+        params:
+          icon: youtube
+      - name: GitHub
+        weight: 9
+        url: "https://www.github.com/JUMPSECLabs"
+        params:
+          icon: github
+
+  pagination:
+    disableAliases: false
+    pagerSize: 6
+    path: page
+  editURL:
+    enable: false
+    base: "https://github.com/imfing/hextra-starter-template/edit/main/content"
+
+  related:
+    includeNewer: true
+    indices:
+      - applyFilter: true
+        name: fragmentrefs
+        type: fragments
+        weight: 80
+    threshold: 20
+    toLower: false
+
+  taxonomies:
+    categories: categories
+    tag: tags
+
+  permalinks:
+    categories:  "/:section/:slug"
+    tags: "/:section/:slug"
+
+

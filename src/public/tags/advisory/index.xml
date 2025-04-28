@@ -1,0 +1,363 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Advisory</title>
+    <link>//localhost:1313/tags/advisory/</link>
+    <description>Recent content in Advisory on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Wed, 21 Jun 2023 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/advisory/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Advisory: IDOR in Microsoft Teams Allows for External Tenants to Introduce Malware</title>
+      <link>//localhost:1313/articles/2023/06/2023-06-21-advisory-idor-in-microsoft-teams-allows-for-external-tenants-to-introduce-malware/</link>
+      <pubDate>Wed, 21 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2023/06/2023-06-21-advisory-idor-in-microsoft-teams-allows-for-external-tenants-to-introduce-malware/</guid>
+      <description>
+        
+        
+        &lt;h3&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;tldr&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#tldr&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Max Corbridge (@CorbridgeMax) and Tom Ellson (@tde_sec) of JUMPSEC’s Red Team recently discovered a vulnerability in the latest version of Microsoft Teams which allows for the possible introduction of malware into any organisations using Microsoft Teams in its default configuration. This is done by bypassing client-side security controls which prevent external tenants from sending files (malware in this case) to staff in your organisation. JUMPSEC has detailed remediation options, as well as some detection opportunities. &lt;/p&gt;
+&lt;h3&gt;Introduction&lt;span class=&#34;absolute -mt-20&#34; id=&#34;introduction&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Introducing malware into target organisations is becoming increasingly difficult. Many of the traditional payload types (.exe, Office Macros, etc) are now heavily-scrutinised or have been proactively addressed to reduce their &lt;a href=&#34;https://learn.microsoft.com/en-us/deployoffice/security/internet-macros-blocked&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;em&gt;efficacy&lt;/em&gt;&lt;/a&gt;. Similarly, payload delivery avenues such as phishing are becoming increasingly monitored and secured to reduce the ease with which threat actors’ malware can reach end-user devices. Mail security controls, IP blocklists, domain reputation, email HTML, content inspection, third-party mail security products, URL filtering and many more must be bypassed for a phishing campaign to traverse all anti-phishing security controls and land in a target’s inbox. &lt;/p&gt;
+&lt;p&gt;As such, threat actors and red teams alike are looking for newer and potentially overlooked avenues of payload delivery. One such novel avenue is Microsoft Teams External Tenants. Organisations that use Microsoft Teams (91% of the Fortune 100 according to &lt;a href=&#34;https://www.linkedin.com/pulse/91-fortune-100-companies-use-teams-techbanditshack&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;em&gt;this article&lt;/em&gt;&lt;/a&gt;) inherit Microsoft’s default configuration which allows users from outside of their organisation to reach out to their staff members. By allowing this, an entirely new avenue of social engineering (and now payload delivery as this blog will explain) is created.&lt;/p&gt;
+&lt;h3&gt;Detail&lt;span class=&#34;absolute -mt-20&#34; id=&#34;detail&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#detail&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Microsoft Teams allows any user with a Microsoft account to reach out to ‘external tenancies’. Here, external tenancies can be thought of as any business or organisation using Microsoft Teams. These organisations each have their own Microsoft tenancy, and users from one tenancy are able to send messages to users in another tenancy. When doing so, an ‘External’ banner appears alongside the name as seen below. &lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19671&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;391&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/external.png&#34; title=&#34;External banner on incoming message&#34; alt=&#34;&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;External banner on incoming message&lt;/figcaption&gt;
+  &lt;/figure&gt; External banner applied to incoming message requests[/caption]&lt;/p&gt;
+&lt;p&gt;As someone who spent a long time doing purely social engineering (phishing, vishing, smshing, etc.) this is not a show stopper by any means. In my experience, whilst this banner (and the subsequent pop-up) may deter a handful of targets, there is still a significant percentage of staff that would click on a message from an external tenant and accept the subsequent warning that the user is ‘external’. In fact, this was proven only last month, as the techniques used in this blog post were successfully used to gain an initial foothold in a client’s environment as part of a red team engagement. This is especially true if the malicious party is impersonating a known member of your organisation, and has purchased and registered a brand-impersonation domain as red teams often do.&lt;/p&gt;
+&lt;p&gt;When messaging staff in another organisation you are blocked from sending files to them, unlike with members of your own tenancy. See below the difference:&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19672&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;1496&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/1.png&#34; title=&#34;Messaging a member of the same organisation&#34; alt=&#34;Messaging a member of the same organisation &#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Messaging a member of the same organisation&lt;/figcaption&gt;
+  &lt;/figure&gt; Messaging a member of the same organisation[/caption]&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19673&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;1421&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/2.png&#34; title=&#34;Restrictions when messaging someone in a different organisation&#34; alt=&#34;Restrictions when messaging someone in a different organisation&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;Restrictions when messaging someone in a different organisation&lt;/figcaption&gt;
+  &lt;/figure&gt; Restrictions when messaging someone in a different organisation[/caption]&lt;/p&gt;
+&lt;p&gt;So far, this is nothing new. However, having leveraged this social engineering avenue in the past I began wondering if this security control could be bypassed to allow for seamless delivery of payloads directly into a target&amp;rsquo;s inbox on our red team engagements. I began looking online, and articles &lt;a href=&#34;https://aadinternals.com/post/teams-policies/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;em&gt;like this&lt;/em&gt;&lt;/a&gt; suggested that certain security controls are actually implemented client-side in Microsoft Teams.&lt;/p&gt;
+&lt;p&gt;I raised this with JUMPSEC’s Head of Offensive Security (Tom Ellson) and no more than 10 minutes later we had bypassed the security control and were able to send files into a target organisation. Exploitation of the vulnerability was straightforward using a traditional IDOR technique of switching the internal and external recipient ID on the POST request, usually here:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;/v1/users/ME/conversations/&amp;lt;RECIPIENT_ID&amp;gt;/messages &lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19674&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;1429&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/3.png&#34; title=&#34;3&#34; alt=&#34;3&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;3&lt;/figcaption&gt;
+  &lt;/figure&gt; Payload delivered directly into a target inbox[/caption]&lt;/p&gt;
+&lt;p&gt;When sending the payload like this, it is actually hosted on a Sharepoint domain and the target downloads it from there. It appears, however, in the target inbox as a file, not a link. &lt;/p&gt;
+&lt;p&gt;Having identified the issue, I wanted to validate that this vulnerability would work as intended as an avenue for payload delivery into a target organisation, and not fall short for some unknown reason when used in a mature client environment. As such, last month I used this vulnerability to deliver our red team C2 (malware) payload directly into a target inbox to gain our initial foothold on a covert red team engagement. This allowed for a much more simple, reliable, and user-friendly payload delivery avenue than traditional phishing journeys. &lt;/p&gt;
+&lt;h3&gt;Why is this a big deal?&lt;span class=&#34;absolute -mt-20&#34; id=&#34;why-is-this-a-big-deal&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#why-is-this-a-big-deal&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The true reason I see this to be a potentially lucrative avenue for threat actors to deliver payloads is the fact that this bypasses nearly all modern anti-phishing security controls mentioned in the introduction of this advisory. &lt;/p&gt;
+&lt;p&gt;Firstly, it is very straightforward to buy a domain similar to your target organisations and register it with M365. It avoids the need to use mature domains, with web servers, landing pages, CAPTCHAs, domain categorisation, and URL filtering. This is a huge time saver, as this can cost several days or more on a red team engagement when setting up the various bits of infrastructure needed for a convincing phishing campaign. &lt;/p&gt;
+&lt;p&gt;Secondly, it avoids the now-rightfully-dangerous act of clicking on a link in an email, something that staff have been trained to avoid for years now, greatly reducing the likelihood of a typical staff member detecting this as a phishing attack. The payload will now be served by a trusted Sharepoint domain, and will arrive in the form of a file in a target’s Teams inbox. As such, the payload inherits the trust reputation of Sharepoint, not a malicious phishing website.&lt;/p&gt;
+&lt;p&gt;Finally, when this vulnerability is combined with social engineering via Teams it becomes very easy to start a back-and-forth conversation, jump on a call, share screens, and more. By comparison, it makes social engineering via email feel very stagnant, and stop-start. When using this on a real engagement the pretext of an IT technician was used to ask the target if they could jump on a call to update some critical software. Once on the call this vulnerability was leveraged to deliver a payload and, when combined with a full social engineering attack, was implicitly trusted by the target. &lt;/p&gt;
+&lt;h3&gt;Impact&lt;span class=&#34;absolute -mt-20&#34; id=&#34;impact&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#impact&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;This vulnerability affects every organisation using Teams in the default configuration. As such it has huge potential reach, and could be leveraged by threat actors to bypass many traditional payload delivery security controls. Having now proven this hypothesis, and used this vulnerability to successfully deliver malware that compromised a target machine in a client&amp;rsquo;s environment, I feel this has been successfully demonstrated as an exploitable finding.&lt;/p&gt;
+&lt;h3&gt;Remediation and Detection&lt;span class=&#34;absolute -mt-20&#34; id=&#34;remediation-and-detection&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#remediation-and-detection&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;This vulnerability was reported to Microsoft, who validated that the vulnerability is legitimate, but said that it ‘did not meet the bar for immediate servicing’. I think this is a shame, but was nonetheless expected. As such, JUMPSEC has added this section to help organisations who might be concerned about the above findings. &lt;/p&gt;
+&lt;p&gt;Firstly, I urge you to review if there is a business requirement for external tenants to have permission to message your staff in the first place. Of course, many businesses do legitimately require communication with other organisations, service providers, and more. That is not the case, however, for all businesses that use Teams. If you are not currently using Teams for regular communication with external tenants, tighten up your security controls and remove the option altogether. This can be done in Microsoft Teams Admin Center &amp;gt; External Access.&lt;/p&gt;
+&lt;p&gt;If you do require communication with external tenants, but there are only a handful of organisations that you regularly communicate with, then you can change the security settings to only allow communication with certain allow-listed domains. This would be a good middle ground for shutting down this attack path, without affecting your business operations. This can be done in Microsoft Teams Admin Center &amp;gt; External Access. &lt;/p&gt;
+&lt;p&gt;If either of the above will not work in your unique business case you have a few options. Firstly, endeavour to educate staff on the possibility of productivity apps such as Teams, Slack, Sharepoint, etc, for launching social engineering campaigns. It is not just email that is being abused any more, and yet it seems, in my personal opinion, that when using alternative avenues to email there is an inherent trust, due to the rich history connecting phishing and emails. &lt;/p&gt;
+&lt;p&gt;Regarding detections, there is currently limited support from Microsoft. Whilst there are plenty of Teams logs (see here for a full list &lt;a href=&#34;https://learn.microsoft.com/en-us/microsoft-365/compliance/audit-teams-audit-log-events?view=o365-worldwide&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://learn.microsoft.com/en-us/microsoft-365/compliance/audit-teams-audit-log-events?view=o365-worldwide&lt;/a&gt;) these do not currently cover the crucial ‘External Tenants Messaging your Staff’, or even better ‘Staff Member Accepts Message Request from External Tenant’. The latter would be preferable, as it would eliminate alerts from previously-known external tenants (your service providers, etc) and focus just on new message requests. I have reached out to Microsoft to attempt to turn on these logs so that they can be monitored in line with the increased usage of Teams for social engineering. If you agree that this should be made available, then please give the feature request a thumbs up (&lt;a href=&#34;https://feedbackportal.microsoft.com/feedback/idea/16fe3111-4410-ee11-a81c-000d3a7a48db&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://feedbackportal.microsoft.com/feedback/idea/16fe3111-4410-ee11-a81c-000d3a7a48db&lt;/a&gt;)&lt;/p&gt;
+&lt;p&gt;Whilst not a perfect solution, it would be possible to use web proxy logs to alert on, or more likely gain some baseline visibility into, staff members accepting external message requests. In EMEA, when a Teams user accepts a message request from an external tenant it sends a POST request to a unique URI which you can monitor:&lt;/p&gt;
+&lt;p&gt;/api/mt/emea/beta/userSettings/acceptlist/manage&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_19675&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;947&amp;rdquo;]&lt;figure&gt;
+    &lt;img src=&#34;images/request_clean.png&#34; title=&#34;request clean&#34; alt=&#34;request clean&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;request clean&lt;/figcaption&gt;
+  &lt;/figure&gt; URI for accepting external message requests[/caption]&lt;/p&gt;
+&lt;p&gt;The difficulty, at present, is turning this into a useful piece of telemetry with usernames, and the message in question. Monitoring this will, however, give you an idea of how common this transaction is in your estate, and allow you to potentially implement some of the mitigation factors mentioned above with a more educated understanding. &lt;/p&gt;
+&lt;h3&gt;Conclusion&lt;span class=&#34;absolute -mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;As a Red Teamer regularly tasked with achieving an initial foothold in a target organisation, I have a unique appreciation and concern for the above-mentioned finding. With over 270 million active monthly users, Teams is incredibly common in target organisations. JUMPSEC’s Detection and Response Team (DART) have seen a trend towards novel phishing and payload delivery techniques leveraged in the wild, including but not limited to using Teams external tenancies for social engineering. With threat actors continually experimenting with new social engineering attacks, organisations are having to expand their security awareness to cover previously-overlooked frontiers.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13769 – Ivanti Unified Endpoint Manager SQL injection</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-13-advisory-cve-2020-13769-ivanti-uem-sql-injection/</link>
+      <pubDate>Fri, 13 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-13-advisory-cve-2020-13769-ivanti-uem-sql-injection/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1; &amp;lt;= 2019.1.3&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13769&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 13/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 7.4 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:L/A:L&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:L/A:L&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Remote, authenticated&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;A number of web components in Endpoint Manager do not properly sanitize user input when executing SQL queries, leaving the application vulnerable to injection attacks towards the underlying database.&lt;br&gt;
+On a standard installation with default options, the account used to query the database is database administrator.&lt;/p&gt;
+&lt;p&gt;Solution&lt;/p&gt;
+&lt;p&gt;The issue has been successfully resolved by the vendor in version 2020.1.1. Customers can install the latest available software update to fix the vulnerability. The vendor also reported this has also been fixed in version 2019.1.4, although this has not been verified by JUMPSEC.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The following endpoints and parameters are vulnerable and exploitable by any authenticated user:&lt;/p&gt;
+&lt;p&gt;POST /LDMS/alert_log.aspx?d=alert_log&amp;amp;tb=serverAlertLog.tb&lt;br&gt;
+&amp;ldquo;filterValue&amp;rdquo; parameter&lt;br&gt;
+Type: Stacked, time-based blind, boolean-based blind&lt;br&gt;
+Example: filterValue=&amp;rsquo;;injection_query_here&amp;ndash;&lt;/p&gt;
+&lt;p&gt;POST /remotecontrolauth/api/device&lt;br&gt;
+&amp;ldquo;global&amp;rdquo;, &amp;ldquo;displayname&amp;rdquo;, &amp;ldquo;ipaddress&amp;rdquo;, &amp;ldquo;owner&amp;rdquo; parameters&lt;br&gt;
+Type: Time-based blind, boolean-based blind&lt;br&gt;
+Example: &amp;ldquo;global&amp;rdquo;:&amp;quot;&amp;rsquo;+(injection_query_here)+&amp;rsquo;&amp;quot;&lt;br&gt;
+This instance also requires a valid &amp;ldquo;sessionid&amp;rdquo; in the request.&lt;/p&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+13/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13772 - Ivanti Unified Endpoint Manager system information disclosure</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-13-cve-2020-13772-ivanti-uem-system-information-disclosure/</link>
+      <pubDate>Fri, 13 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-13-cve-2020-13772-ivanti-uem-system-information-disclosure/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13772&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 13/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 5.3 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Remote, unauthenticated&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Ivanti Unified Endpoint Manager&amp;rsquo;s &amp;ldquo;ldcient&amp;rdquo; component expose information about the system that could be used in further attacks against the system.&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;There is currently no fix for this issue. The vendor has yet to release a patch to address the vulnerability; it is advised to review the host configuration and monitor for suspicious activity. If possible, consider disabling or whitelisting access to the affected URLs.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The following endpoint expose information about the system, such as environment variables, domain name, internal paths and CPU information:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;/ldclient/ldprov.cgi, HTTP 9595&lt;/li&gt;
+&lt;li&gt;/ldclient/ldprov.cgi, HTTPS 9594&lt;/li&gt;
+&lt;li&gt;/ldclient/ldprov.cgi, HTTPS 9593&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+13/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13773 - Ivanti Unified Endpoint Manager Reflected XSS</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-13-cve-2020-13773-ivanti-uem-reflected-xss/</link>
+      <pubDate>Fri, 13 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-13-cve-2020-13773-ivanti-uem-reflected-xss/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13773&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 13/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 5.5 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:N/AC:L/PR:L/UI:R/S:U/C:L/I:L/A:L&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:N/AC:L/PR:L/UI:R/S:U/C:L/I:L/A:L&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Remote, authenticated&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Various web pages on Ivanti Unified Endpoint Manager web management console lack proper input validation on parameters passed in HTTP request, leaving the application vulnerable to client-side attacks. An attacker able to cause the victim to open a malicious URL would obtain javascript code execution on the victim&amp;rsquo;s browser and potentially be able to obtain sensitive information and execute actions on their behalf.&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;There is currently no fix for this issue. The vendor has yet to release a patch to address the vulnerability; it is advised to review the host configuration and monitor for suspicious activity.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The following endpoints and parameter are vulnerable:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;/LDMS/frm_splitfrm.aspx &amp;ldquo;top&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_splitfrm.aspx &amp;ldquo;ttb&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_splitfrm.aspx &amp;ldquo;splittf&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/licensecheck.aspx &amp;ldquo;doc&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_splitcollapse.aspx &amp;ldquo;bottom&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/alert_log.aspx &amp;ldquo;sortdir&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/alert_log.aspx &amp;ldquo;sortcol&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/ServerList.aspx &amp;ldquo;sortdir&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_coremainfrm.aspx &amp;ldquo;bfn&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_findfrm.aspx &amp;ldquo;m&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/frm_taskfrm.aspx any parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/query_browsecomp.aspx &amp;ldquo;t&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/sm_actionfrm.asp &amp;ldquo;bfn&amp;rdquo; parameter&lt;/li&gt;
+&lt;li&gt;/LDMS/sm_actionfrm.asp &amp;ldquo;d&amp;rdquo; parameter&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+13/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13774 - Ivanti Unified Endpoint Manager authenticated RCE via file upload</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-12-advisory-cve-2020-13774-ivanti-uem-rce/</link>
+      <pubDate>Thu, 12 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-12-advisory-cve-2020-13774-ivanti-uem-rce/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1; &amp;lt;= 2019.1.3&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13774&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 12/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 9.9 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Remote, authenticated&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Improper validation on file upload functionality present in Ivanti Unified Endpoint Manager&amp;rsquo;s web management console permits an authenticated user to upload .aspx files and execute them on the MS IIS server&amp;rsquo;s context. The issue is caused by insufficient file extension validation and insecure file operations on the uploaded image, which upon failure will leave the temporarily created files in an accessible location on the server.&lt;/p&gt;
+&lt;p&gt;Solution&lt;/p&gt;
+&lt;p&gt;The issue has been successfully resolved by the vendor in version 2020.1.1. Customers can install the latest available software update to fix the vulnerability. The vendor also communicated this has also been fixed in version 2019.1.4, although this has not been verified by JUMPSEC.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The &amp;ldquo;/LDMS/softwaredistribution/EditLaunchPadDialog.aspx&amp;rdquo; URL permits the upload of an image file on the server. Security controls on the file extension are implemented client-side and can thus be easily bypassed. By crafting a proper .ico image file containing ASP code and uploading it with .aspx extension, it is later possible to access and execute the malicious file on &amp;ldquo;/landesk/files/&lt;filename&gt;.aspx&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;The user must be authenticated and either part of &amp;ldquo;LANDesk Admnistrators&amp;rdquo; group or both part of &amp;ldquo;Landesk Management Suite&amp;rdquo; group and be assigned to the &amp;ldquo;Software Distribution&amp;rdquo; role in order to access the vulnerable component.&lt;/p&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+12/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13770 - Ivanti Unified Endpoint Manager named pipe token impersonation privilege escalation</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13770-ivanti-uem-named-pipe-token-impersonation/</link>
+      <pubDate>Wed, 11 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13770-ivanti-uem-named-pipe-token-impersonation/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Unified Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13770&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 11/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 8.8 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:L/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Local&lt;br&gt;
+&lt;strong&gt;Credits&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Several services are accessing named pipes with default or overly permissive security attributes; as these services run as user &amp;lsquo;NT AUTHORITY\SYSTEM&amp;rsquo;, the issue can be used to escalate privileges from a local standard or service account having SeImpersonatePrivilege (eg. user &amp;lsquo;NT AUTHORITY\NETWORK SERVICE&amp;rsquo;).&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;There is currently no fix for this issue. The vendor has yet to release a patch to address the vulnerability; it is advised to review the host configuration and monitor for suspicious activity.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;The process of exploiting the vulnerability consists in creating a named pipe server, waiting for the vulnerable service to connect to it as a client, extract the client&amp;rsquo;s token and use it to perform privileged actions as &amp;lsquo;NT AUTHORITY\SYSTEM&amp;rsquo;. As there can only be one server-side named pipe object, to exploit the vulnerability it might be required to create the named pipe object before the legitimate process does, or alternatively kill it or cause it to crash.&lt;/p&gt;
+&lt;p&gt;The following named pipe client processes and named pipe objects are affected on version &amp;lt;=2020.1.1:&lt;/p&gt;
+&lt;p&gt;Pipe name: \\.\pipe\SQLLocal\ldmsdata&lt;br&gt;
+Server process: C:\Program Files\Microsoft SQL Server\MSSQL13.LDMSDATA\MSSQL\Binn\sqlservr.exe&lt;br&gt;
+Client processes:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;C:\PROGRA&lt;del&gt;1\LANDesk\MANAGE&lt;/del&gt;1\landesk\SAM\SamServer\bin\SAM.O365PS_Routines.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\LDClient\LDdevmon.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\AlertService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\BrokerService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.Core.Barcode.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\SchedQry.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\MDMManagementService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\commands.service.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\CoreSyncService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.RapidDeploy.Service.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\MPCore.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\LDInv32.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\SchedSvc.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.Common.DBMonitorService.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.Common.SoftwareManager.exe&lt;/li&gt;
+&lt;li&gt;C:\Program Files\LANDesk\ManagementSuite\ManagedPlanet.DiscoveryServices.Core.exe&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;28/05/2020: Issue reported to the vendor&lt;br&gt;
+01/06/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+11/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Advisory CVE-2020-13771 - Ivanti Unified Endpoint Manager DLL search order hijacking privilege escalation</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13771-ivanti-uem-dll-hijacking/</link>
+      <pubDate>Wed, 11 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13771-ivanti-uem-dll-hijacking/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Unified Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13771&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 11/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 8.1 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Local&lt;br&gt;
+&lt;strong&gt;Credit&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Various services running as user &amp;lsquo;NT AUTHORITY\SYSTEM&amp;rsquo; rely on Windows&amp;rsquo; DLL search order for loading DLL files that are not present on the filesystem. Under certain circumstances, a local attacker would be able to place a malicious DLL file to obtain code execution in the vulnerable service&amp;rsquo;s context to elevate privileges.&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;The vendor has released an update partially fixing the issue. 2019.1.4 and 2020.1.1 releases can be installed to remediate some of the instances; the remaining instances remain outstanding. It is advised to review the host configuration and monitor for suspicious activity.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;Affected services attempt to load DLL libraries which are not found on the filesystem relying on Windows&amp;rsquo; DLL search order. A local attacker able to place a purposely crafted library in one of the directories searched, such as one listed in the PATH system environment variable, would gain code execution in the context of the vulnerable service.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Vulnerable instances on version &amp;lt;= 2020.1.1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk Inventory Server&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ldprofileui.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Vulnerable instances on version &amp;lt;= 2020.1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk Inventory Server&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;wfapi.dll&lt;/li&gt;
+&lt;li&gt;DMIAPI32.DLL&lt;/li&gt;
+&lt;li&gt;logonsrv.dll&lt;/li&gt;
+&lt;li&gt;ldprofileui.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk(R) Console Redirection Service&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OOBCredentials.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+11/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

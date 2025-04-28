@@ -1,0 +1,57 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Game</title>
+    <link>//localhost:1313/tags/game/</link>
+    <description>Recent content in Game on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Tue, 23 May 2023 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/game/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>&lt;strong&gt;Advisory CVE-2023-30382 – Half-Life Local Privilege Escalation&lt;/strong&gt;</title>
+      <link>//localhost:1313/articles/2023/05/2023-05-23-advisory-cve-2023-30382-half-life-local-privilege-escalation/</link>
+      <pubDate>Tue, 23 May 2023 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2023/05/2023-05-23-advisory-cve-2023-30382-half-life-local-privilege-escalation/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software:&lt;/strong&gt; Half-Life&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Affected versions:&lt;/strong&gt; Latest (&amp;lt;= build 5433873), at the time of writing&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Vendor page:&lt;/strong&gt; &lt;a href=&#34;https://www.valvesoftware.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.valvesoftware.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;CVE Reference:&lt;/strong&gt; CVE-2023-30382&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Published:&lt;/strong&gt; 23/05/2023&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;CVSS 3.1 Score:&lt;/strong&gt; 8.2 AV:L/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Attack Vector:&lt;/strong&gt; Local&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Credit:&lt;/strong&gt; Ryan Saridar&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Summary&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;An attacker can leverage a stack-based buffer overflow via Half-Life’s command line arguments to compromise the account of any local user who launches the game.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Technical details&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;hl.exe does not adequately perform bounds checking on the command line used to launch it, allowing an attacker with control of the launch parameters to gain code execution as the user running it. By default, all users can access the C:\Program Files (x86)\Steam\userdata\&lt;steamID3&gt;\config\localconfig.vdf file, which can be modified to enforce a Steam application to launch with any provided command line parameters. Combining these, a low-privileged attacker can set specially crafted launch parameters using this file, and therefore gain privilege escalation when a higher privileged user runs the application.&lt;/p&gt;
+&lt;p&gt;The cause of the buffer overflow is found in the CCommandLine::CreateCmdLine and CCommandLine::LoadParametersFromFile functions. CreateCmdLine allocates a 4096 byte buffer which LoadParametersFromFile copies the command line to. Given that the command line is not restricted to 4096 bytes, this can lead to an overflow. This appears to have been fixed in games such as HL2 and TF2, however the fix was not applied to the original HL.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Mitigation&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Valve has not responded to previous submissions of this issue, meaning the game is not patched. The simplest and most effective method of mitigation at this time is the uninstallation of Half-Life.&lt;/p&gt;
+&lt;p&gt;That said, there is another way of mitigating this route of attack if this isn’t an option, though it does not address the underlying buffer overflow vulnerability and thus will not cover possible alternate routes of exploitation. Your Steam installation contains globally writable configuration files that store each Steam user’s saved command line arguments (C:\Program Files (x86)\Steam\userdata\&lt;steamID3&gt;\config\localconfig.vdf). If a Steam user account is predominantly used by a specific local user, you can restrict writability of this file to that user account, preventing another user from being able to overwrite your command line arguments. You could also check the command line parameters via the Steam GUI before launching the game to ensure it is as expected.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Timeline&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;09/01/2021: Buffer overflow submitted for bug bounty, though rejected due to social engineering requirement&lt;/p&gt;
+&lt;p&gt;11/01/2021: Attempt to disclose via Valve’s public security email, with no response received&lt;/p&gt;
+&lt;p&gt;09/02/2021: Subsequent attempt to disclose, again with no response&lt;/p&gt;
+&lt;p&gt;28/08/2022: Revisited the vulnerability and discovered the local privilege escalation route via the configuration file&lt;/p&gt;
+&lt;p&gt;29/08/2022: Subsequent bug bounty submission, which was rejected due to claims that a remote code execution exploit of this vulnerability had been discovered and disclosed since&lt;/p&gt;
+&lt;p&gt;04/04/2023: CVE requested and plan to publish due to lack of remediation, despite awareness of the issue&lt;/p&gt;
+&lt;p&gt;26/04/2023: CVE assigned by MITRE&lt;/p&gt;
+&lt;p&gt;23/05/2023: Publication by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

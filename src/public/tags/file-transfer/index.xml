@@ -1,0 +1,123 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – File-Transfer</title>
+    <link>//localhost:1313/tags/file-transfer/</link>
+    <description>Recent content in File-Transfer on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Fri, 24 Apr 2015 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/file-transfer/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Covert channels - (Mis)Using ICMP protocol for file transfers with scapy</title>
+      <link>//localhost:1313/articles/2015/04/2015-04-24-covert-channels-misusing-icmp-protocol-for-file-transfers-with-scapy/</link>
+      <pubDate>Fri, 24 Apr 2015 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2015/04/2015-04-24-covert-channels-misusing-icmp-protocol-for-file-transfers-with-scapy/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Hello w0rld. In this post I will show how it is possible to (mis)use ICMP protocol for file transfers with scapy.&lt;/p&gt;
+&lt;p&gt;“In computer security, a covert channel is a type of computer security attack that creates a capability to transfer information objects between processes that are not supposed to be allowed to communicate by the computer security policy.” &lt;em&gt;Source: &lt;a href=&#34;http://en.wikipedia.org/wiki/Covert_channel&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Wikipedia&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;I have to give credit to the GhostInTheShellcode 2015 for “borrowing” the idea from the forensics challenge (see my previous post!). It is quite tricky to achieve, but the effort is worth it for the result. Network filtering restricts the traversal of specific packets or all the traffic of a kind. A firewall (pseudo)entry might be similar to “allow src dst http” “allow src dst icmp” and the (invisible usually) implicit deny restrict all other traffic. In cases like this there are 2 solutions; either use the existing “allow” for transferring data or switch to a different protocol which is allowed. ICMP is usually allowed because it was created for network troubleshooting mainly. More over messages like ICMP timestamps are blocked but echo requests/responses are not. A network admin that denies ICMP traffic will have troubleshooting difficulties when problems arise. The idea is not new, and according to the wish list of metasploit we should expect to see ICMP/UDP file transfers add-ons/functionalities to be introduced soon.&lt;/p&gt;
+&lt;p&gt;My idea can be summarized as the following:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We have 2 ends, sender and receiver (else we can imagine it as attacker/compromised host)&lt;/li&gt;
+&lt;li&gt;Attacker wants to send a file, let’s say an ELF or a PE file to the compromised host and for a reason he doesn’t want to use the solutions that exist already (meterpreter&amp;gt; upload function for example)&lt;/li&gt;
+&lt;li&gt;ICMP is connectionless/ and not really stateful as TCP however it keeps track in a timed fashion (it can be considered stateful)&lt;/li&gt;
+&lt;li&gt;I want to be able to parse a file and break it down to multiple chunks so that I can have different sizes of payloads&lt;/li&gt;
+&lt;li&gt;Then I will send these chunks&lt;/li&gt;
+&lt;li&gt;Client will receive these “pings” or more accurately this ICMP echo requests&lt;/li&gt;
+&lt;li&gt;At the side of compromised host/receiver a file will be created and the payload of these requests will be appended.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;For dealing with my ideas, I created 2 python scripts, a sender and a sniffer for grabbing the file. The sender is straightforward. The only thing that I had to add is the way of tearing down a file to multiple chunks and then parse these chunks for sending them. I used an &amp;ldquo;offset&amp;rdquo; so that in the future I can change the offset and have my chunks in different sizes. For the screenshot below you need to know that &lt;strong&gt;x=1&lt;/strong&gt; and &lt;strong&gt;y=2&lt;/strong&gt;. So the seek() will be executed just once for moving the file descriptor &amp;ldquo;offset&amp;rdquo; bytes ahead.&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/04/offset.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/offset.png&#34; alt=&#34;offset&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;Setting the offset for subsequent read&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;After the sender was done the &amp;ldquo;client&amp;rdquo; was the next step. I used the sniff() from scapy which I have to admit I didn&amp;rsquo;t really enjoy. There are several things that I learned out of this process most notable that the &lt;em&gt;count&lt;/em&gt; refers to the number of packets that will be received and NOT to the number of packets that will be received from the filter (packets that &amp;ldquo;hit&amp;rdquo; the filter!).&lt;/p&gt;
+&lt;p&gt;Another issue that I had to solve was that I wanted specifically to grab the &lt;em&gt;Type 8&lt;/em&gt; &amp;ldquo;&lt;em&gt;echo request&lt;/em&gt;&amp;rdquo; messages. However when I was setting a &lt;em&gt;filter=icmp&lt;/em&gt; and then in my callback function an if statement as the following I was getting back duplicate packets.&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/04/sniff-issue1.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/sniff-issue1.png&#34; alt=&#34;sniff issue&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;This didnt work really&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;Because of that I had to use a statement as &lt;em&gt;if raw in downloadlist&lt;/em&gt; so that I removed the double entries from my list.&lt;/p&gt;
+&lt;p&gt;Another funny problem would arise in the case that another machine pings the receiver. In that case the payload of the echo request would be appended on the file. For this I just created an if statement and grab the packets coming from a specific source address.&lt;/p&gt;
+&lt;p&gt;For testing our scripts in a &amp;ldquo;real case&amp;rdquo; scenario we placed the client on the host with IP 192.168.1.56 and the sender on 192.168.1.156. A simple ELF file was created.&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/04/elf-sent.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/elf-sent.png&#34; alt=&#34;elf sent&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;File used for transfer&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;Then we launched the client and the sender and&amp;hellip;&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/04/sending-the-file.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/sending-the-file.png&#34; alt=&#34;sending the file&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;Sender. Sorry for the painful output of the non-printable chars :(&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/04/output_client_kappa.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/output_client_kappa.png&#34; alt=&#34;output_client_kappa&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;Client receiving the file and.. boom!&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;As you can imagine this PoC does not employ a way of obscuring what was sent. We can see that from what tcpdump spits&amp;hellip;&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/04/tcpdump_kappa.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/tcpdump_kappa.png&#34; alt=&#34;tcpdump_kappa&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;tcpdump clearly shows that some sort of an executable file that uses libc was transfered!&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;There are multiple limitations and challenges here.&lt;/p&gt;
+&lt;p&gt;1st  The receiver/compromised host will reply back the payload that will be received; a behavior that is not good&lt;/p&gt;
+&lt;p&gt;2nd ICMP does not have a “window-size” as TCP; there isn’t any “sliding window” that will allow us to send multiple chunks of a file in a single window. We need to take care of that somehow.&lt;/p&gt;
+&lt;p&gt;3rd The ordering of data chunks is also a challenge. If the 2nd chunk arrives before the 1st one because of network-related issues (maybe a different route was chosen…) then the receiver/compromised host will reconstruct the file incorrectly&lt;/p&gt;
+&lt;p&gt;4th Since scapy will be used (for now) we have all the limitations related to its capabilities (root access, installation dependencies, etc).&lt;/p&gt;
+&lt;p&gt;In order to make it happen we need a small script to behave as a client and another one for the sender. The sender should also take care of the breaking up of the file to chunks of a specific size (must be less than the max_payload_size).&lt;/p&gt;
+&lt;p&gt;Assuming that the ICMP type 8 messages are permitted then detection of a file transfer happening like that comes down to whether an IDS look for “abnormal” traffic. The type 8/0 messages depending on the OS (*nix/Windows/etc) have a similar payload every time that are getting sent (however it depends on the OS, Windows do not have the same payload with Linux). For finding the actual file though, a reconstruction of the file is necessary. Dealing with avoidance we have the following paths that we can use:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Encrypt the payload with a key hardcoded into client/server is obviously the strongest way. This would provide end to end encryption and from the network side it “shouldn’t” be possible to find what was sent.&lt;/li&gt;
+&lt;li&gt;Encrypt the payload with a key that is sent through or a value of a packet. This is less “safe” when compared to method 1. But it is still difficult to reverse it. Even if you have the ciphertext and you can extract which algorithm was used you still need to know the key.&lt;/li&gt;
+&lt;li&gt;Doing transposition/permutation. So imagine that we have an array with bytes where z = 0 and y = position of last element. By just reversing the order in the way transposed[y]=element[z] we can create a sequence that wouldn’t make sense at first place (Keep in mind that we do that per chunk (we can also do it per file but this leads to a smaller obfuscation)… so if we have a chunk size of 50 bytes and we are sending it on the reverse order if a file is big then it wouldn’t be so obvious what it is). This approach is (I guess) a way of performing steganography since we just hide the method that we use and we do not encrypt the actual payload. Still though there would be cases where an image header (or a trailer) sent on the reverse order would give away the fact that this is a header. For example the “.exe” if it is sent in that way it will look as “exe.” and would spoil our technique! Still though from a network forensics standpoint the analyst must find a way to find the start/end of the file and the correct sequences in order to reverse the process and reconstruct the file. There are multiple ways of performing this and only sky is the limit… So another example is to use a matrix x*y with the byte sequence of the payload and then shift the columns and the arrows around (similarly to AES process but without XORing) and then send the new matrix to the client who reverses the process.&lt;/li&gt;
+&lt;li&gt;Use encoding instead. Still though encoding with base 64 can be easily spotted.&lt;/li&gt;
+&lt;li&gt;Use a mixed approach of the the previous 2.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Hiding the message though, doesn’t prove the fact that something sneaky happened. If an IPS monitors the ping requests and realizes that the payload is not the one that it should be then it can just discard the packets. There also firewalls that perform stateful inspection of ICMP.&lt;/p&gt;
+&lt;p&gt;Covert channels are becoming more and more used. We have seen already steganography been used in videos, music but also in networking protocols. A malware author might use ICMP and/or UDP for dropping his downloader and the necessary protection mechanisms must be therefore deployed for mitigating that risk.&lt;/p&gt;
+&lt;p&gt;Food for thought:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Add also encryption to each chunk by hardcoding a key&lt;/li&gt;
+&lt;li&gt;Porting it to C for making it a Portable Executable (PE-File)&lt;/li&gt;
+&lt;li&gt;Writing it alternatively (still in python) with ctypes&lt;/li&gt;
+&lt;li&gt;Add steganographic ways for obscurity&lt;/li&gt;
+&lt;li&gt;Use other fields for the actual transfer of a file&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;You can find the sender/client scripts in our github &lt;a href=&#34;https://bitbucket.org/jumpseclab/kit-kappa-icmp-transfer&#34; title=&#34;KIT download page&#34;target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt; &lt;/p&gt;
+&lt;p&gt;If you are still here, thanks for your time ;)&lt;/p&gt;
+&lt;p&gt;Blooper Section!&lt;/p&gt;
+&lt;p&gt;This happened while testing the sender with an offset=3!&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2015/04/trolol.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/trolol.png&#34; alt=&#34;trolol&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;Blooper: When computers decide not to speak human-languages&amp;hellip;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
