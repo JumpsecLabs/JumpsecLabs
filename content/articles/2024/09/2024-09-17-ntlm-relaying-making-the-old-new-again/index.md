@@ -3,7 +3,7 @@ title: "NTLM Relaying - Making the Old New Again"
 date: "2024-09-17"
 categories: 
   - "red-teaming"
-author: "davidkennedy"
+author: "David Kennedy"
 coverImage: "1.png"
 ---
 

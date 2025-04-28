@@ -1,47 +1,16 @@
 {{ define "main" }}
-<div class="mx-auto flex {{ partial `utils/page-width` . }}">
+<div class="mx-auto flex {{ partial `utils/page-width` . }} single-article">
     {{ partial "sidebar.html" (dict "context" . "disableSidebar" false "displayPlaceholder" true) }}
     {{ partial "toc.html" . }}
     <article class="w-full break-words flex min-h-[calc(100vh-var(--navbar-height))] min-w-0 justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)]">
         <main class="w-full min-w-0 max-w-6xl px-6 pt-4 md:px-12 single">
             {{ partial "breadcrumb.html" . }}
             <h1 class="mt-2 text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{{ .Title }}</h1>
-            <div class="mt-4 mb-16 text-gray-500 text-sm flex items-center flex-wrap gap-y-2">
+            <div class="mt-4 mb-4 text-gray-500 text-sm flex items-center flex-wrap gap-y-2">
                 {{- with $date := .Date }}<span class="mr-1">{{ partial "utils/format-date" $date }}</span>{{ end -}}
                 {{- $lazyLoading := site.Params.enableImageLazyLoading | default true -}}
                 {{ if and .Date .Params.authors }}<span class="mx-1">·</span>{{ end -}}
-                {{ $.Scratch.Set "author" .Params.author }}
-                {{ if (eq .Params.author "tomellson") }}
-                {{ $.Scratch.Set "author" "Tom Ellison" }}
-                {{ end }}
-                {{ if (eq .Params.author "davidkennedy") }}
-                {{ $.Scratch.Set "author" "David Kennedy" }}
-                {{ end }}
-                {{ with (eq .Params.author "maxcorbridge") }}
-                {{ $.Scratch.Set "author" "Max Corbridge" }}
-                {{ end }}
-                {{ with (eq .Params.author "rootkid8") }}
-                {{ $.Scratch.Set "author" "Thom" }}
-                {{ end }}
-                {{ with (eq .Params.author "donna") }}
-                {{ $.Scratch.Set "author" "Donna" }}
-                {{ end }}
-                {{ with (eq .Params.author "jordanjay") }}
-                {{ $.Scratch.Set "author" "Jordon Jay" }}
-                {{ end }}
-                {{ with (eq .Params.author "ryan") }}
-                {{ $.Scratch.Set "author" "Ryan" }}
-                {{ end }}
-                {{ with (eq .Params.author "ratchakritse") }}
-                {{ $.Scratch.Set "author" "Lenk Ratchakrit Seriamnuai" }}
-                {{ end }}
-                {{ with (eq .Params.author "xnand") }}
-                {{ $.Scratch.Set "author" "Andrei Constantin Scutariu" }}
-                {{ end }}
-                {{ with (eq .Params.author "emiliachau") }}
-                {{ $.Scratch.Set "author" "Emelia Chau" }}
-                {{ end }}
-                {{- if $.Params.author }}<span class="mr-1">,</span>{{ end -}}<span class="mx-1">{{ $.Scratch.Get "author" }}</span>
+                {{- if $.Params.author }}<span class="mr-1">,</span>{{ end -}}<span class="mx-1">{{ $.Params.author }}</span>
                 {{- with $.Params.authors -}}
                 {{- range $i, $author := . -}}
                 {{- if reflect.IsMap $author -}}

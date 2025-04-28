@@ -5,7 +5,7 @@ categories:
   - "hardening"
   - "mail-security"
   - "network"
-author: "donna"
+author: "Patryk Zajdel"
 ---
 
 In this labs post, I will introduce you to modern security controls that are currently used (but not always correctly) by the vast majority of enterprises, and hopefully by the end of this write-up, the topic will become a little clearer and the concepts will become easier to grasp.

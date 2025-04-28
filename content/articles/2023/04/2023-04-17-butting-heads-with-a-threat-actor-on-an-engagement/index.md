@@ -21,7 +21,7 @@ tags:
   - "threat-actor"
   - "webshell"
 coverImage: "5-1.png"
-author: "maxcorbridge"
+author: "Max Corbridge"
 excerpt: "After compromising a sensitive external server JUMPSEC's Red Team found that they were not the first ones there..."
 ---
 

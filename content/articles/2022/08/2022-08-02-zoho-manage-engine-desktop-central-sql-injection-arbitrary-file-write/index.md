@@ -1,7 +1,7 @@
 ---
 title: "(ZOHO) ManageEngine Desktop Central – SQL Injection / Arbitrary File Write"
 date: "2022-08-02"
-author: "tomellson"
+author: "Tom Ellison"
 ---
 
 **Software**: Zoho ManageEngine Desktop Central  

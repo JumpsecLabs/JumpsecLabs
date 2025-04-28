@@ -21,7 +21,7 @@ tags:
   - "red-team"
   - "ssrf"
 coverImage: "image6-1.png"
-author: "maxcorbridge"
+author: "Max Corbridge"
 ---
 
 ## **Introduction**

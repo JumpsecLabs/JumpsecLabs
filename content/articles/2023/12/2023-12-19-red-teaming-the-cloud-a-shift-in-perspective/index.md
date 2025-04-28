@@ -3,7 +3,7 @@ title: "Red Teaming the Cloud: A Shift in Perspective"
 date: "2023-12-19"
 categories: 
   - "jumpsec"
-author: "maxcorbridge"
+author: "Max Corbridge"
 excerpt: "Having delivered entirely cloud red teams, JUMPSEC experts discuss the shifts in perspective necessary for red teamers when targeting cloud environments."
 ---
 

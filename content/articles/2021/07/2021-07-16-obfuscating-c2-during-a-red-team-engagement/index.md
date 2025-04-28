@@ -6,7 +6,7 @@ categories:
 tags: 
   - "fullwidth"
 coverImage: "2021-07-16_11-32.png"
-author: "donna"
+author: "Patryk Zajdel"
 excerpt: "Command-and-Control (C2) infrastructure is one the most important tools in a red teamer’s arsenal. In this article, we introduce a few simple methods that red teams use to harden their C2 infrastructure."
 ---
 

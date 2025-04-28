@@ -25,7 +25,7 @@ tags:
   - "siem-evasion"
   - "sysmon"
   - "sysmon-config"
-author: "rootkid8"
+author: "Thom"
 excerpt: "Recently JUMPSEC’s youngest red team researcher @_batsec_ raised the bar once more using rootkit techniques to universally evade Sysmon."
 ---
 

@@ -409,7 +409,7 @@ h1, a {
 	margin-left: 0;
 	border-radius: initial;
 	color: red;
-}
+}#
 
 .nav-container .search-input::placeholder {
 	color: black;
@@ -781,9 +781,20 @@ article main:not(.single, .home) h3 a {
 	color: black;
 }
 
+.dark .single-article  article main h1,
+.dark .single-article  article main h2,
+.dark .single-article  article main h3{
+	color: black;
+}
+
 .dark .latest-labs-post-container,
 .dark .description{
 	color:white;
+}
+
+.dark .continue-reading, 
+.dark .continue-reading strong{
+	color: red;
 }
 
 @media (prefers-color-scheme: dark) {

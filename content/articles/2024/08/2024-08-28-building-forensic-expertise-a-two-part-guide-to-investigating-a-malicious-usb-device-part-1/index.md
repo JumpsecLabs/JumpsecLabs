@@ -4,7 +4,7 @@ date: "2024-08-28"
 categories: 
   - "forensics"
   - "incident-response"
-author: "emiliachau"
+author: "Emilia Chau"
 coverImage: "1png.png"
 ---
 

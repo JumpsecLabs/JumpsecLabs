@@ -5,7 +5,7 @@ categories:
   - "detection"
   - "incident-response"
 coverImage: "11.png"
-author: "umair"
+author: "Umair Qamar"
 ---
 
 Every good cybersecurity article needs a Sun Tzu quote, here is one lesser known quote from Sun Tzu to start us off.

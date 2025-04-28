@@ -4,7 +4,7 @@ date: "2024-06-28"
 categories: 
   - "adversary-infrastructure"
   - "red-teaming"
-author: "davidkennedy"
+author: "David Kennedy"
 ---
 
 > **tl;dr** How to bring up an entire C2 infrastructure with all your tooling and their corresponding redirectors within 5 minutes with the help of Azure Snapshots, Cloudflare and Tmux Resurrect.

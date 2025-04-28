@@ -1,7 +1,7 @@
 ---
 title: "Azure - Securing Shared Access Signatures (SAS)"
 date: "2022-07-14"
-author: "tomellson"
+author: "Tom Ellison"
 ---
 
 Tom Ellson - Head of Offensive Security

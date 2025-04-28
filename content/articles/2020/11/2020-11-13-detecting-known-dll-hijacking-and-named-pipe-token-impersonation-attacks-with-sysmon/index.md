@@ -12,7 +12,7 @@ tags:
   - "ivanti"
   - "sysmon"
 coverImage: "thumb_ivanti_detecting.png"
-author: "xnand"
+author: "Andrei Constantin Scutariu"
 excerpt: "Recently we posted a bunch of advisories relating to Ivanti Unified Endpoint Manager, a couple of which are for vulnerabilities which can be used to achieve local privilege escalation. We will give a brief explanation of the vulnerabilities and an example of Sysmon configuration rules to log exploitation attempts, along with the rationale behind them so you can adapt them to your existing configuration if needed."
 ---
 

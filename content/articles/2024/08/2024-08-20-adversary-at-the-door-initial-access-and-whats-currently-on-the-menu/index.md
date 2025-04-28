@@ -5,7 +5,7 @@ categories:
   - "initial-access"
   - "red-teaming"
 coverImage: "wolf-in-sheep-clothes-1.png"
-author: "donna"
+author: "Patryk Zajdel"
 ---
 
 ![wolf in sheep clothes 1](images/wolf-in-sheep-clothes-1.png "wolf in sheep clothes 1")Based on the data from the [Cyber Security Breaches Survey 2024](https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024), phishing with malicious links or malware remains the most common initial access vector, followed by impersonation. The challenge with impersonation attacks is that current technology often struggles to accurately determine the purpose of a website. Although checks on domain maturity, reputation, categorization, and certificates are performed, a skilled adversary can still create sophisticated phishing infrastructure that hosts malware. This allows them to establish a foothold within a network and gain initial access, despite various defences.
