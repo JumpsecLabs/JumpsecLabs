@@ -1,0 +1,69 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Dll-Hijacking</title>
+    <link>//localhost:1313/tags/dll-hijacking/</link>
+    <description>Recent content in Dll-Hijacking on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Wed, 11 Nov 2020 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/dll-hijacking/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Advisory CVE-2020-13771 - Ivanti Unified Endpoint Manager DLL search order hijacking privilege escalation</title>
+      <link>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13771-ivanti-uem-dll-hijacking/</link>
+      <pubDate>Wed, 11 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2020/11/2020-11-11-advisory-cve-2020-13771-ivanti-uem-dll-hijacking/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;Software&lt;/strong&gt;: Ivanti Unified Endpoint Manager&lt;br&gt;
+&lt;strong&gt;Affected Versions&lt;/strong&gt;: &amp;lt;= 2020.1.1&lt;br&gt;
+&lt;strong&gt;Vendor page&lt;/strong&gt;: &lt;a href=&#34;https://www.ivanti.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;www.ivanti.com&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;CVE Reference&lt;/strong&gt;: CVE-2020-13771&lt;br&gt;
+&lt;strong&gt;Published&lt;/strong&gt;: 11/11/2020&lt;br&gt;
+&lt;strong&gt;CVSS 3.1 Score&lt;/strong&gt;: 8.1 - &lt;a href=&#34;https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H&amp;amp;version=3.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;AV:L/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H&lt;/a&gt;&lt;br&gt;
+&lt;strong&gt;Attack Vector&lt;/strong&gt;: Local&lt;br&gt;
+&lt;strong&gt;Credit&lt;/strong&gt;: Andrei Constantin Scutariu, Lenk Ratchakrit, Calvin Yau&lt;/p&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;Various services running as user &amp;lsquo;NT AUTHORITY\SYSTEM&amp;rsquo; rely on Windows&amp;rsquo; DLL search order for loading DLL files that are not present on the filesystem. Under certain circumstances, a local attacker would be able to place a malicious DLL file to obtain code execution in the vulnerable service&amp;rsquo;s context to elevate privileges.&lt;/p&gt;
+&lt;p&gt;Mitigation&lt;/p&gt;
+&lt;p&gt;The vendor has released an update partially fixing the issue. 2019.1.4 and 2020.1.1 releases can be installed to remediate some of the instances; the remaining instances remain outstanding. It is advised to review the host configuration and monitor for suspicious activity.&lt;/p&gt;
+&lt;p&gt;Technical details&lt;/p&gt;
+&lt;p&gt;Affected services attempt to load DLL libraries which are not found on the filesystem relying on Windows&amp;rsquo; DLL search order. A local attacker able to place a purposely crafted library in one of the directories searched, such as one listed in the PATH system environment variable, would gain code execution in the context of the vulnerable service.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Vulnerable instances on version &amp;lt;= 2020.1.1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk Inventory Server&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ldprofileui.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Vulnerable instances on version &amp;lt;= 2020.1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk Inventory Server&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;wfapi.dll&lt;/li&gt;
+&lt;li&gt;DMIAPI32.DLL&lt;/li&gt;
+&lt;li&gt;logonsrv.dll&lt;/li&gt;
+&lt;li&gt;ldprofileui.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Service &amp;ldquo;LANDesk(R) Console Redirection Service&amp;rdquo;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;OOBCredentials.dll&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Timeline&lt;/p&gt;
+&lt;p&gt;15/04/2020: Issue reported to the vendor&lt;br&gt;
+16/04/2020: Vendor acknowledged the issues&lt;br&gt;
+02/06/2020: CVE number assigned from MITRE&lt;br&gt;
+13/07/2020: 90 days notice period for disclosure given to the vendor&lt;br&gt;
+11/11/2020: Advisory published by JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

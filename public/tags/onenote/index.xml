@@ -1,0 +1,70 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Onenote</title>
+    <link>//localhost:1313/tags/onenote/</link>
+    <description>Recent content in Onenote on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Sun, 01 Mar 2015 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/onenote/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Microsoft Onenote Image Caching Bug (Confidential Information Leakage)</title>
+      <link>//localhost:1313/articles/2015/03/2015-03-01-microsoft-onenote-image-caching-bug-confidential-information-leakage/</link>
+      <pubDate>Sun, 01 Mar 2015 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2015/03/2015-03-01-microsoft-onenote-image-caching-bug-confidential-information-leakage/</guid>
+      <description>
+        
+        
+        &lt;h2&gt;Bug Summary&lt;span class=&#34;absolute -mt-20&#34; id=&#34;bugsummary&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#bugsummary&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;A security bug in the Microsoft Onenote allows images placed in user-created password-protected sections to be cached persistently in the user profile temporary directory folder:&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;C:\Users\%username%\AppData\Local\Temp.&lt;/em&gt; &lt;/p&gt;
+&lt;p&gt;Analysing the content the temporary folder will reveal images that should be securely protected by Onenote.&lt;/p&gt;
+&lt;h2&gt;Bug Scope&lt;span class=&#34;absolute -mt-20&#34; id=&#34;bug-scope&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#bug-scope&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;This has only been tested with Microsoft Onenote 2013 with all known updates installed. Last testing on 01/03/2015.&lt;/p&gt;
+&lt;h2&gt;Find the Bug Guide&lt;span class=&#34;absolute -mt-20&#34; id=&#34;find-the-bug-guide&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#find-the-bug-guide&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;ol&gt;
+&lt;li&gt;Open Onenote and add a section to any existing notebook this will automatically create a page too.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_95&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;501&amp;rdquo;]&lt;img src=&#34;images/1-Create-Section-in-Onenote.png&#34; alt=&#34;Create Section in Onenote&#34; loading=&#34;lazy&#34; /&gt; Create Section in Onenote[/caption]&lt;/p&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;Navigate to the REVIEW tab in the main menu and click password button (see image above), the pane on the right will appear and allow you to set a new section password (see image below). You should set one now.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_96&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;557&amp;rdquo;]&lt;img src=&#34;images/2-Set-a-section-password.png&#34; alt=&#34;Set a section password&#34; loading=&#34;lazy&#34; /&gt; Set a section password[/caption]&lt;/p&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;
+&lt;p&gt;Exit Onenote, then reopen it and enter password to unlock section. Now we are secure right!&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Open your explorer, and navigate to the following location:   &lt;em&gt;C:\Users\%username%\AppData\Local\Temp&lt;/em&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Leave this window open, your images will appear here shortly!&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_107&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;574&amp;rdquo;]&lt;img src=&#34;images/5-Navigate-to-Temporary-Directory-Fixed.png&#34; alt=&#34;Navigate to Temporary Directory&#34; loading=&#34;lazy&#34; /&gt; Navigate to Temporary Directory[/caption]&lt;/p&gt;
+&lt;ol start=&#34;5&#34;&gt;
+&lt;li&gt;Open your web browser/explorer, find some images and copy and paste them into OneNote.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_97&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;188&amp;rdquo;]&lt;img src=&#34;images/4-Copy-and-Paste-Image-into-Onenote-188x300.png&#34; alt=&#34;Copy and Paste Image into Onenote&#34; loading=&#34;lazy&#34; /&gt; Copy and Paste Image into Onenote[/caption]&lt;/p&gt;
+&lt;p&gt;On some occasions Onenote will cache the image immediately in the temp folder, you can delete these since they will be back shortly.&lt;/p&gt;
+&lt;ol start=&#34;6&#34;&gt;
+&lt;li&gt;Now close and reopen Onenote, you should enter the password to unlock section. During this stage Onenote caches the images in this password protected section in the temporary directory. Go take a look.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_108&amp;rdquo; align=&amp;ldquo;alignnone&amp;rdquo; width=&amp;ldquo;707&amp;rdquo;]&lt;img src=&#34;images/7-Microsoft-Onenote-Caches-Image-Fixed.png&#34; alt=&#34;Microsoft Onenote Caches Image&#34; loading=&#34;lazy&#34; /&gt; Microsoft Onenote Caches Image[/caption]&lt;/p&gt;
+&lt;h2&gt;Conclusion&lt;span class=&#34;absolute -mt-20&#34; id=&#34;conclusion&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#conclusion&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Everything saved here is suppose to be in a password-protected section, but image are saved &lt;strong&gt;persistently&lt;/strong&gt; in the temp directory and could potentially leak confidential information.&lt;/p&gt;
+&lt;h2&gt;Scenario&lt;span class=&#34;absolute -mt-20&#34; id=&#34;scenario&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#scenario&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;There are a number of problems that arise from this security bug, a few example could be a scanned image of a handwritten form reveals confidential information or a screenshot of usernames/passwords/finances saved in Onenote.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

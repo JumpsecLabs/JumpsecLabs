@@ -1,0 +1,498 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Monitoring</title>
+    <link>//localhost:1313/categories/monitoring/</link>
+    <description>Recent content in Monitoring on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Thu, 07 Oct 2021 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/categories/monitoring/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>PowerShell Jobs</title>
+      <link>//localhost:1313/articles/2021/10/2021-10-07-powershell-jobs/</link>
+      <pubDate>Thu, 07 Oct 2021 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2021/10/2021-10-07-powershell-jobs/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://twitter.com/Purp1eW0lf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;By Dray Agha&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/Jumpsec_icons_Detection-1.png&#34; alt=&#34;Jumpsec icons Detection 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;JUMPSEC investigators recently observed an adversary weaponising PowerShell Jobs to schedule their attack, whilst responding to an incident. In this article, we discuss what PowerShell jobs are, how they can be leveraged for malicious purposes, and how defenders can protect, detect, and respond to neutralise the threat. &lt;/p&gt;
+&lt;h1&gt;What are PowerShell Jobs&lt;/h1&gt;&lt;p&gt;Adversaries are known to &lt;a href=&#34;https://attack.mitre.org/techniques/T1053/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;schedule parts&lt;/a&gt; of their campaign once they have infiltrated a target network. They may timetable their attack for an opportune moment (such as during unsociable hours, based on the region in which the infrastructure is hosted, or support teams reside) or set up a recurring task to ensure ongoing &lt;a href=&#34;https://attack.mitre.org/tactics/TA0003/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;persistence&lt;/a&gt;. &lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.microsoft.com/en-us/powershell/module/psscheduledjob/?view=powershell-5.1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PowerShell jobs&lt;/a&gt; aren’t designed to be inherently malicious and have many legitimate use cases. However, as is often the case in cyber security, the innate functionality of PowerShell Jobs and its susceptibility to abuse means it can also be leveraged by an adversary. &lt;/p&gt;
+&lt;h2&gt;Using legitimately&lt;span class=&#34;absolute -mt-20&#34; id=&#34;using-legitimately&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#using-legitimately&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;When using the command line for most operating systems, users have to run a command and wait a microsecond for the system to return with a reply. This can be inconvenient - for example, when running a script that will take a while to run, or when you know that you want to run the command at a specific time or date in the future. &lt;/p&gt;
+&lt;p&gt;When using PowerShell, a job allows you to push a task into the background. PowerShell will continue to work on your query behind the scenes and allow you to continue using the shell for other things. &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#Push command to the background&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Start-Job&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-ScriptBlock&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;date&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#Retrieve the results of the backgrounded command&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Receive-job&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;X&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/image6-1024x407.png&#34; alt=&#34;image6&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;According to schedule&lt;span class=&#34;absolute -mt-20&#34; id=&#34;according-to-schedule&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#according-to-schedule&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;PowerShell jobs can also be &lt;strong&gt;scheduled&lt;/strong&gt; to execute on very particular conditions&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#organise when the task should trigger&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$trigger&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;New-JobTrigger&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Daily&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-At&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;4:15 AM&amp;#34;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-DaysInterval&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#register the PowerShell job&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Register-ScheduledJob&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;–&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Collect_date&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;–&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ScriptBlock&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;date&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;–&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Trigger&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$trigger&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/image15-1-1024x234.png&#34; alt=&#34;image15 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There are numerous ways to go and find where our scheduled job is located&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#Either of these work just fine&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-ScheduledJob&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-id&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-ScheduledTask&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-taskname&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/image14-1024x155.png&#34; alt=&#34;image14&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/image10-1024x166.png&#34; alt=&#34;image10&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can also find out a scheduled job’s date, time, and frequency are due to be executed&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-JobTrigger&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/image4.png&#34; alt=&#34;image4&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h1&gt;Malicious scheduled jobs&lt;/h1&gt;&lt;p&gt;In the above example, we’re completing the rather boring scheduled job of collecting the date. A more interesting representative example of how PowerShell jobs can be leveraged by attackers was found during our response to a recent incident. &lt;/p&gt;
+&lt;p&gt;Whilst this article won’t recreate the exact syntax the attacker used for obvious reasons, we’ve provided a functionally similar example below.&lt;/p&gt;
+&lt;h2&gt;Using for evil&lt;span class=&#34;absolute -mt-20&#34; id=&#34;using-for-evil&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#using-for-evil&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Let’s schedule a malicious PowerShell Job to run at &lt;strong&gt;3 o’clock in the morning on Christmas Day&lt;/strong&gt; - a gift to incident responders and sysadmins everywhere!&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#schedule the job for Christmas&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$trigger&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;New-JobTrigger&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Once&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-At&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;12/25/2021 3:00 AM&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#point to the malicious script to execute&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$file&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;C:&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;\&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SuperEvil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;ps1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#try to hide this job from the Task Scheduler GUI….will still show up in the command line and GUI (if the right options are selected in ‘View’)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$options&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;New-ScheduledJobOption&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;–&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;HideInTaskScheduler&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#and now schedule the job&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Register-ScheduledJob&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;–&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Name&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Christmas_Day&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-FilePath&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$file&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;–&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Trigger&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$trigger&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;–&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ScheduledJobOption&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$options&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/image13-1024x228.png&#34; alt=&#34;image13&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Now, we’ve emulated how an adversary could weaponise a PowerShell job to strike when the defenders are less likely to be able to manually react and respond. In these cases, automated measures to prevent and detect the threat are essential.&lt;/p&gt;
+&lt;h1&gt;Hunting Malicious Jobs&lt;/h1&gt;&lt;p&gt;Now, you know me, I&amp;rsquo;m not about to show you something malicious without showing you the defensive counterpart! Let&amp;rsquo;s put our Blue Team hat on&lt;/p&gt;
+&lt;h2&gt;Monitoring&lt;span class=&#34;absolute -mt-20&#34; id=&#34;monitoring&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#monitoring&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;From a monitoring and detection point of view, if we combine &lt;a href=&#34;https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon#:~:text=System%20Monitor%20%5c%28Sysmon%5c%29%20is%20a,changes%20to%20file%20creation%20time.&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Sysmon&lt;/a&gt; and &lt;a href=&#34;https://github.com/Neo23x0/sysmon-config&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Florian Roth’s&lt;/a&gt; config of rules, we can see how a PowerShell job would be flagged&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/image11.png&#34; alt=&#34;image11&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The BLUE arrows: event info
+&lt;ul&gt;
+&lt;li&gt;The Event ID 11 involves file creation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The RED arrows: specific info
+&lt;ul&gt;
+&lt;li&gt;TargetFileName shows that the scheduled job has been written to the Task directory&lt;/li&gt;
+&lt;li&gt;Notice, however, we have no visibility to WHAT this task does….we just know it has been registered.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The PINK arrow: MITRE ATT&amp;amp;CK reference
+&lt;ul&gt;
+&lt;li&gt;This may not be in every sysmon config. However Florian Roth includes the MITRE ATT&amp;amp;CK tactic number in a particular event. This allows security analysts to schematise the event data they are observing with the wider TTPs of an adversary. &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In the above sysmon/endpoint log based SIEM, we would &lt;em&gt;have&lt;/em&gt; some visibility of scheduled jobs. However this data won&amp;rsquo;t be enough for an analyst to work with. We need to dig deeper beyond &lt;strong&gt;passive monitoring&lt;/strong&gt; to &lt;strong&gt;active threat hunting&lt;/strong&gt; to identify exactly what this scheduled job is about. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/image8.png&#34; alt=&#34;image8&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;Hunting&lt;span class=&#34;absolute -mt-20&#34; id=&#34;hunting&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#hunting&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In our JUMPSEC clients’ environments, we have found no system-level usage of scheduled jobs. This suggests that scheduled jobs you identify are deliberately put there and are worth investigation.&lt;/p&gt;
+&lt;p&gt;You can query the scheduled jobs on a machine with this straight forward command&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-ScheduledJob&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/image5-1024x177.png&#34; alt=&#34;image5&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;You can also examine &lt;em&gt;when&lt;/em&gt; this scheduled job is due to be executed&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-ScheduledJob&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-JobTrigger&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Ft &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-Property&lt;/span&gt; &lt;span class=&#34;vm&#34;&gt;@&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Label&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;ScheduledJob&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Expression&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;={&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;JobDefinition&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Name&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}},&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Enabled&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;At&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;frequency&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DaysOfWeek&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/image7-1024x162.png&#34; alt=&#34;image7&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Knowing that this premeditated attack will ruin Christmas for an incident responder, let’s neutralise the malicious PowerShell job that has been scheduled. &lt;/p&gt;
+&lt;h2&gt;Responding&lt;span class=&#34;absolute -mt-20&#34; id=&#34;responding&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#responding&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;You can remove a PowerShell scheduled job in two different ways, neither of which present a disadvantage. &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#option one&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Unregister-ScheduledTask&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-TaskName&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Christmas_Day&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-verbose&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Confirm:&lt;/span&gt;&lt;span class=&#34;vm&#34;&gt;$false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;#option two&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Unregister-ScheduledJob&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Christmas_Day&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-verbose&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Confirm:&lt;/span&gt;&lt;span class=&#34;vm&#34;&gt;$false&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/image3-1024x95.png&#34; alt=&#34;image3&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/image12-1024x79.png&#34; alt=&#34;image12&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can confirm that the malicious tasks have been eradicated from this machine.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/image9.png&#34; alt=&#34;image9&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h1&gt;Scheduling Security&lt;/h1&gt;&lt;p&gt;This article took inspiration from a real life attack, and examined how an adversary could abuse PowerShell scheduled Jobs to both gain persistence, and quietly dwell on a network before picking the opportune moment to strike. Scripted attacks must be proactively identified and eliminated, as automated attack chains can be speedily operated by an attacker, reducing the opportunity for defenders to respond. &lt;strong&gt;It’s important you are scouring your network for the recurring tasks that can give an attack a backdoor into your environment.&lt;/strong&gt;  &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Related articles&lt;/strong&gt;: We recently wrote about how &lt;a href=&#34;https://labs.jumpsec.com/running-once-running-twice-pwned-windows-registry-run-keys/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;registry run keys&lt;/a&gt; can offer adversaries a stealthy persistence mechanism&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Detect and investigate any recurring tasks you see in your environment, and you may just catch an adversarial campaign before they can cause any damage. Deny them the pleasure of striking on Christmas Day!&lt;/p&gt;
+&lt;p&gt;Any questions, comments, or criticisms please drop me a line&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://twitter.com/Purp1eW0lf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Twitter&lt;/a&gt; &lt;a href=&#34;https://github.com/Purp1eW0lf/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Dray Agha,&lt;/strong&gt; Security Researcher&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/image2.png&#34; alt=&#34;image2&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Running Once, &lt;del&gt;Running Twice&lt;/del&gt;, Pwned! Windows Registry Run Keys</title>
+      <link>//localhost:1313/articles/2021/08/2021-08-11-running-once-running-twice-pwned-windows-registry-run-keys/</link>
+      <pubDate>Wed, 11 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2021/08/2021-08-11-running-once-running-twice-pwned-windows-registry-run-keys/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://twitter.com/Purp1eW0lf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;By Dray Agha&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/Jumpsec_icons_Physical-security-2.png&#34; alt=&#34;Jumpsec icons Physical security 2&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The Windows registry is a vast and complex topic and cannot be understood and defended in one article. One particular area of interest from a security perspective is registry run keys. In this article, we discuss who uses run keys, how to uncover abuse, and how to eradicate evil from them. &lt;/p&gt;
+&lt;h2&gt;An Introduction to Run Keys&lt;span class=&#34;absolute -mt-20&#34; id=&#34;an-introduction-to-run-keys&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#an-introduction-to-run-keys&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;&lt;em&gt;What are registry run keys?&lt;/em&gt;&lt;/strong&gt; Run keys are an obscure mechanism of the registry to execute something on a Windows system when a user logs in or the machine boots up. &lt;/p&gt;
+&lt;p&gt;A number of advanced adversaries have abused run keys due to their problematic nature. For example, &lt;a href=&#34;https://securelist.com/sofacy-apt-hits-high-profile-targets-with-updated-toolset/72924/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Fancy Bear&lt;/strong&gt;&lt;/a&gt; (also known as &lt;a href=&#34;https://download.bitdefender.com/resources/media/materials/white-papers/en/Bitdefender_In-depth_analysis_of_APT28%E2%80%93The_Political_Cyber-Espionage.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;APT28&lt;/strong&gt;&lt;/a&gt;), &lt;a href=&#34;https://www.proofpoint.com/us/blog/threat-insight/i-knew-you-were-trouble-ta456-targets-defense-contractor-alluring-social-media&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;TA456&lt;/strong&gt;&lt;/a&gt;, and &lt;a href=&#34;https://blog.talosintelligence.com/2018/01/korea-in-crosshairs.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Group 123&lt;/strong&gt;&lt;/a&gt; enjoy weaponizing run keys to achieve persistent access to a compromised network. Run keys have housed all manner of malicious content - from simple executables to macro-riddled spreadsheets.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;MITRE ATT&amp;amp;CK® records this particular persistence tactic as the sub-technique &lt;a href=&#34;https://attack.mitre.org/techniques/T1547/001/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;T1547.001&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt;.&lt;/strong&gt; It is not a super common technique for adversarial campaigns, however it can offer ardent persistence - all the more reason for you and I to explore this obscurity further. &lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_16-53.png&#34; alt=&#34;2021 07 28 16 53&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Though advanced attackers abuse run keys on occasion, &lt;strong&gt;I find it is a mechanism that is not discussed widely enough, even though it is quite straightforward to query run keys for evil.&lt;/strong&gt; &lt;/p&gt;
+&lt;p&gt;The silence on this registry capability isn’t from technical gaps across the infosec community. &lt;strong&gt;Rather, run keys are an unexpected executable component of the ‘config database’ that is the Windows registry.&lt;/strong&gt; This means they often don’t get the same level of attention compared to bigger, more well-known attacker techniques and OS components. However, I recently came across this interesting snippet on the infosec social circuit:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-08-02_17-15.png&#34; alt=&#34;2021 08 02 17 15&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Before we get into how to hunt for malicious run keys, &lt;strong&gt;let’s detour down the Windows registry.&lt;/strong&gt; &lt;/p&gt;
+&lt;h2&gt;The Windows Registry&lt;span class=&#34;absolute -mt-20&#34; id=&#34;the-windows-registry&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#the-windows-registry&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;The Windows registry is a labyrinthine place. On the surface it presents itself as a &lt;a href=&#34;https://docs.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;centralised database&lt;/strong&gt;&lt;/a&gt; to store information pertaining to user and machine settings. &lt;strong&gt;The reality is that it’s more a menagerie of weird and wonderful capabilities&lt;/strong&gt; that Microsoft sometimes obscurely document, despite these capabilities possessing devastating potential.&lt;/p&gt;
+&lt;p&gt;I could spend hours writing about the inconsistencies and capriciousness of the Windows registry. Trying to understand the limits and parameters of its potential is truly maddening. It seems like the byzantine &lt;strong&gt;nature of the registry offers an adversary an unfair advantage&lt;/strong&gt; to stash away their persistence mechanisms and skulk outside the network until the Blue Team has averted their gaze. &lt;/p&gt;
+&lt;p&gt;Trying to decipher what is benign and what is malevolent in the windows registry can be considered Sisyphean, especially during an incident.&lt;/p&gt;
+&lt;h2&gt;Run keys&lt;span class=&#34;absolute -mt-20&#34; id=&#34;run-keys&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#run-keys&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;I hope so far I have conveyed just how difficult it is to tame the registry. To make matters worse, run key capabilities are criminally under-documented by Microsoft, who &lt;a href=&#34;https://docs.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;devote a mere six paragraphs&lt;/strong&gt;&lt;/a&gt; to them.&lt;/p&gt;
+&lt;p&gt;Run keys live in the registry. They are configurable to allow a program to execute when a user logs in or the computer is turned on.  “&lt;em&gt;But hold on!&lt;/em&gt;”, I hear you angrily cry, “&lt;em&gt;Windows already has a&lt;/em&gt; &lt;strong&gt;&lt;em&gt;Task Scheduler&lt;/em&gt;&lt;/strong&gt;, &lt;em&gt;THAT’S how you schedule tasks!!!&lt;/em&gt;”&lt;/p&gt;
+&lt;p&gt;Well, not according to our Lord and Saviour Bill Gates. Moreover, run keys have some crucial differences that make comparisons to Windows’ &lt;a href=&#34;https://docs.microsoft.com/en-us/windows/win32/taskschd/task-scheduler-start-page&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Task Scheduler&lt;/strong&gt;&lt;/a&gt; somewhat limited.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/memes-1.png&#34; alt=&#34;memes 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;In contrast to Windows Task Scheduler, &lt;strong&gt;registry run keys possess a number of unique characteristics&lt;/strong&gt;:&lt;/p&gt;
+&lt;h3&gt;Character Limitations&lt;span class=&#34;absolute -mt-20&#34; id=&#34;character-limitations&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#character-limitations&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Run keys can only store commands that are less than 280 characters.&lt;/strong&gt; So an adversaries’ one-liner must form as few characters as a Tweet. I hope Microsoft didn’t intend for THAT to be a low-tier defence mechanism, as your basic script-kiddie reverse shell will barely cost you 50 characters. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_15-43.png&#34; alt=&#34;2021 07 28 15 43&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Moreover, compiling your own malicious executable and firing it off via the run keys will cost you very few characters but achieve maximum effect. So whilst the character limitation is unique compared to other system timers, it’s a trivial obstacle. &lt;/p&gt;
+&lt;h3&gt;Special Character Behaviour&lt;span class=&#34;absolute -mt-20&#34; id=&#34;special-character-behaviour&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#special-character-behaviour&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Another unique feature of run key considers how special characters change the behaviour of the scheduled command.&lt;/strong&gt; Specifically, the &lt;strong&gt;exclamation mark&lt;/strong&gt;  ( ! ) and the &lt;strong&gt;asterisk /&lt;/strong&gt; &lt;strong&gt;wildcard&lt;/strong&gt; ( * ). By default, the run key wipes itself after execution - whether it fails to execute its task or not. These two special characters can be deployed to alter this behaviour.&lt;/p&gt;
+&lt;p&gt;If, on your next threat hunting session or incident response, you see this bad boy right here with an exclamation mark, you have encountered a run key that will persist until it has run its allocated command for sure. &lt;strong&gt;If for whatever reason the evil command does not run, the exclamation mark ensures that it will not delete itself until it runs successfully.&lt;/strong&gt; &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_09-24.png&#34; alt=&#34;2021 07 28 09 24&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The prefixed exclamation of a run key can be defeated by booting the computer in Safe Mode.&lt;/strong&gt; To ensure that a run key is executed regardless of boot mode, &lt;strong&gt;an adversary can leverage an asterisk / wildcard which forces the command to run.&lt;/strong&gt; &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_09-26.png&#34; alt=&#34;2021 07 28 09 26&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Run keys are configured to wipe themselves after running, by default, which means that unless your logging and detection is sharp, these kinds of malicious activities could go by unnoticed, unless you go through the painstaking  process of forensically recovering the image of the machine&lt;/p&gt;
+&lt;h1&gt;Hunting Run Keys&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;images/2021-07-28_16-11.png&#34; alt=&#34;2021 07 28 16 11&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Is this your face right now? This was my face when I first encountered run keys. This may actually be my face all the time, to be honest. &lt;em&gt;#blueteamproblems&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Although run keys may seem complicated and obscure, &lt;strong&gt;I promise you they are anything but.&lt;/strong&gt; They are wonderfully easy to query and monitor, and they show up fabulously in a SIEM when an adversary manipulates their values. &lt;strong&gt;Let’s prove it together.&lt;/strong&gt;&lt;/p&gt;
+&lt;h2&gt;Finding Run Keys&lt;span class=&#34;absolute -mt-20&#34; id=&#34;finding-run-keys&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#finding-run-keys&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;There are a number of places where malicious run keys can be deployed. We’re just going to focus on the top four locations, but if you read some &lt;a href=&#34;https://dmcxblue.gitbook.io/red-team-notes/persistence/registry-keys-startup-folder&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;red team documentation&lt;/strong&gt;&lt;/a&gt; you’ll find some more registry locations to deploy run key persistence. &lt;/p&gt;
+&lt;p&gt;Anyway, in the Windows registry, if you look under HKey Local Machine and Current User, and traverse a couple of directories, you’ll find &lt;strong&gt;Run&lt;/strong&gt; and &lt;strong&gt;RunOnce.&lt;/strong&gt; &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\Run&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;HKCU:\Software\Microsoft\Windows\CurrentVersion\Run&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce&amp;#34;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;The directories are important here.&lt;/strong&gt; The behaviour of the run key is contingent on the registry location it is written in: &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;If you see something written in &lt;strong&gt;HKLM:\&lt;/strong&gt; it means this was written as a &lt;strong&gt;high-privileged&lt;/strong&gt; user (most likely Admin) or SYSTEM.
+&lt;ul&gt;
+&lt;li&gt;Run keys written here can &lt;strong&gt;execute when the machine boots up&lt;/strong&gt; &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;If you see something something written in &lt;strong&gt;HKCU:\&lt;/strong&gt; it means this was written as just a &lt;strong&gt;normal user&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;Run keys written here will &lt;strong&gt;only execute when the user logs in&lt;/strong&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;If you see something written to &lt;strong&gt;\RunOnce&lt;/strong&gt; it &lt;strong&gt;will&lt;/strong&gt; be removed after execution&lt;/li&gt;
+&lt;li&gt;If you see something written in &lt;strong&gt;\Run&lt;/strong&gt; it &lt;strong&gt;will not&lt;/strong&gt; be removed after execution
+&lt;ul&gt;
+&lt;li&gt;These can be complicated by the &lt;strong&gt;special character behaviour&lt;/strong&gt; that we already discussed.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;What do Run Keys look like IRL ?&lt;span class=&#34;absolute -mt-20&#34; id=&#34;what-do-run-keys-look-like-irl-&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#what-do-run-keys-look-like-irl-&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;In real life, you actually have to sift a little bit of the registry’s noise to get to the meat of a run key.&lt;/strong&gt; Allow me to share with you two examples, where the first has not been filtered with PowerShell, and the second is enjoying a luxurious yet temporal life as filtered PowerShell.&lt;/p&gt;
+&lt;p&gt;Look at this mess. What even is this? &lt;strong&gt;We don’t even need the stuff highlighted in the red box, it’s just noise.&lt;/strong&gt; We know this is the ‘HKLM’ Drive and ‘Run’ ChildName…&amp;hellip;we know that because we are the ones who traversed here! Honestly…&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_17-20-1024x349.png&#34; alt=&#34;2021 07 28 17 20&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Let’s filter out the noise with some PowerShell:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-ItemProperty&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\Run&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;select &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-property&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-exclude&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fl&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/124326535-76c64680-db7e-11eb-9b98-261b3704d30a.png&#34; alt=&#34;124326535 76c64680 db7e 11eb 9b98 261b3704d30a&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Look at how superior this is. Imagine running this glorious filtered-one-liner, and getting thousands of endpoints returning information in this kind of clear, noise-free way; the stuff Blue Team dreams are made of. &lt;strong&gt;This kind of filtered PowerShell is fantastically suited to be run enterprise-wide to identify anomalies beyond the standard builds across your network.&lt;/strong&gt; &lt;/p&gt;
+&lt;p&gt;If you look in the run keys, you&amp;rsquo;ll find the entries’ name and accompanying commands &lt;em&gt;(name: command).&lt;/em&gt; The legitimate contents of the run keys can vary and it’s your task to understand what is normal in your enterprise, as this will allow abnormal inconsistencies to stand out. &lt;/p&gt;
+&lt;p&gt;As you hunt, you may want to filter out legitimate startup items in the registry runkeys. This is easily done. Using the same PowerShell as above, we can use the `-exclude` flag which already removes `PS*`. Just add a comma, and remove the other run key names that you don’t want to see. &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-ItemProperty&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\Run&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;select &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-property&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-exclude&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Vmware&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*,&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bginfo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fl&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-08-03_16-21.png&#34; alt=&#34;2021 08 03 16 21&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;Malicious Run Keys&lt;span class=&#34;absolute -mt-20&#34; id=&#34;malicious-run-keys&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#malicious-run-keys&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Let us emulate some of the adversaries&amp;rsquo; behaviour. We will insert some malice onto a run key, and then I will show you:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;First,&lt;/strong&gt; how to loop through and find it automatically;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Second,&lt;/strong&gt; how you eradicate it from the machine without damaging the other legitimate run keys.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Pretend we have pwned a machine, and are looking to maintain persistence. We compile evilcommand.exe, which bypasses all anti-virus known to man and gives us a reverse shell. &lt;strong&gt;We can force one of the run keys to execute our malicious program&lt;/strong&gt;:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Set-ItemProperty&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce&amp;#34;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;!Delete After Running&amp;#39;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Value&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;evilcommand.exe&amp;#34;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;If you append `-whatif` to the end of a lot of powershell one-liners, it will not actually run your command. Instead, it will show you what the effect COULD be if you ran it. &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_09-04-1024x110.png&#34; alt=&#34;2021 07 28 09 04&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;When you want to really run something, tag on `-verbose` so you can get confirmation that the PowerShell you expected has taken effect.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_09-06-1024x128.png&#34; alt=&#34;2021 07 28 09 06&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Without all of the noise, this is what we have forcibly co-opted the run key to do for us: we have created a run key named “&lt;strong&gt;Delete_After_Running&lt;/strong&gt;”, whose execution &lt;strong&gt;value&lt;/strong&gt; will be “&lt;strong&gt;evilcommand.exe&lt;/strong&gt;”. Notice the &lt;strong&gt;exclamation point&lt;/strong&gt;, which as we have discussed will ensure the program will run before it self-deletes, guaranteeing our successful re-entry to this compromised machine.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_09-11-1024x142.png&#34; alt=&#34;2021 07 28 09 11&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The Task Scheduler is oblivious to this&lt;/strong&gt;. It does not and cannot recognise that this run key task has been scheduled. If I were Microsoft, I’d probably include that functionality in Task Scheduler…&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_15-36-1024x491.png&#34; alt=&#34;2021 07 28 15 36&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;Finding Run Key evil&lt;span class=&#34;absolute -mt-20&#34; id=&#34;finding-run-key-evil&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#finding-run-key-evil&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;A quick Powershell ‘for loop’ can collect the contents of these four registry locations.&lt;/strong&gt; &lt;/p&gt;
+&lt;p&gt;When drafting this script, I (and now you, too) made life easier by ensuring the code produced output that was &lt;strong&gt;pre-filtered and added colours&lt;/strong&gt;. This will make our task that bit easier to determine &lt;strong&gt;IF&lt;/strong&gt; something &lt;strong&gt;abnormal&lt;/strong&gt; (read: evil) exists and &lt;strong&gt;WHERE&lt;/strong&gt; it exists.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$items&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;vm&#34;&gt;@&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\Run&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;HKCU:\Software\Microsoft\Windows\CurrentVersion\Run&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;foreach&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$item&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;in&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$items&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;nb&#34;&gt;write-host&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;----Reg location is &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$item&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;----&amp;#34;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-ForegroundColor&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Magenta&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;nb&#34;&gt;get-itemproperty&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-path&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$item&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;  &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;select &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-property&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-exclude&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;fl
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_09-22.png&#34; alt=&#34;2021 07 28 09 22&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;And if we look hard enough, &lt;strong&gt;we identify something abnormal&lt;/strong&gt;. Once we take the executable and reverse engineer it, we can determine it is a malicious executable from the adversary. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_17-42-1024x315.png&#34; alt=&#34;2021 07 28 17 42&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;If you identify a malicious run key, you are of course obliged to remove it from the machine. Let’s discuss how in a moment, &lt;strong&gt;after we discuss what this evil looks like from a SIEM / SOC perspective.&lt;/strong&gt;&lt;/p&gt;
+&lt;h2&gt;Monitoring for Evil&lt;span class=&#34;absolute -mt-20&#34; id=&#34;monitoring-for-evil&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#monitoring-for-evil&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;Let’s discuss what this looks like from a detection and monitoring perspective.&lt;/strong&gt; &lt;/p&gt;
+&lt;p&gt;For our example, we are using the built-in &lt;strong&gt;Windows Event Viewer&lt;/strong&gt;, and then adding &lt;a href=&#34;https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon#:~:text=System%20Monitor%20%5c%28Sysmon%5c%29%20is%20a,changes%20to%20file%20creation%20time.&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Sysmon&lt;/strong&gt;&lt;/a&gt; and &lt;a href=&#34;https://github.com/Neo23x0/sysmon-config&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Florian&lt;/strong&gt; &lt;strong&gt;Roth’s&lt;/strong&gt;&lt;/a&gt; config of rules for detection. You could then feed this sysmon log data into a SIEM, and monitor hundreds of thousands of endpoints for run key malice (and other stuff too).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_18-15.png&#34; alt=&#34;2021 07 28 18 15&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There is a wealth of information here worth considering: &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;The &lt;strong&gt;BLUE&lt;/strong&gt; arrows: event info&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;strong&gt;Event ID 13 involves registry values&lt;/strong&gt; &lt;strong&gt;modification&lt;/strong&gt;, and this ID will be consistent in any environment. &lt;/li&gt;
+&lt;li&gt;The &lt;strong&gt;EventType&lt;/strong&gt; and &lt;strong&gt;Task Category&lt;/strong&gt; spell out exactly what is happening here too: &lt;strong&gt;a registry value is being set&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The &lt;strong&gt;RED&lt;/strong&gt; arrows**:** specific info&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;strong&gt;TargetObject&lt;/strong&gt; shows the &lt;strong&gt;full path&lt;/strong&gt; for the run key registry we are changing. It also shows the &lt;strong&gt;name&lt;/strong&gt; we called it, and includes the special character that modifies the behaviour&lt;/li&gt;
+&lt;li&gt;The &lt;strong&gt;Details&lt;/strong&gt; section shows the command / executable the run key is forced to run&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The &lt;strong&gt;PINK&lt;/strong&gt; arrow: MITRE ATT&amp;amp;CK reference&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This may not be in every sysmon config. However &lt;strong&gt;Florian Roth&lt;/strong&gt; includes the MITRE ATT&amp;amp;CK tactic number in a particular event.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Rather than get attack alerts for every Event 13, I’d recommend you go on a bit of a discovery exercise of what the run keys in your environment normally do.&lt;/strong&gt;  &lt;/p&gt;
+&lt;p&gt;Across the entire enterprise do they have the same consistent contents? &lt;/p&gt;
+&lt;p&gt;Or does the finance department run software that legitimately alters the run key? &lt;/p&gt;
+&lt;p&gt;Would you be able to baseline this and then create a small alert for any new, inconsistent run key changes to a workstation in the finance department?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;This has greater value than hoping to catch one rogue Event 13 out of a million.&lt;/strong&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;h3&gt;Interactive detection&lt;span class=&#34;absolute -mt-20&#34; id=&#34;interactive-detection&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#interactive-detection&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;If you want a more interactive detection experience, might I recommend a tool like &lt;a href=&#34;https://docs.velociraptor.app/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Dr Michael Cohen’s Velociraptor?&lt;/strong&gt;&lt;/a&gt;. &lt;/p&gt;
+&lt;p&gt;Velocitaptor is a tool (and philosophy) that deserves its own article, so I will be brief here. Velociraptor is an endpoint response agent that you can install on every single endpoint across your enterprise, and orchestrate from one server via a web-app. This distributed tool allows us to then query thousands of machines at once. &lt;/p&gt;
+&lt;p&gt;Built in to Velociraptor is a hunt that queries every Windows machine specifically for their startup process, and part of this hunt includes &lt;a href=&#34;https://github.com/Velocidex/velociraptor/blob/master/artifacts/definitions/Windows/Sys/StartupItems.yaml&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;querying run keys&lt;/strong&gt;&lt;/a&gt;&lt;strong&gt;.&lt;/strong&gt;  As you can see, this hunt targets a number of the registry run keys that our previous PowerShell query also hunted for. Velociraptor targets an additional few run keys, as well as some other startup locations (but I leave that to you to investigate this all further).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-08-02_10-30-1024x519.png&#34; alt=&#34;2021 08 02 10 30&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;If we fire off this startup detection hunt, we will be given a beautifully formatted table of results. In real production environments, you will find more noise than this so be warned! But look at what we detected - a single machine in our domain currently running &lt;strong&gt;C:\evil.exe&lt;/strong&gt;, shocking stuff. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-08-02_10-18-1024x665.png&#34; alt=&#34;2021 08 02 10 18&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Fortunately now we know and can eradicate it from the host - I’ll show you how.&lt;/strong&gt; &lt;/p&gt;
+&lt;h2&gt;Eradicating Run Key Evil&lt;span class=&#34;absolute -mt-20&#34; id=&#34;eradicating-run-key-evil&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#eradicating-run-key-evil&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;It’s time. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/showtime.png&#34; alt=&#34;showtime&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Be surgical here.&lt;/strong&gt; If you aren’t precise in your commands, you will &lt;strong&gt;accidentally remove&lt;/strong&gt; run key entries that are &lt;strong&gt;legitimate&lt;/strong&gt;.  It&amp;rsquo;s important you remove with &lt;strong&gt;-verbose&lt;/strong&gt; too and double-check it has gone, to make sure you have removed what you think you have. &lt;/p&gt;
+&lt;p&gt;Off the back of our PowerShell for loop, copy and paste the &lt;strong&gt;full path&lt;/strong&gt; location that the evil was detected. And double check this is where the malicious run key resides.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-ItemProperty&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;select &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-property&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-exclude&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*|&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fl&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_19-07-1024x276.png&#34; alt=&#34;2021 07 28 19 07&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Then pick the EXACT name of the run key entry you want to remove. Copy paste it, include any special characters too please. &lt;strong&gt;Don’t copy&lt;/strong&gt; the executable details that come &lt;strong&gt;after the colon&lt;/strong&gt; ( : )&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Remove-ItemProperty&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Path&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce&amp;#34;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Name&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;*Run Safe Mode too&amp;#34;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-verbose&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_19-11-1024x202.png&#34; alt=&#34;2021 07 28 19 11&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We get our verbose message returned to us confirming that we are indeed removing the run key we think we are.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_19-12-1024x127.png&#34; alt=&#34;2021 07 28 19 12&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Then check again to be sure it&amp;rsquo;s gone. If you still have the malicious run key here, double check you have copied and pasted appropriately, as fat-fingering paths and registry names are very real problems.&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;Get-ItemProperty&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce&amp;#34;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;select &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-property&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-exclude&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PS&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;*|&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fl&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;images/empty-1024x124.png&#34; alt=&#34;empty&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h1&gt;Unpicking Run Keys&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;Run keys are obscure mechanisms of persistence for sure. But I hope this article has instilled confidence in how straightforward it is to monitor, detect, control, and remove any malicious activity involving your run keys.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;As a defender, sometimes our roles are framed as being consistently at a disadvantage compared to the adversary. They can leverage zero-days, they can trick users, they can run across time zones with bigger budgets. &lt;strong&gt;Whilst we must consistently be at the top of our game, they only need to be lucky once.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;All of this is true, but I find that sometimes we could invert this framing to focus on the advantages we possess compared to the attacker.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;This is &lt;strong&gt;OUR&lt;/strong&gt; environment. This is &lt;strong&gt;OUR&lt;/strong&gt; registry. And these are &lt;strong&gt;OUR&lt;/strong&gt; run keys. We know how it all works, and we should be here waiting for the adversary to so much as sneeze in our domain without us knowing about it. Sure, have a foothold. But we aren’t naive, we expect compromise. And we will catch you, kick you out, and ensure your future attempts at re-entry are that bit harder. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/sparta-1024x577.jpg&#34; alt=&#34;sparta&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Understand what is normal for your environment so you know when a registry run key manipulation is out of place, and foster a hostile network so an adversary can’t move an inch without you knowing about it and containing them.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;There’s a lot to do and never enough time or resource to do it, but that’s why we’re in infosec right? &lt;/p&gt;
+&lt;h2&gt;Some Bedside Reading&lt;span class=&#34;absolute -mt-20&#34; id=&#34;some-bedside-reading&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#some-bedside-reading&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;There are so many other janky registry entries that can do weird things with run keys. We didn’t mention, for example, how entire folders can become mechanisms of persistence via registry run keys! You can read more &lt;a href=&#34;https://www.picussecurity.com/resource/blog/picus-10-critical-mitre-attck-techniques-t1060-registry-run-keys-startup-folder&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;here&lt;/strong&gt;&lt;/a&gt;, &lt;a href=&#34;https://dmcxblue.gitbook.io/red-team-notes/persistence/registry-keys-startup-folder&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;here&lt;/strong&gt;&lt;/a&gt;, and &lt;a href=&#34;https://attack.mitre.org/techniques/T1547/001/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;here&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you enjoyed this article or especially if you DIDN’T enjoy this article, give these other ones a go: looking at &lt;a href=&#34;https://labs.jumpsec.com/car-hacking-manual-bypass-of-modern-rolling-code-implementations/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;hacking cars&lt;/strong&gt;&lt;/a&gt; and breaking their keyfob encryption; evaluating the potential &lt;a href=&#34;https://labs.jumpsec.com/can-depix-deobfuscate-your-data/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;de-obfuscate redacted text&lt;/strong&gt;&lt;/a&gt; in sensitive documents; and advanced techniques to defend your &lt;a href=&#34;https://labs.jumpsec.com/obfuscating-c2-during-a-red-team-engagement/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;C2&amp;rsquo;s&lt;/strong&gt;&lt;/a&gt; honour.&lt;/p&gt;
+&lt;p&gt;Any questions, comments, or criticisms please drop me a line&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;a href=&#34;https://twitter.com/Purp1eW0lf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Twitter&lt;/a&gt; &lt;a href=&#34;https://github.com/Purp1eW0lf/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Dray Agha,&lt;/strong&gt; Security Researcher&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-08-10_21-10.png&#34; alt=&#34;2021 08 10 21 10&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Short introduction to Network Forensics and Indicators of Compromise (IoC)</title>
+      <link>//localhost:1313/articles/2016/06/2016-06-28-short-introduction-network-forensics-indicators-compromise-ioc/</link>
+      <pubDate>Tue, 28 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2016/06/2016-06-28-short-introduction-network-forensics-indicators-compromise-ioc/</guid>
+      <description>
+        
+        
+        &lt;p&gt;“&lt;em&gt;Indicator of compromise (IOC) in computer forensics is an artifact observed on a network or in an operating system that with high confidence indicates a computer intrusion. Typical IOCs are virus signatures and IP addresses, MD5 hashes of malware files or URLs or domain names of botnet command and control servers. After IOCs have been identified in a process of incident response and computer forensics, they can be used for early detection of future attack attempts using intrusion detection systems and antivirus software.&lt;/em&gt;” &lt;em&gt;Wikipedia&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Hello w0rld! In this post I am planning to do a brief introduction into network forensics and how network monitoring can be used to identify successful attacks. Network monitoring is essential in order to identify reconnaissance activities such as port scans but also for identifying successful attacks such as planted malware (such as ransomware) or spear-phishing. Generally when doing network forensics the network footprint is of significant importance since it allows us to replicate the timeline of events. With that said, network footprint can still be obscured/hidden by using cryptographic means such as point-2-point encryption. Even if you can’t see the actual traffic because it is encrypted, what you can see is the bandwidth load which might be an IoC.&lt;/p&gt;
+&lt;p&gt;In incident response the first step is the time that is needed for the attack realization. If the attack is not realized then of course there is no ‘incident response’ (doh!). There is a list of things that the analyst should go over in order to try to identify if an attack was successful. The list is not definite and there are far more things that need to be checked than those discussed here. Whether an attack is targeted or non-targeted, if it is utilizing the Internet connection in any way it will leave network footprints behind. In targeted attacks we see things like spear-phishing and USB planting that quite often are targeting susceptible individuals with lack of security awareness. Non-targeted attacks might include attack vectors such as malware, ransomware, malicious javascripts, flash exploits, etc. This is not exhausting since flash exploits and malicious javascripts can be used also in a targeted fashion. By identifying the Indicators of Compromise (IoC), we can have briefly describe each attack vector as follows depending on the network footprint that will have:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;IP addresses&lt;/li&gt;
+&lt;li&gt;domain names&lt;/li&gt;
+&lt;li&gt;DNS resolve requests/response&lt;/li&gt;
+&lt;li&gt;downloadable malicious content (javascripts, flash, PDF files with embedded scripts, DOCX with Macros enabled)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are also indicators coming out from behavioural analysis. For example a malware which contacts a Command &amp;amp; Control server will ‘beacon’ in a timely (usually) fashion. This ‘beaconing’ behaviour can be identified by monitoring spikes of specific traffic or bandwidth utilisation of a host. Moreover it can be spotted by monitoring out-of-hours behaviour since a host shouldn’t send data except of X type (which is legit) or shouldn’t be sending any data at all. Ransomware will encrypt all accessible filesystems/mounted drives and will ask (guess what!?) for money! Most likely it will be downloaded somehow or will be dropped by exploit kits or other malware. Sometimes it is delivered through email attachments (if mail administrator has no clue!). As stand-alone ‘version’ ransomware comes in portable executable (PE file) format. However variants of Cryptolocker are employing even PowerShell for doing so. In order to detect them we need a way to extract the files from the network dump. There are couple of tools that does this such as foremost but it is also possible to do it ‘manually’ through wireshark by exporting the objects. This assumes that the file transfer happened through an unencrypted channel and not under SSL. Malware might serve many different purposes such as stealing data, utilizing bandwidth for DDoS, or used as a ‘dropper’ where a ransomware is pushed. One of the more concerning is turning a compromised host into a zombie computer. Fast flux malware have numerous IPs associated with a single FQDN whereas domain flux malware have multiple FQDN per single IP. The latter is not ideal for malware authors since this IP will be easily identified and traffic will be dropped (a bit more about &amp;lsquo;&lt;em&gt;sinkhole&lt;/em&gt;&amp;rsquo; in the next paragraph!). Assuming that we are after a fast flux malware that uses a C&amp;amp;C, then there are ways to locate the malware by looking for beaconing. Quite often these malware make use of DGAs (Domain Generation Algorithms) which basically hide the C&amp;amp;C IP behind a series of different domain names. Malware that uses DGA are actively avoiding ‘sinkhole’ which allows ISPs to identify the malicious IP (C&amp;amp;C) and leading to the ‘blackhole’ of the traffic, shunning the communication of the infected system with it. An infected host will attempt to resolve (through DNS) a series of domain names acquired from the DGAs, This behaviour will lead to lots of ‘Non-Existent’ &lt;em&gt;NX&lt;/em&gt; responses from the name server back to the infected machine. Monitoring the number of &lt;em&gt;NX&lt;/em&gt; responses might help us identify infected systems. Moreover monitoring the DNS queries should also help.&lt;/p&gt;
+&lt;p&gt;In a latter post I will publish a small script that I am using for looking for IoC.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_217&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;300&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2016/06/options.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/options-300x133.png&#34; alt=&#34;Main menu&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; Script under development ;)[/caption]&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,231 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Obfuscation</title>
+    <link>//localhost:1313/categories/obfuscation/</link>
+    <description>Recent content in Obfuscation on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Tue, 03 Aug 2021 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/categories/obfuscation/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Can Depix deobfuscate your data?</title>
+      <link>//localhost:1313/articles/2021/08/2021-08-03-can-depix-deobfuscate-your-data/</link>
+      <pubDate>Tue, 03 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2021/08/2021-08-03-can-depix-deobfuscate-your-data/</guid>
+      <description>
+        
+        
+        &lt;h2&gt;&lt;strong&gt;&lt;em&gt;The censored text cracking tool&lt;/em&gt;&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;the-censored-text-cracking-tool&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#the-censored-text-cracking-tool&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;By Caleb Herbert&lt;/p&gt;
+&lt;p&gt;In this post, Caleb explores &lt;strong&gt;Depix&lt;/strong&gt; and its potential to recover sensitive text from reports that were redacted by the original authors. You can use our guidance to enter the challenge and test your GPU’s mettle against the gauntlet we’ve thrown down!&lt;/p&gt;
+&lt;h1&gt;&lt;strong&gt;1. What is Depix and how is it used?&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;When sensitive information is about to be displayed to a reader, an author may &lt;strong&gt;blur the sensitive text&lt;/strong&gt; so it can no longer be recognised. &lt;strong&gt;Blurring&lt;/strong&gt; is intended to be used to redact text &lt;strong&gt;FOREVER&lt;/strong&gt;… but I think that isn’t true anymore. We have some tooling that can unblur that text, and uncover quite interesting things that the original authors would have rather we didn&amp;rsquo;t know.&lt;/p&gt;
+&lt;p&gt;This &lt;a href=&#34;https://twitter.com/nieldk/status/1416659174759469057?s=20&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;fascinating Twitter exchange&lt;/a&gt; offers the perfect example of how the &lt;strong&gt;Depix&lt;/strong&gt; tool could be deployed to steal redacted, sensitive credit card information?!&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;img src=&#34;images/2021-07-30_10-13.png&#34; alt=&#34;2021 07 30 10 13&#34; loading=&#34;lazy&#34; /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;img src=&#34;images/2021-07-30_15-55-1.png&#34; alt=&#34;2021 07 30 15 55 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1&gt;&lt;strong&gt;2.What is Depix and what can it do?&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/beurtschipper/Depix&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Depix is a Python program&lt;/a&gt; designed to recover censored text to a readable format via a simple command. &lt;em&gt;Sounds too good to be true right?&lt;/em&gt; In this post, we’ll be evaluating how effective Depix is at defeating obfuscation.&lt;/p&gt;
+&lt;p&gt;The Depix tool assumes that all text positioning of all characters is done at pixel level. Pixelation is an author’s attempt to redact and obfuscate specific chunks of text they consider to be sensitive. For example, a test report may pixelate and blur a user’s password that the tester had been able to recover. As a high-level overview, leveraging pixelation-as-redaction lowers the resolution and quality of an image to undermine its readability.&lt;/p&gt;
+&lt;p&gt;A big caveat to Depix’s use-case is that it &lt;strong&gt;relies on the redaction tool operating in a specific way&lt;/strong&gt;: the text must have been pixelated with a linear box filter, since it processes every block separately. What this means is that the tool takes a quadrant of the pixels and overwrites them based on specific averages of those collected pixels. If you have obfuscated your sensitive text by using a &lt;strong&gt;nice thick, opaque box&lt;/strong&gt; then you don’t have anything to worry about….but if you used pixelation as obfuscation, then &lt;strong&gt;you may have 99 problems and de-obfuscation is one&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-28_10-24-edited.png&#34; alt=&#34;2021 07 28 10 24&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;2.1 Reversing pixelation&lt;span class=&#34;absolute -mt-20&#34; id=&#34;21-reversing-pixelation&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#21-reversing-pixelation&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Given that the &lt;em&gt;algorithm&lt;/em&gt; that Depix un-pixelates the text follows a specific ‘recipe’, it may not always be effective.&lt;/p&gt;
+&lt;p&gt;Depix deploys almost a &lt;strong&gt;brute force&lt;/strong&gt; method to recover the original text. It takes all printable characters and then begins to pixelate these characters in different combinations. This brute force is compared with the original, blurred text and continues until the same pixelated, numeric value can be replicated.&lt;/p&gt;
+&lt;h2&gt;2.2 Why is there a concern? &lt;span class=&#34;absolute -mt-20&#34; id=&#34;22-why-is-there-a-concern&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#22-why-is-there-a-concern&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Depix &lt;strong&gt;&lt;em&gt;could&lt;/em&gt;&lt;/strong&gt; have a serious impact on the existing archive of documents and videos that exist across the internet.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-27_17-40.png&#34; alt=&#34;2021 07 27 17 40&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The possibility of this tool means any files which have been redacted and publicly disclosed, or YouTube videos which have passwords/texts or IPs redacted can be recovered and stolen. If malicious actors, organisation competitors, or even script kiddies got their hands on this, the censored private information would be at serious risk. &lt;/p&gt;
+&lt;p&gt;They would only need to screenshot/download the files or images and run Depix against it. Granted, they’d have to have used a specific set of tools to censor the text but if so, the risk remains. &lt;/p&gt;
+&lt;h1&gt;&lt;strong&gt;3. Depix in action&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;We’ve teased you enough, let’s see this tool in action!&lt;/p&gt;
+&lt;p&gt;We’re going to do this twice. The &lt;strong&gt;first time&lt;/strong&gt; we’ll be using the author’s practice example, to ensure the tooling works as expected. The &lt;strong&gt;second time&lt;/strong&gt; we’ll conjure up our own redacted, pixelated image and see how well the tooling still recovers the original text. &lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;3.1 Setup Depix&lt;/strong&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;31-setup-depix&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#31-setup-depix&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Go to the &lt;a href=&#34;https://github.com/beurtschipper/Depix&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github repo for Depix&lt;/a&gt;, and download the .ZIP that contains all of the tooling. Extract the .ZIP in a directory you are happy with.&lt;/p&gt;
+&lt;p&gt;You’ll want to traverse to two directories down (/Depix-main/Depix-main) and then install the requirements that Depix requires to work&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/pngbase646f4446a5516dec7d.png&#34; alt=&#34;pngbase646f4446a5516dec7d&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;3.2 Test images&lt;span class=&#34;absolute -mt-20&#34; id=&#34;32-test-images&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#32-test-images&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;There are two important directories we’ll need for this experiment: /&lt;strong&gt;testimages/&lt;/strong&gt; and /&lt;strong&gt;searchimages&lt;/strong&gt;/ &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The test image directory includes censored text which you can practice recovering. &lt;/li&gt;
+&lt;li&gt;The search image directory includes images which are used like a dictionary to recover pixelated text. The image includes all upper- and lower-case alphanumeric letters with and without spaces for testing purposes. &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;images/unnamed.png&#34; alt=&#34;unnamed&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Close up, the above image looks like this - a collection of printable characters. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-30_16-00.png&#34; alt=&#34;2021 07 30 16 00&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h3&gt;3.2.1 De Bruijn sequence &lt;span class=&#34;absolute -mt-20&#34; id=&#34;321-de-bruijn-sequence&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#321-de-bruijn-sequence&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Interestingly, the above image can actually be re-created fresh on your own local machine. You don’t have to do this, as a sequence is already provided for you. However, it is interesting to see how it is produced.&lt;/p&gt;
+&lt;p&gt;In the ether of the internet, there is this orphaned &lt;a href=&#34;https://gist.github.com/rgov/891712#file-debruijn-py-L16&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;script&lt;/a&gt; that will produce the sequence of printable characters necessary to also use &lt;strong&gt;Depix.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/unnamed-1.png&#34; alt=&#34;unnamed 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-27_14-56.png&#34; alt=&#34;2021 07 27 14 56&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;3.3 Test recovery&lt;span class=&#34;absolute -mt-20&#34; id=&#34;33-test-recovery&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#33-test-recovery&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;To recover redacted text there are specific methods, depending on the tools that obfuscated the original text. This is a &lt;strong&gt;significant limitation&lt;/strong&gt; that the original author recognises, however we’ll put that aside for now and come back to it later. &lt;/p&gt;
+&lt;p&gt;If &lt;strong&gt;Notepad&lt;/strong&gt; is used and pixelated with &lt;strong&gt;Greenshot&lt;/strong&gt; we need the following command: &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;python3&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;depix&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;py&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;images&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;testimages&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;testimage3_pixels&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;png&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;images&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;searchimages&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;debruinseq_notepad_Windows10_closeAndSpaced&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;png&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;o&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;images&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;output&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;png&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;The command specifies the Path to the Pixelated Image (-p), Path to the Search Image (-s) and Path to Output (-o). &lt;/p&gt;
+&lt;p&gt;If &lt;strong&gt;sublime&lt;/strong&gt; text editor is used and pixelated with &lt;strong&gt;Gimp&lt;/strong&gt;, this command is used: &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;python3&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;depix&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;py&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;images&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;testimages&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sublime_screenshot_pixels_gimp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;png&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;images&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;searchimages&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;debruin_sublime_Linux_small&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;png&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;--&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;backgroundcolor&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;40&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;41&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;35&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;--&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;averagetype&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;linear&lt;/span&gt; &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;The &lt;em&gt;backgroundcolour&lt;/em&gt; option filters out the coloured background of the editor and specifies the linear &lt;em&gt;averagetype&lt;/em&gt; as that’s the default averaging within Gimp. &lt;/p&gt;
+&lt;h3&gt;3.3.1 Example&lt;span class=&#34;absolute -mt-20&#34; id=&#34;331-example&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#331-example&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;This &lt;strong&gt;example&lt;/strong&gt; leverages the first instance of Notepad &amp;amp; Greenshot. &lt;/p&gt;
+&lt;p&gt;In the image below, we see that depix begins brute forcing the images for a match.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Remember, it isn’t actually attacking the &lt;strong&gt;pixelated image&lt;/strong&gt;. Rather, it leverages the De Bruijn image (with all the printable characters) to generate combinations of letters that can be pixelated to match the &lt;strong&gt;obfuscated image.&lt;/strong&gt; &lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;images/pngbase646a8a043faedc72c4.png&#34; alt=&#34;pngbase646a8a043faedc72c4&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Depending on the size of the redacted image this can take a while. We used the author’s original, example image. As this was the ‘ideal’ condition to operate under, the brute force took around 60-90 seconds to complete! &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/pngbase64195247c857a273c2.png&#34; alt=&#34;pngbase64195247c857a273c2&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;h2&gt;&lt;strong&gt;3.4 Results&lt;/strong&gt; &lt;span class=&#34;absolute -mt-20&#34; id=&#34;34-results&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#34-results&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;This was the censored file we tested against - not a very pretty sight, but very redacted nonetheless. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/unnamed-2.png&#34; alt=&#34;unnamed 2&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This obfuscated image was fed into &lt;strong&gt;Depix.&lt;/strong&gt; These are the results from the brute force.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/unnamed-1-1.png&#34; alt=&#34;unnamed 1 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Although the results aren’t perfect. We are still able to interpret the results. For reference, the original message said, “&lt;em&gt;Hello from the other side.”&lt;/em&gt; &lt;/p&gt;
+&lt;p&gt;Not bad. &lt;em&gt;It’s pretty good&lt;/em&gt;&lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/unnamed-2-1.png&#34; alt=&#34;unnamed 2 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;We&amp;rsquo;re 10 layers deep in meme culture with this one&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h1&gt;&lt;strong&gt;4. Re-creating the test&lt;/strong&gt; &lt;/h1&gt;&lt;p&gt;In our example we were operating under &lt;strong&gt;ideal conditions.&lt;/strong&gt; As we know, in the real world, nefarious activities hardly ever take place under ideal conditions!&lt;/p&gt;
+&lt;p&gt;Let’s &lt;strong&gt;recreate the experiment&lt;/strong&gt;. This time, it will be original content, not the author’s supplied example: &lt;strong&gt;we’ll create our own text, obfuscate it, and try to brute force it.&lt;/strong&gt;&lt;/p&gt;
+&lt;h2&gt;4.1 Setup part two&lt;span class=&#34;absolute -mt-20&#34; id=&#34;41-setup-part-two&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#41-setup-part-two&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We opened &lt;strong&gt;Notepad&lt;/strong&gt; on our Windows machine. We added the shameless plug text we wanted to redact:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/pasted-image-0.png&#34; alt=&#34;pasted image 0&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;In order to &lt;strong&gt;pixelate&lt;/strong&gt; this text, I used Depix’s example obfuscator: &lt;strong&gt;genpixed.py&lt;/strong&gt; I was able to redact the text inside the image. Greenshot would be useful if only key words were redacted but to show it’s capability I redacted the whole thing: &lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;python&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;genpixed&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;py&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;i&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Capture&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PNG&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;o&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Capture1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PNG&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;with -i being the input image and -o being the output image.&lt;/p&gt;
+&lt;h2&gt;4.2  A disappointing recovery&lt;span class=&#34;absolute -mt-20&#34; id=&#34;42-a-disappointing-recovery&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#42-a-disappointing-recovery&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;To then &lt;strong&gt;recover&lt;/strong&gt; this &lt;strong&gt;obfuscated&lt;/strong&gt; text, we ran this big old one-liner:&lt;/p&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;python&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;depix&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;py&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Capture1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;png&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;s&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;images&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;searchimages&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;debruinseq_notepad_Windows10_closeAndSpace&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;png&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;o&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;images&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;output1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;png&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;After around &lt;strong&gt;45/50 minutes&lt;/strong&gt;, Depix finally had a returned output… unfortunately it &lt;strong&gt;failed to&lt;/strong&gt; &lt;strong&gt;recover the pixelated text.&lt;/strong&gt; &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/unnamed-3.png&#34; alt=&#34;unnamed 3&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We wondered if this was due to the length of the text we offered Depix. So we re-created this experiment with &amp;ldquo;Hello World&amp;rdquo;. The results still did not yield success.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;img src=&#34;images/hi-1.png&#34; alt=&#34;hi 1&#34; loading=&#34;lazy&#34; /&gt;&lt;/li&gt;
+&lt;li&gt;&lt;img src=&#34;images/bi.png&#34; alt=&#34;bi&#34; loading=&#34;lazy&#34; /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This could be due to a number of reasons:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Minor issues in the pixel layout&lt;/li&gt;
+&lt;li&gt;The character font is different&lt;/li&gt;
+&lt;li&gt;A faulty De Bruijn image is leveraged for the dictionary attack&lt;/li&gt;
+&lt;li&gt;Or good old human error&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Regardless, one or more of these issues frustrated Depix and it failed to depixelate our original content. &lt;strong&gt;Whereas I’m sure it has a strong potential in the future, It currently has a  limited scope of what it can return.&lt;/strong&gt;&lt;/p&gt;
+&lt;h1&gt;5. Reviewing Depix&lt;/h1&gt;&lt;p&gt;Depix’s python program was straightforward to use. Under the ideal demo example conditions, the results were impressive considering how pixelated the sample was beforehand. But it wasn’t perfect and failed to work for our real-life original content, though we gave some reasons why that could be the case.&lt;/p&gt;
+&lt;p&gt;In addition, Depix isn’t the answer to deobfuscating all pixelated text. There are only a couple of situations where it works. If the pixelation scale or cell size was different, the results would return nothing. If the pixelation was done with a tool other than the supported ones, it simply does not work. Moreover, you’d have to arbitrarily know or guess the specific tools used and hope that the Depix tool would work at de-obfuscating them. In the author’s Github, they recognise this current limitation. &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;The Depix tool poses minimal risk to security at present, as it requires specific criteria to be met to be effective.&lt;/strong&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;For now, however, there is a small chance that users can depixelate images, so it’s recommended to use a &lt;strong&gt;full box at full opacity&lt;/strong&gt; to redact files. &lt;/p&gt;
+&lt;figure&gt;
+&lt;p&gt;&lt;img src=&#34;images/2021-07-27_16-25.png&#34; alt=&#34;2021 07 27 16 25&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;figcaption&gt;
+&lt;p&gt;You can pick a less offensive colour of course&lt;/p&gt;
+&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h1&gt;&lt;strong&gt;5. Challenge&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;If you fancy having a go at this yourself, and your GPU is beefy enough for the Herculean challenge, we’d love for you to have a go at de-obfuscating this image. If you crack the code, @ us on Twitter and we’ll &lt;strong&gt;organise for something interesting to be delivered to you&lt;/strong&gt;. &lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;images/memes.png&#34; alt=&#34;memes&#34; loading=&#34;lazy&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;If you do use Depix (even outside of our challenge), we would be interested to hear about your experience. &lt;strong&gt;Let us know on twitter:&lt;/strong&gt; &lt;a href=&#34;https://twitter.com/jumpseclabs?lang=en&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;@JumpsecLabs&lt;/strong&gt;&lt;/a&gt; &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Caleb Herbert&lt;/strong&gt; is a Red Team Researcher @ JUMPSEC&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Research and Development</title>
+      <link>//localhost:1313/articles/2016/01/2016-01-28-research-and-development/</link>
+      <pubDate>Thu, 28 Jan 2016 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2016/01/2016-01-28-research-and-development/</guid>
+      <description>
+        
+        
+        &lt;p&gt;Hello w0rld. On this post we would like to let you know our areas of research and the research projects that we are working on currently. For 2016 we are planning to develop tools that will be used in our tests. Our areas of interest can be highlighted as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;AntiVirus Detection and Evasion techniques (sandbox detection, etc)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Packers, anti-debugging, anti-disassembly and binary obfuscation&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Network packet capture analysis scripts looking for IoC&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;FUD Malware (maybe Veil Improvisation)&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The initial idea is to find a way to create several different templates on top of Veil. Additionally we can implement several add-ons for Virtual Machine detection or Sandbox Environment detection. This can be either logical-based such as human interaction or can be through technical means like red pills. Even 2-3 assembly instructions can be used for identifying a sandbox environment. Veil exports a .py file which is quite random. It randomizes variable names and also since it uses encryption it randomizes the key that will be used. Then it encrypts the payload and stores it in a .stub area on the binary. This area will be unfold after the execution and a routine is responsible for decrypting and launching the payload. This doesn’t offer and sandbox detection nor VM detection. It is heavily focused against AVs and specifically it is focused defeating signature-based detection systems. The idea of having different binaries but still using the same payload (meterpreter) is necessary for pentesters and for generating quickly payloads that will be used in social engineering tasks. Technically now the most important property is the large keyspace. The larger the key space the more ‘impossible’ to hit the same binary twice. Veil is providing that but still there are issues with the actual binary. My thought is to either break the exported binary and placed it under a new one OR just add several lines of code in the python script that will be used for compilation (through py2exe or pwninstaller). Another possibility is to mess around the pwninstaller and add things there. Another idea is to add randomisation on techniques defeating / escaping sandbox environments. Things that are looking promising:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Mess with the actual PE Header, things like .STAB areas, add more stab areas add junk data to stab areas or even add other encrypted data that might look interesting (hyperion paper also has a super cool idea…)&lt;/li&gt;
+&lt;li&gt;Change the file size of the exported binary dynamically. This will happen assuming the above will happen. (Can also be randomized with NOP padding&lt;/li&gt;
+&lt;li&gt;Change values that will not necessarily mess the execution (maybe the versioning of the PE? or the Entry point of the binary?)&lt;/li&gt;
+&lt;li&gt;Write a small scale packer for performance and maybe add also VM detection there&lt;/li&gt;
+&lt;li&gt;Employ sandbox detection and VM detection through several means (this also adds to the 2nd step)&lt;/li&gt;
+&lt;li&gt;Randomized routines for sandbox detection (if mouse_right_click = %random_value then decrypt else break/sleep)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Implementation techniques will include ctypes for sandbox detection and adding loops or other useless things such as calculations. Also using ndisasm or pyelf for messing the binary it is suggested. Red pills can be used in several different techniques.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Packer&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Another idea that JUMPSEC labs have is to develop their own packer. This will have several routines for:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Static analysis obfuscation: Encryption&lt;/li&gt;
+&lt;li&gt;Dynamic analysis obfuscation: Add noise in program flow/Add randomness to data/runtime&lt;/li&gt;
+&lt;li&gt;Anti-debugging&lt;/li&gt;
+&lt;li&gt;Sandbox escape: Detect human interactions&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Network Analysis Scripts&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We are developing several scripts for analysing pcap files. The purpose of these scripts is to parse packet captures and to identify whether there are IoC (Indicators of Compromise) by performing statistical analysis of the protocols usage and searching for potential protocol misuse (HTTP requests / responses that arent according to RFC).&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

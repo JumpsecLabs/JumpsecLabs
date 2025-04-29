@@ -1,0 +1,3000 @@
+<!DOCTYPE html>
+<html lang="en"><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon shortcut" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link fetchpriority="low" href="/site.webmanifest" rel="manifest" />
+
+    <title>Hunting for &#39;Snake&#39; – JUMPSEC</title>
+    <meta name="description" content="Following the NCSC and CISA’s detailed joint advisory on the highly sophisticated ‘Snake’ cyber espionage tool, JUMPSEC threat intelligence analysts have provided a condensed blueprint for organisations to start proactively hunting for Snake within their network, contextualising key Indicators of Compromise (IoC), and providing additional methods to validate the effectiveness of Snake detections.
+Snake’s capabilitiesThe implant dubbed ‘Snake’ has been attributed to Centre 16 of Russia’s state sponsored FSB. The tool has been collecting intelligence in over 50 countries for up to 20 years, targeting research facilities, government networks, financial services, communications organisations, and other Critical National Infrastructure (CNI) organisations, meaning these organisations should be particularly vigilant and take precautionary steps to protect their networks." />
+
+    
+    <link rel="canonical" href="//localhost:1313/articles/2023/05/2023-05-26-hunting-for-snake/" itemprop="url" />
+    
+
+    
+
+<meta property="og:title" content="Hunting for &#39;Snake&#39;" />
+<meta property="og:description" content="Following the NCSC and CISA’s detailed joint advisory on the highly sophisticated ‘Snake’ cyber espionage tool, JUMPSEC threat intelligence analysts have provided a condensed blueprint for organisations to start proactively hunting for Snake within their network, contextualising key Indicators of Compromise (IoC), and providing additional methods to validate the effectiveness of Snake detections.
+Snake’s capabilitiesThe implant dubbed ‘Snake’ has been attributed to Centre 16 of Russia’s state sponsored FSB. The tool has been collecting intelligence in over 50 countries for up to 20 years, targeting research facilities, government networks, financial services, communications organisations, and other Critical National Infrastructure (CNI) organisations, meaning these organisations should be particularly vigilant and take precautionary steps to protect their networks." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="//localhost:1313/articles/2023/05/2023-05-26-hunting-for-snake/" /><meta property="article:section" content="articles" />
+<meta property="article:published_time" content="2023-05-26T00:00:00+00:00" />
+<meta property="article:modified_time" content="2025-04-28T17:05:32+03:00" />
+
+    
+  <meta itemprop="name" content="Hunting for &#39;Snake&#39;">
+  <meta itemprop="description" content="Following the NCSC and CISA’s detailed joint advisory on the highly sophisticated ‘Snake’ cyber espionage tool, JUMPSEC threat intelligence analysts have provided a condensed blueprint for organisations to start proactively hunting for Snake within their network, contextualising key Indicators of Compromise (IoC), and providing additional methods to validate the effectiveness of Snake detections.
+Snake’s capabilitiesThe implant dubbed ‘Snake’ has been attributed to Centre 16 of Russia’s state sponsored FSB. The tool has been collecting intelligence in over 50 countries for up to 20 years, targeting research facilities, government networks, financial services, communications organisations, and other Critical National Infrastructure (CNI) organisations, meaning these organisations should be particularly vigilant and take precautionary steps to protect their networks.">
+  <meta itemprop="datePublished" content="2023-05-26T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-04-28T17:05:32+03:00">
+  <meta itemprop="wordCount" content="2948">
+  <meta itemprop="keywords" content="J">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Hunting for &#39;Snake&#39;">
+  <meta name="twitter:description" content="Following the NCSC and CISA’s detailed joint advisory on the highly sophisticated ‘Snake’ cyber espionage tool, JUMPSEC threat intelligence analysts have provided a condensed blueprint for organisations to start proactively hunting for Snake within their network, contextualising key Indicators of Compromise (IoC), and providing additional methods to validate the effectiveness of Snake detections.
+Snake’s capabilitiesThe implant dubbed ‘Snake’ has been attributed to Centre 16 of Russia’s state sponsored FSB. The tool has been collecting intelligence in over 50 countries for up to 20 years, targeting research facilities, government networks, financial services, communications organisations, and other Critical National Infrastructure (CNI) organisations, meaning these organisations should be particularly vigilant and take precautionary steps to protect their networks.">
+
+    <link href="/css/compiled/main.css" rel="stylesheet" />
+
+
+
+  <link href="/css/custom.css" rel="stylesheet" />
+
+
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-445609549"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-445609549');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+
+    
+    <script type="text/javascript" id="hs-script-loader" async defer src="//js-eu1.hs-scripts.com/26015867.js"></script>
+    
+
+    
+
+
+    <script>
+         
+        const defaultTheme = 'system';
+
+        const setDarkTheme = () => {
+            document.documentElement.classList.add("dark");
+            document.documentElement.style.colorScheme = "dark";
+        }
+        const setLightTheme = () => {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.style.colorScheme = "light";
+        }
+
+        if ("color-theme" in localStorage) {
+            localStorage.getItem("color-theme") === "dark" ? setDarkTheme() : setLightTheme();
+        } else {
+            defaultTheme === "dark" ? setDarkTheme() : setLightTheme();
+            if (defaultTheme === "system") {
+                window.matchMedia("(prefers-color-scheme: dark)").matches ? setDarkTheme() : setLightTheme();
+            }
+        }
+    </script>
+
+    
+</head>
+<body dir="ltr"><div class="nav-container sticky top-0 z-20 w-full bg-transparent print:hidden">
+    <div class="nav-container-blur pointer-events-none absolute z-[-1] h-full w-full bg-white dark:bg-dark shadow-[0_2px_4px_rgba(0,0,0,.02),0_1px_0_rgba(0,0,0,.06)] contrast-more:shadow-[0_0_0_1px_#000] dark:shadow-[0_-1px_0_rgba(255,255,255,.1)_inset] contrast-more:dark:shadow-[0_0_0_1px_#fff]"></div>
+
+    <nav class="mx-auto flex items-center justify-end gap-2 h-16 px-6 max-w-[90rem]">
+        <a class="flex items-center hover:opacity-75 ltr:mr-auto rtl:ml-auto logo" href="/">
+            <img class="block dark:hidden logo-first" src="/images/jumpsec_full_logo_white_indexed_transparent_bg_hi-res_with_bar.png" alt="JUMPSEC" height="35" width="275" />
+            <img class="hidden dark:block logo-second" src="/images/jumpsec_full_logo_white_indexed_transparent_bg_hi-res_with_bar.png" alt="JUMPSEC" height="35" width="275" />
+        </a><a
+                title="Articles"
+                href="/articles"
+                
+                class="text-sm contrast-more:text-gray-700 contrast-more:dark:text-gray-100 relative -ml-2 hidden whitespace-nowrap p-2 md:inline-block font-medium"
+        >
+            <span class="text-center">Articles</span>
+        </a><a
+                title="Contact ↗"
+                href="https://www.jumpsec.com/contact/"
+                target="_blank" rel="noreferer"
+                class="text-sm contrast-more:text-gray-700 contrast-more:dark:text-gray-100 relative -ml-2 hidden whitespace-nowrap p-2 md:inline-block text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+            <span class="text-center">Contact ↗</span>
+        </a><div class="search-wrapper relative md:w-64">
+  <div class="relative flex items-center text-gray-900 contrast-more:text-gray-800 dark:text-gray-300 contrast-more:dark:text-gray-300">
+    <input
+      placeholder="Search..."
+      class="search-input block w-full appearance-none rounded-lg px-3 py-2 transition-colors text-base leading-tight md:text-sm bg-black/[.05] dark:bg-gray-50/10 focus:bg-white dark:focus:bg-dark placeholder:text-gray-500 dark:placeholder:text-gray-400 contrast-more:border contrast-more:border-current"
+      type="search"
+      value=""
+      spellcheck="false"
+    />
+    <kbd
+      class="absolute my-1.5 select-none ltr:right-1.5 rtl:left-1.5 h-5 rounded bg-white px-1.5 font-mono text-[10px] font-medium text-gray-500 border dark:border-gray-100/20 dark:bg-dark/50 contrast-more:border-current contrast-more:text-current contrast-more:dark:border-current items-center gap-1 transition-opacity pointer-events-none hidden sm:flex"
+    >
+      CTRL K
+    </kbd>
+  </div>
+
+  <div>
+    <ul
+      class="search-results hextra-scrollbar hidden border border-gray-200 bg-white text-gray-100 dark:border-neutral-800 dark:bg-neutral-900 absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-xl py-2.5 shadow-xl max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)] md:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)] inset-x-0 ltr:md:left-auto rtl:md:right-auto contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50 w-screen min-h-[100px] max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      style="transition: max-height 0.2s ease 0s;"
+    ></ul>
+  </div>
+</div>
+<button
+        title="Change theme"
+        data-theme="light"
+        class="theme-toggle group h-7 rounded-md px-2 text-left text-xs font-medium text-gray-600 transition-colors dark:text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-primary-100/5 dark:hover:text-gray-50"
+        type="button"
+        aria-label="Change theme"
+>
+    <div class="flex items-center gap-2 capitalize slider-container"><span class="group-data-[theme=light]:hidden ball-left"></span><span class="group-data-[theme=dark]:hidden ball-right"></span></div>
+</button>
+
+        <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://twitter.com/JumpsecLabs" title="Twitter"><svg height=24 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg><span class="sr-only">Twitter</span>
+        </a>
+        <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.linkedin.com/company/jumpsec/" title="LinkedIn"><svg height=24 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037c-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85c3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065a2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg><span class="sr-only">LinkedIn</span>
+        </a>
+        <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.youtube.com/channel/UCXSbS5DNUZA2LNidrb67tvw" title="YouTube"><svg height=24 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104l.022.26l.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105l-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006l-.087-.004l-.171-.007l-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103l.003-.052l.008-.104l.022-.26l.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007l.172-.006l.086-.003l.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/></svg><span class="sr-only">YouTube</span>
+        </a>
+        <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.github.com/JUMPSECLabs" title="GitHub"><svg height=24 fill="currentColor" viewBox="3 3 18 18">
+  <path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path>
+</svg>
+<span class="sr-only">GitHub</span>
+        </a><button type="button" aria-label="Menu" class="hamburger-menu -mr-2 rounded p-2 active:bg-gray-400/20 md:hidden"><svg height=24 fill="none" viewBox="0 0 24 24" stroke="currentColor"><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8H20"></path></g><g><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16H20"></path></g></svg></button>
+    </nav>
+</div>
+<div class="mx-auto flex max-w-screen-xl single-article">
+    <div class="mobile-menu-overlay [transition:background-color_1.5s_ease] fixed inset-0 z-10 bg-black/80 dark:bg-black/60 hidden"></div>
+<aside class="sidebar-container flex flex-col print:hidden md:top-16 md:shrink-0 md:w-64 md:self-start max-md:[transform:translate3d(0,-100%,0)] md:sticky">
+    
+    <div class="px-4 pt-4 md:hidden">
+        <div class="search-wrapper relative md:w-64">
+  <div class="relative flex items-center text-gray-900 contrast-more:text-gray-800 dark:text-gray-300 contrast-more:dark:text-gray-300">
+    <input
+      placeholder="Search..."
+      class="search-input block w-full appearance-none rounded-lg px-3 py-2 transition-colors text-base leading-tight md:text-sm bg-black/[.05] dark:bg-gray-50/10 focus:bg-white dark:focus:bg-dark placeholder:text-gray-500 dark:placeholder:text-gray-400 contrast-more:border contrast-more:border-current"
+      type="search"
+      value=""
+      spellcheck="false"
+    />
+    <kbd
+      class="absolute my-1.5 select-none ltr:right-1.5 rtl:left-1.5 h-5 rounded bg-white px-1.5 font-mono text-[10px] font-medium text-gray-500 border dark:border-gray-100/20 dark:bg-dark/50 contrast-more:border-current contrast-more:text-current contrast-more:dark:border-current items-center gap-1 transition-opacity pointer-events-none hidden sm:flex"
+    >
+      CTRL K
+    </kbd>
+  </div>
+
+  <div>
+    <ul
+      class="search-results hextra-scrollbar hidden border border-gray-200 bg-white text-gray-100 dark:border-neutral-800 dark:bg-neutral-900 absolute top-full z-20 mt-2 overflow-auto overscroll-contain rounded-xl py-2.5 shadow-xl max-h-[min(calc(50vh-11rem-env(safe-area-inset-bottom)),400px)] md:max-h-[min(calc(100vh-5rem-env(safe-area-inset-bottom)),400px)] inset-x-0 ltr:md:left-auto rtl:md:right-auto contrast-more:border contrast-more:border-gray-900 contrast-more:dark:border-gray-50 w-screen min-h-[100px] max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
+      style="transition: max-height 0.2s ease 0s;"
+    ></ul>
+  </div>
+</div>
+
+    </div>
+    <div class="hextra-scrollbar overflow-y-auto overflow-x-hidden p-4 grow md:h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
+        <ul class="flex flex-col gap-1 md:hidden">
+            
+            
+<li class="open"><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/" title="Latest Articles">
+    <strong>Latest LABS posts</strong>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/"
+            
+    >
+        
+        Explore LABS posts
+        
+        <span class="hextra-sidebar-collapsible-button"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-[18px] min-w-[18px] rounded-sm p-0.5 hover:bg-gray-800/5 dark:hover:bg-gray-100/5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" class="origin-center transition-transform rtl:-rotate-180"></path></svg></span>
+        </a>
+</span><div class="jumpsec-categories-list"><div class="ltr:pr-0 overflow-hidden">
+    <ul class='relative flex flex-col before:absolute before:w-px before:bg-gray-200 before:content-[""] ltr:ml-3 ltr:before:left-0 rtl:mr-3 rtl:pr-3 rtl:before:right-0 dark:before:bg-neutral-800'><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">
+        <span class="inner-medium-weight">Active Cyber Defence - Taking back control</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/" title="NTLM Relaying - Making the Old New Again">
+        <span class="inner-medium-weight">NTLM Relaying - Making the Old New Again</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu">
+        <span class="inner-medium-weight">Adversary at the Door - Initial Access and what&#39;s currently on the menu</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li><li class="flex flex-col "><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs">
+        <span class="inner-medium-weight">SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span>
+            
+        </li></ul>
+</div></div>
+</li>
+        </ul>
+
+        <ul class="flex flex-col gap-1 max-md:hidden jumpsec-categories ">
+            
+            
+            
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/" title="Active Cyber Defence - Taking back control">
+        <span class="inner-medium-weight">Active Cyber Defence - Taking back control</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/10/2024-10-15-active-cyber-defence-taking-back-control/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/" title="NTLM Relaying - Making the Old New Again">
+        <span class="inner-medium-weight">NTLM Relaying - Making the Old New Again</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-17-ntlm-relaying-making-the-old-new-again/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 2)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/09/2024-09-11-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-2/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/" title="Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)">
+        <span class="inner-medium-weight">Building Forensic Expertise: A Two-Part Guide to Investigating a Malicious USB Device (Part 1)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-28-building-forensic-expertise-a-two-part-guide-to-investigating-a-malicious-usb-device-part-1/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/" title="Adversary at the Door - Initial Access and what&#39;s currently on the menu">
+        <span class="inner-medium-weight">Adversary at the Door - Initial Access and what&#39;s currently on the menu</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-20-adversary-at-the-door-initial-access-and-whats-currently-on-the-menu/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/" title="SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs">
+        <span class="inner-medium-weight">SSH Tunnelling to Punch Through Corporate Firewalls - Updated take on one of the oldest LOLBINs</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-13-ssh-tunnelling-to-punch-through-corporate-firewalls-updated-take-on-one-of-the-oldest-lolbins/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/08/2024-08-06-how-to-handle-development-projects-in-a-pentest-company/" title="How to Handle Development Projects in a Pentest Company">
+        <span class="inner-medium-weight">How to Handle Development Projects in a Pentest Company</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/08/2024-08-06-how-to-handle-development-projects-in-a-pentest-company/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2024/07/2024-07-04-how-cloud-migration-is-affecting-appsec-a-red-teamers-perspective/" title="How Cloud Migration is Affecting AppSec - A Red Teamer&#39;s Perspective">
+        <span class="inner-medium-weight">How Cloud Migration is Affecting AppSec - A Red Teamer&#39;s Perspective</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/07/2024-07-04-how-cloud-migration-is-affecting-appsec-a-red-teamers-perspective/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2024/06/2024-06-28-putting-the-c2-in-c2loudflare/" title="Putting the C2 in C2loudflare">
+        <span class="inner-medium-weight">Putting the C2 in C2loudflare</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/06/2024-06-28-putting-the-c2-in-c2loudflare/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2024/06/2024-06-19-bullet-proofing-your-email-gateway/" title="Bullet Proofing Your Email Gateway">
+        <span class="inner-medium-weight">Bullet Proofing Your Email Gateway</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/06/2024-06-19-bullet-proofing-your-email-gateway/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2024/06/2024-06-13-whats-in-a-name-writing-custom-dns-tunnelling-protocol-exploiting-unexpected-aws-lambda-misconfiguration-in-a-web-app-pen-test-part-2/" title="What’s in a Name? Writing custom DNS tunnelling protocol, exploiting unexpected AWS Lambda misconfiguration – in a web app Pen test (Part 2)">
+        <span class="inner-medium-weight">What’s in a Name? Writing custom DNS tunnelling protocol, exploiting unexpected AWS Lambda misconfiguration – in a web app Pen test (Part 2)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/06/2024-06-13-whats-in-a-name-writing-custom-dns-tunnelling-protocol-exploiting-unexpected-aws-lambda-misconfiguration-in-a-web-app-pen-test-part-2/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2024/05/2024-05-31-wasm-smuggling-for-initial-access-and-w-a-l-k-tool-release/" title="WASM Smuggling for Initial Access and W.A.L.K. Tool Release">
+        <span class="inner-medium-weight">WASM Smuggling for Initial Access and W.A.L.K. Tool Release</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/05/2024-05-31-wasm-smuggling-for-initial-access-and-w-a-l-k-tool-release/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2024/05/2024-05-16-adventures-and-accidental-honeypots-in-network-infrastructure-unravelling-internet-shenanigans/" title="Adventures and Accidental Honeypots in Network Infrastructure: Unravelling Internet Shenanigans">
+        <span class="inner-medium-weight">Adventures and Accidental Honeypots in Network Infrastructure: Unravelling Internet Shenanigans</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/05/2024-05-16-adventures-and-accidental-honeypots-in-network-infrastructure-unravelling-internet-shenanigans/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2024/05/2024-05-09-poisoning-pipelines-azure-devops-edition/" title="Poisoning Pipelines: Azure DevOps Edition">
+        <span class="inner-medium-weight">Poisoning Pipelines: Azure DevOps Edition</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/05/2024-05-09-poisoning-pipelines-azure-devops-edition/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2024/05/2024-05-02-why-sneak-when-you-can-walk-through-the-front-door/" title="Why sneak when you can walk through the front door - A Love letter to Password Spraying against M365 in Red Team Engagements">
+        <span class="inner-medium-weight">Why sneak when you can walk through the front door - A Love letter to Password Spraying against M365 in Red Team Engagements</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2024/05/2024-05-02-why-sneak-when-you-can-walk-through-the-front-door/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2023/12/2023-12-21-advisory-cve-2023-43042-ibm-backup-products-superuser-information-disclosure/" title="&lt;strong&gt;Advisory CVE-2023-43042 – IBM Backup Products Superuser Information Disclosure&lt;/strong&gt;">
+        <span class="inner-medium-weight">&lt;strong&gt;Advisory CVE-2023-43042 – IBM Backup Products Superuser Information Disclosure&lt;/strong&gt;</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2023/12/2023-12-21-advisory-cve-2023-43042-ibm-backup-products-superuser-information-disclosure/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2023/12/2023-12-19-red-teaming-the-cloud-a-shift-in-perspective/" title="Red Teaming the Cloud: A Shift in Perspective">
+        <span class="inner-medium-weight">Red Teaming the Cloud: A Shift in Perspective</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2023/12/2023-12-19-red-teaming-the-cloud-a-shift-in-perspective/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2023/09/2023-09-29-vectr-for-purple-team-engagements/" title="VECTR for Purple Team Engagements">
+        <span class="inner-medium-weight">VECTR for Purple Team Engagements</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2023/09/2023-09-29-vectr-for-purple-team-engagements/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2023/06/2023-06-21-advisory-idor-in-microsoft-teams-allows-for-external-tenants-to-introduce-malware/" title="Advisory: IDOR in Microsoft Teams Allows for External Tenants to Introduce Malware">
+        <span class="inner-medium-weight">Advisory: IDOR in Microsoft Teams Allows for External Tenants to Introduce Malware</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2023/06/2023-06-21-advisory-idor-in-microsoft-teams-allows-for-external-tenants-to-introduce-malware/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2023/06/2023-06-19-hunting-the-snake-an-overview-of-threat-hunting-with-velociraptor/" title="Hunting the Snake: An Overview of Threat Hunting with Velociraptor">
+        <span class="inner-medium-weight">Hunting the Snake: An Overview of Threat Hunting with Velociraptor</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2023/06/2023-06-19-hunting-the-snake-an-overview-of-threat-hunting-with-velociraptor/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2023/06/2023-06-09-ligolo-quality-of-life-on-red-team-engagements/" title="Ligolo: Quality of Life on Red Team Engagements">
+        <span class="inner-medium-weight">Ligolo: Quality of Life on Red Team Engagements</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2023/06/2023-06-09-ligolo-quality-of-life-on-red-team-engagements/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class="open"><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2023/05/2023-05-26-hunting-for-snake/" title="Hunting for &#39;Snake&#39;">
+        <span class="inner-medium-weight">Hunting for &#39;Snake&#39;</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      sidebar-active-item bg-red-100 font-semibold text-red-800 contrast-more:border contrast-more:border-red-500 dark:bg-red-400/10 dark:text-red-600 contrast-more:dark:border-red-500"
+            href="/articles/2023/05/2023-05-26-hunting-for-snake/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2023/05/2023-05-23-advisory-cve-2023-30382-half-life-local-privilege-escalation/" title="&lt;strong&gt;Advisory CVE-2023-30382 – Half-Life Local Privilege Escalation&lt;/strong&gt;">
+        <span class="inner-medium-weight">&lt;strong&gt;Advisory CVE-2023-30382 – Half-Life Local Privilege Escalation&lt;/strong&gt;</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2023/05/2023-05-23-advisory-cve-2023-30382-half-life-local-privilege-escalation/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2023/04/2023-04-17-butting-heads-with-a-threat-actor-on-an-engagement/" title="Butting Heads with a Threat Actor on an Engagement">
+        <span class="inner-medium-weight">Butting Heads with a Threat Actor on an Engagement</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2023/04/2023-04-17-butting-heads-with-a-threat-actor-on-an-engagement/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/12/2022-12-15-advisory-cve-2022-37832-mutiny-network-monitoring-appliance-hardcoded-credentials/" title="&lt;strong&gt;Advisory CVE-2022-37832 - Mutiny Network Monitoring Appliance hardcoded credentials&lt;/strong&gt;">
+        <span class="inner-medium-weight">&lt;strong&gt;Advisory CVE-2022-37832 - Mutiny Network Monitoring Appliance hardcoded credentials&lt;/strong&gt;</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/12/2022-12-15-advisory-cve-2022-37832-mutiny-network-monitoring-appliance-hardcoded-credentials/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/12/2022-12-12-online-machine-learning-how-to-integrate-user-feedback/" title="Online Machine Learning: how to integrate user feedback">
+        <span class="inner-medium-weight">Online Machine Learning: how to integrate user feedback</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/12/2022-12-12-online-machine-learning-how-to-integrate-user-feedback/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/11/2022-11-23-implementation-and-dynamic-generation-for-tasks-in-apache-airflow/" title="Implementation and Dynamic Generation for Tasks in Apache Airflow&lt;/strong&gt;">
+        <span class="inner-medium-weight">Implementation and Dynamic Generation for Tasks in Apache Airflow&lt;/strong&gt;</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/11/2022-11-23-implementation-and-dynamic-generation-for-tasks-in-apache-airflow/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/09/2022-09-08-quest-kace-desktop-authority-pre-auth-remote-code-execution-cve-2021-44031/" title="QUEST KACE Desktop Authority Pre-Auth Remote Code Execution (CVE-2021-44031)">
+        <span class="inner-medium-weight">QUEST KACE Desktop Authority Pre-Auth Remote Code Execution (CVE-2021-44031)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/09/2022-09-08-quest-kace-desktop-authority-pre-auth-remote-code-execution-cve-2021-44031/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/08/2022-08-11-abusing-shareduserdata-for-defense-evasion-and-exploitation-2/" title="Abusing SharedUserData For Defense Evasion and Exploitation">
+        <span class="inner-medium-weight">Abusing SharedUserData For Defense Evasion and Exploitation</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/08/2022-08-11-abusing-shareduserdata-for-defense-evasion-and-exploitation-2/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/08/2022-08-02-zoho-manageengine-desktop-central-path-traversal-arbitrary-file-write/" title="(ZOHO) ManageEngine Desktop Central - Path Traversal / Arbitrary File Write">
+        <span class="inner-medium-weight">(ZOHO) ManageEngine Desktop Central - Path Traversal / Arbitrary File Write</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/08/2022-08-02-zoho-manageengine-desktop-central-path-traversal-arbitrary-file-write/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/08/2022-08-02-zoho-manage-engine-desktop-central-sql-injection-arbitrary-file-write/" title="(ZOHO) ManageEngine Desktop Central – SQL Injection / Arbitrary File Write">
+        <span class="inner-medium-weight">(ZOHO) ManageEngine Desktop Central – SQL Injection / Arbitrary File Write</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/08/2022-08-02-zoho-manage-engine-desktop-central-sql-injection-arbitrary-file-write/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/07/2022-07-14-azure-securing-shared-access-signatures-sas/" title="Azure - Securing Shared Access Signatures (SAS)">
+        <span class="inner-medium-weight">Azure - Securing Shared Access Signatures (SAS)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/07/2022-07-14-azure-securing-shared-access-signatures-sas/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/01/2022-01-26-advisory-cve-2021-41550-leostream-connection-broker-authenticated-remote-code-execution/" title="Advisory CVE-2021-41550 Leostream Connection Broker - Authenticated Remote Code Execution">
+        <span class="inner-medium-weight">Advisory CVE-2021-41550 Leostream Connection Broker - Authenticated Remote Code Execution</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/01/2022-01-26-advisory-cve-2021-41550-leostream-connection-broker-authenticated-remote-code-execution/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2022/01/2022-01-26-advisory-cve-2021-41551-leostream-connection-broker-authenticated-zip-slip/" title="Advisory CVE-2021-41551 Leostream Connection Broker - Authenticated Zip Slip">
+        <span class="inner-medium-weight">Advisory CVE-2021-41551 Leostream Connection Broker - Authenticated Zip Slip</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2022/01/2022-01-26-advisory-cve-2021-41551-leostream-connection-broker-authenticated-zip-slip/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2021/11/2021-11-22-no-logs-no-problem-incident-response-without-windows-event-logs/" title="No Logs? No Problem! Incident Response without Windows Event Logs">
+        <span class="inner-medium-weight">No Logs? No Problem! Incident Response without Windows Event Logs</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/11/2021-11-22-no-logs-no-problem-incident-response-without-windows-event-logs/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2021/10/2021-10-07-powershell-jobs/" title="PowerShell Jobs">
+        <span class="inner-medium-weight">PowerShell Jobs</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/10/2021-10-07-powershell-jobs/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2021/08/2021-08-24-burpsuite-and-beyond/" title="Burp Suite and Beyond: Exploring non-HTTP protocols using MITM_RELAY">
+        <span class="inner-medium-weight">Burp Suite and Beyond: Exploring non-HTTP protocols using MITM_RELAY</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/08/2021-08-24-burpsuite-and-beyond/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2021/08/2021-08-11-running-once-running-twice-pwned-windows-registry-run-keys/" title="Running Once, &lt;del&gt;Running Twice&lt;/del&gt;, Pwned! Windows Registry Run Keys">
+        <span class="inner-medium-weight">Running Once, &lt;del&gt;Running Twice&lt;/del&gt;, Pwned! Windows Registry Run Keys</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/08/2021-08-11-running-once-running-twice-pwned-windows-registry-run-keys/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2021/08/2021-08-03-can-depix-deobfuscate-your-data/" title="Can Depix deobfuscate your data?">
+        <span class="inner-medium-weight">Can Depix deobfuscate your data?</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/08/2021-08-03-can-depix-deobfuscate-your-data/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2021/07/2021-07-22-car-hacking-manual-bypass-of-modern-rolling-code-implementations/" title="Car Hacking - Manual Bypass of Modern Rolling Code Implementations">
+        <span class="inner-medium-weight">Car Hacking - Manual Bypass of Modern Rolling Code Implementations</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/07/2021-07-22-car-hacking-manual-bypass-of-modern-rolling-code-implementations/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2021/07/2021-07-16-obfuscating-c2-during-a-red-team-engagement/" title="Obfuscating C2 During a Red Team Engagement">
+        <span class="inner-medium-weight">Obfuscating C2 During a Red Team Engagement</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/07/2021-07-16-obfuscating-c2-during-a-red-team-engagement/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2021/07/2021-07-07-printnightmare-network-analysis/" title="PRINTNIGHTMARE NETWORK ANALYSIS">
+        <span class="inner-medium-weight">PRINTNIGHTMARE NETWORK ANALYSIS</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/07/2021-07-07-printnightmare-network-analysis/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2021/07/2021-07-06-securing-against-new-offensive-techniques-abusing-active-directory-certificate-service/" title="Securing against new offensive techniques abusing active directory certificate service">
+        <span class="inner-medium-weight">Securing against new offensive techniques abusing active directory certificate service</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/07/2021-07-06-securing-against-new-offensive-techniques-abusing-active-directory-certificate-service/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2021/04/2021-04-28-burp-suite-python-scripter/" title="Overcoming Issues Using Custom Python Scripts with Burp Suite Professional">
+        <span class="inner-medium-weight">Overcoming Issues Using Custom Python Scripts with Burp Suite Professional</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2021/04/2021-04-28-burp-suite-python-scripter/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2020/12/2020-12-21-win-a-place-hackfu-2021-community-edition/" title="Win a place @HackFu 2021 Community Edition!">
+        <span class="inner-medium-weight">Win a place @HackFu 2021 Community Edition!</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/12/2020-12-21-win-a-place-hackfu-2021-community-edition/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2020/11/2020-11-13-advisory-cve-2020-13769-ivanti-uem-sql-injection/" title="Advisory CVE-2020-13769 – Ivanti Unified Endpoint Manager SQL injection">
+        <span class="inner-medium-weight">Advisory CVE-2020-13769 – Ivanti Unified Endpoint Manager SQL injection</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/11/2020-11-13-advisory-cve-2020-13769-ivanti-uem-sql-injection/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2020/11/2020-11-13-cve-2020-13772-ivanti-uem-system-information-disclosure/" title="Advisory CVE-2020-13772 - Ivanti Unified Endpoint Manager system information disclosure">
+        <span class="inner-medium-weight">Advisory CVE-2020-13772 - Ivanti Unified Endpoint Manager system information disclosure</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/11/2020-11-13-cve-2020-13772-ivanti-uem-system-information-disclosure/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2020/11/2020-11-13-cve-2020-13773-ivanti-uem-reflected-xss/" title="Advisory CVE-2020-13773 - Ivanti Unified Endpoint Manager Reflected XSS">
+        <span class="inner-medium-weight">Advisory CVE-2020-13773 - Ivanti Unified Endpoint Manager Reflected XSS</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/11/2020-11-13-cve-2020-13773-ivanti-uem-reflected-xss/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2020/11/2020-11-13-detecting-known-dll-hijacking-and-named-pipe-token-impersonation-attacks-with-sysmon/" title="Detecting known DLL hijacking and named pipe token impersonation attacks with Sysmon">
+        <span class="inner-medium-weight">Detecting known DLL hijacking and named pipe token impersonation attacks with Sysmon</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/11/2020-11-13-detecting-known-dll-hijacking-and-named-pipe-token-impersonation-attacks-with-sysmon/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2020/11/2020-11-12-advisory-cve-2020-13774-ivanti-uem-rce/" title="Advisory CVE-2020-13774 - Ivanti Unified Endpoint Manager authenticated RCE via file upload">
+        <span class="inner-medium-weight">Advisory CVE-2020-13774 - Ivanti Unified Endpoint Manager authenticated RCE via file upload</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/11/2020-11-12-advisory-cve-2020-13774-ivanti-uem-rce/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2020/11/2020-11-11-advisory-cve-2020-13770-ivanti-uem-named-pipe-token-impersonation/" title="Advisory CVE-2020-13770 - Ivanti Unified Endpoint Manager named pipe token impersonation privilege escalation">
+        <span class="inner-medium-weight">Advisory CVE-2020-13770 - Ivanti Unified Endpoint Manager named pipe token impersonation privilege escalation</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/11/2020-11-11-advisory-cve-2020-13770-ivanti-uem-named-pipe-token-impersonation/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="" title="">
+        
+    </a>
+    
+    
+    <a style="color: red" href="/articles/2020/11/2020-11-11-advisory-cve-2020-13771-ivanti-uem-dll-hijacking/" title="Advisory CVE-2020-13771 - Ivanti Unified Endpoint Manager DLL search order hijacking privilege escalation">
+        <span class="inner-medium-weight">Advisory CVE-2020-13771 - Ivanti Unified Endpoint Manager DLL search order hijacking privilege escalation</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/11/2020-11-11-advisory-cve-2020-13771-ivanti-uem-dll-hijacking/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2020/09/2020-09-04-pwning-windows-event-logging-with-yara-rules/" title="Pwning Windows Event Logging with YARA rules">
+        <span class="inner-medium-weight">Pwning Windows Event Logging with YARA rules</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/09/2020-09-04-pwning-windows-event-logging-with-yara-rules/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2020/08/2020-08-11-defending-your-malware/" title="Defending Your Malware">
+        <span class="inner-medium-weight">Defending Your Malware</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/08/2020-08-11-defending-your-malware/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2020/06/2020-06-07-api-hooking-framework/" title="API Hooking Framework">
+        <span class="inner-medium-weight">API Hooking Framework</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/06/2020-06-07-api-hooking-framework/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2020/06/2020-06-07-thunder-eye-threat-intelligence-aggregator/" title="Thunder Eye – Threat Intelligence Aggregator">
+        <span class="inner-medium-weight">Thunder Eye – Threat Intelligence Aggregator</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/06/2020-06-07-thunder-eye-threat-intelligence-aggregator/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2020/06/2020-06-03-shad0w/" title="shad0w">
+        <span class="inner-medium-weight">shad0w</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/06/2020-06-03-shad0w/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2020/04/2020-04-20-a-defenders-guide-for-rootkit-detection-episode-1-kernel-drivers/" title="A Defender’s Guide For Rootkit Detection: Episode 1 - Kernel Drivers">
+        <span class="inner-medium-weight">A Defender’s Guide For Rootkit Detection: Episode 1 - Kernel Drivers</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2020/04/2020-04-20-a-defenders-guide-for-rootkit-detection-episode-1-kernel-drivers/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2019/06/2019-06-20-bypassing-antivirus-with-golang-gopher-it/" title="Bypassing Antivirus with Golang - Gopher it!">
+        <span class="inner-medium-weight">Bypassing Antivirus with Golang - Gopher it!</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2019/06/2019-06-20-bypassing-antivirus-with-golang-gopher-it/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2019/02/2019-02-06-enhanced-logging-to-detect-common-attacks-on-active-directory-part-1/" title="Enhanced logging to detect common attacks on Active Directory– Part 1">
+        <span class="inner-medium-weight">Enhanced logging to detect common attacks on Active Directory– Part 1</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2019/02/2019-02-06-enhanced-logging-to-detect-common-attacks-on-active-directory-part-1/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2016/06/2016-06-28-short-introduction-network-forensics-indicators-compromise-ioc/" title="Short introduction to Network Forensics and Indicators of Compromise (IoC)">
+        <span class="inner-medium-weight">Short introduction to Network Forensics and Indicators of Compromise (IoC)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2016/06/2016-06-28-short-introduction-network-forensics-indicators-compromise-ioc/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2016/03/2016-03-07-cve-2015-7547-glibc-getaddrinfo-dns-vulnerability/" title="CVE 2015-7547 glibc getaddrinfo() DNS Vulnerability">
+        <span class="inner-medium-weight">CVE 2015-7547 glibc getaddrinfo() DNS Vulnerability</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2016/03/2016-03-07-cve-2015-7547-glibc-getaddrinfo-dns-vulnerability/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2016/01/2016-01-28-research-and-development/" title="Research and Development">
+        <span class="inner-medium-weight">Research and Development</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2016/01/2016-01-28-research-and-development/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2015/04/2015-04-24-covert-channels-misusing-icmp-protocol-for-file-transfers-with-scapy/" title="Covert channels - (Mis)Using ICMP protocol for file transfers with scapy">
+        <span class="inner-medium-weight">Covert channels - (Mis)Using ICMP protocol for file transfers with scapy</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2015/04/2015-04-24-covert-channels-misusing-icmp-protocol-for-file-transfers-with-scapy/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2015/03/2015-03-01-microsoft-onenote-image-caching-bug-confidential-information-leakage/" title="Microsoft Onenote Image Caching Bug (Confidential Information Leakage)">
+        <span class="inner-medium-weight">Microsoft Onenote Image Caching Bug (Confidential Information Leakage)</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2015/03/2015-03-01-microsoft-onenote-image-caching-bug-confidential-information-leakage/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2015/01/2015-01-19-ghost-shellcode-2015-ctf-write-cloudfs-challenge/" title="Ghost In The Shellcode 2015 CTF: Write-up for cloudfs challenge">
+        <span class="inner-medium-weight">Ghost In The Shellcode 2015 CTF: Write-up for cloudfs challenge</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2015/01/2015-01-19-ghost-shellcode-2015-ctf-write-cloudfs-challenge/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2014/11/2014-11-10-layer-8-patching-un-patchable/" title="LAYER 8 – Patching the un-patchable….">
+        <span class="inner-medium-weight">LAYER 8 – Patching the un-patchable….</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2014/11/2014-11-10-layer-8-patching-un-patchable/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2014/11/2014-11-10-playing-ms14-060-ms14-058-cve-2014-4113-cve-2014-4114-attacks-defenses/" title="Playing with MS14-060 and MS14-058 [CVE-2014-4113 CVE-2014-4114] : Attacks and Defenses">
+        <span class="inner-medium-weight">Playing with MS14-060 and MS14-058 [CVE-2014-4113 CVE-2014-4114] : Attacks and Defenses</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2014/11/2014-11-10-playing-ms14-060-ms14-058-cve-2014-4113-cve-2014-4114-attacks-defenses/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+<li class=""><span class="items-container">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <a style="color: red" href="/articles/2014/11/2014-11-07-gpu-password-cracking-hype/" title="GPU Password Cracking Hype">
+        <span class="inner-medium-weight">GPU Password Cracking Hype</span>
+    </a>
+    
+
+    <a
+            class="flex items-center justify-between gap-2 cursor-pointer rounded px-2 py-1.5 text-sm transition-colors  [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] [word-break:break-word]
+      text-gray-500 hover:bg-gray-100 hover:text-gray-900 contrast-more:border contrast-more:border-transparent contrast-more:text-gray-900 contrast-more:hover:border-gray-900 dark:text-neutral-400 dark:hover:bg-primary-100/5 dark:hover:text-red-500 contrast-more:dark:text-red-500 contrast-more:dark:hover:border-gray-50"
+            href="/articles/2014/11/2014-11-07-gpu-password-cracking-hype/"
+            
+    >
+        
+        Read more
+        
+        </a>
+</span><div class="jumpsec-categories-list"></div>
+</li>
+            
+            
+        </ul>
+        </div>
+    
+    </aside>
+    
+
+<nav class="hextra-toc order-last hidden w-64 shrink-0 xl:block print:hidden px-4" aria-label="table of contents">
+    <div class="hextra-scrollbar sticky top-16 overflow-y-auto pr-4 pt-6 text-sm [hyphens:auto] max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:-mr-4 rtl:-ml-4"><p class="mb-4 font-semibold tracking-tight">On this page</p><ul></ul><ul>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="font-semibold inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#host-based-detection">Host-Based Detection
+    </a>
+</li>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="font-semibold inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#network-based-detection">Network-based Detection
+    </a>
+</li>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="ltr:pl-4 rtl:pr-4 inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#snake-http-rule">Snake http rule
+    </a>
+</li>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="ltr:pl-4 rtl:pr-4 inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#snake-http2-rule">Snake http2 rule
+    </a>
+</li>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="ltr:pl-4 rtl:pr-4 inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#snake-tcp-rule">Snake tcp rule
+    </a>
+</li>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="font-semibold inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#memory-analysis">Memory Analysis
+    </a>
+</li>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="font-semibold inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#other-detection-mechanisms-and-sigma-rules">Other Detection Mechanisms and Sigma Rules
+    </a>
+</li></ul><ul>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="font-semibold inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#mfa-and-credential-management">MFA and credential management
+    </a>
+</li>
+<li class="my-2 scroll-my-6 scroll-py-6">
+    <a class="font-semibold inline-block text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 contrast-more:text-gray-900 contrast-more:underline contrast-more:dark:text-gray-50 w-full break-words" href="#helpful-links">Helpful Links
+    </a>
+</li></ul>
+        <div class="mt-8 border-t bg-white pt-8 shadow-[0_-12px_16px_white] dark:bg-dark dark:shadow-[0_-12px_16px_#111] sticky bottom-0 flex flex-col items-start gap-2 pb-8 dark:border-neutral-800 contrast-more:border-t contrast-more:border-neutral-400 contrast-more:shadow-none contrast-more:dark:border-neutral-400">
+            <button aria-hidden="true" id="backToTop" onClick="scrollUp();" class="transition-all transition duration-75 opacity-0 text-xs font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 contrast-more:text-gray-800 contrast-more:dark:text-gray-50">
+          <span>Scroll to top</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="inline ml-1 h-3.5 w-3.5 border rounded-full border-gray-500 hover:border-gray-900 dark:border-gray-400 dark:hover:border-gray-100 contrast-more:border-gray-800 contrast-more:dark:border-gray-50">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                </svg>
+            </button>
+        </div>
+
+        <h3><strong>Share the article:</strong></h3>
+        <div class="share-buttons">
+            <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=Hunting&#43;for&#43;%27Snake%27&url=%2f%2flocalhost%3a1313%2farticles%2f2023%2f05%2f2023-05-26-hunting-for-snake" target="_blank" rel="noopener" aria-label="">
+                <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg>
+                </div>
+                </div>
+            </a>
+            <a class="resp-sharing-button__link" href="mailto:?subject=Hunting&#43;for&#43;%27Snake%27&body=%2f%2flocalhost%3a1313%2farticles%2f2023%2f05%2f2023-05-26-hunting-for-snake" target="_self" rel="noopener" aria-label="">
+                <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg>
+                </div>
+                </div>
+            </a>
+            <a class="resp-sharing-button__link" href="https://www.linkedin.com/shareArticle?mini=true&url=%2f%2flocalhost%3a1313%2farticles%2f2023%2f05%2f2023-05-26-hunting-for-snake&summary=Hunting&#43;for&#43;%27Snake%27&source=Hunting&#43;for&#43;%27Snake%27" target="_blank" rel="noopener" aria-label="">
+                <div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z"/></svg>
+                </div>
+                </div>
+            </a>
+            <a class="resp-sharing-button__link" href="whatsapp://send?text=Hunting&#43;for&#43;%27Snake%27" target="_blank" rel="noopener" aria-label="">
+                <div class="resp-sharing-button resp-sharing-button--whatsapp resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.1 3.9C17.9 1.7 15 .5 12 .5 5.8.5.7 5.6.7 11.9c0 2 .5 3.9 1.5 5.6L.6 23.4l6-1.6c1.6.9 3.5 1.3 5.4 1.3 6.3 0 11.4-5.1 11.4-11.4-.1-2.8-1.2-5.7-3.3-7.8zM12 21.4c-1.7 0-3.3-.5-4.8-1.3l-.4-.2-3.5 1 1-3.4L4 17c-1-1.5-1.4-3.2-1.4-5.1 0-5.2 4.2-9.4 9.4-9.4 2.5 0 4.9 1 6.7 2.8 1.8 1.8 2.8 4.2 2.8 6.7-.1 5.2-4.3 9.4-9.5 9.4zm5.1-7.1c-.3-.1-1.7-.9-1.9-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1s-1.2-.5-2.3-1.4c-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6s.3-.3.4-.5c.2-.1.3-.3.4-.5.1-.2 0-.4 0-.5C10 9 9.3 7.6 9 7c-.1-.4-.4-.3-.5-.3h-.6s-.4.1-.7.3c-.3.3-1 1-1 2.4s1 2.8 1.1 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.3-.3-.4-.6-.5z"/></svg>
+                </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    </nav>
+
+
+    <article class="w-full break-words flex min-h-[calc(100vh-var(--navbar-height))] min-w-0 justify-center pb-8 pr-[calc(env(safe-area-inset-right)-1.5rem)]">
+        <main class="w-full min-w-0 max-w-6xl px-6 pt-4 md:px-12 single">
+            <div class="mt-1.5 flex items-center gap-1 overflow-hidden text-sm text-gray-500 dark:text-gray-400 contrast-more:text-current">
+      <div class="whitespace-nowrap transition-colors min-w-[24px] overflow-hidden text-ellipsis hover:text-gray-900 dark:hover:text-gray-100">
+        <a href="//localhost:1313/articles/">Latest Articles</a>
+      </div><svg class="w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg><div class="whitespace-nowrap transition-colors font-medium text-gray-700 contrast-more:font-bold contrast-more:text-current dark:text-gray-100 contrast-more:dark:text-current">Hunting for &#39;Snake&#39;</div>
+</div>
+
+            <h1 class="mt-2 text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Hunting for &#39;Snake&#39;</h1>
+            <div class="mt-4 mb-4 text-gray-500 text-sm flex items-center flex-wrap gap-y-2"><span class="mr-1">May 26, 2023</span><span class="mr-1">,</span><span class="mx-1">francescoiulio</span></div>
+            <div class="content">
+                <p>Following the NCSC and CISA’s detailed <a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-129a" target="_blank" rel="noopener">joint advisory</a> on the highly sophisticated ‘Snake’ cyber espionage tool, JUMPSEC threat intelligence analysts have provided a condensed blueprint for organisations to start proactively hunting for Snake within their network, contextualising key Indicators of Compromise (IoC), and providing additional methods to validate the effectiveness of Snake detections.</p>
+<h1>Snake’s capabilities</h1><p>The implant dubbed ‘Snake’ has been attributed to Centre 16 of Russia’s state sponsored FSB. The tool has been collecting intelligence in over 50 countries for up to 20 years, targeting research facilities, government networks, financial services, communications organisations, and other Critical National Infrastructure (CNI) organisations, meaning these organisations should be particularly vigilant and take precautionary steps to protect their networks.</p>
+<p>Described by CISA as Centre 16’s “most sophisticated cyber espionage tool for long-term intelligence collection”, Snake typically targets and infects external facing infrastructure, with its ultimate aim to compromise domain controllers and administrator accounts, enabling attackers to gain widespread access and control within targeted networks.</p>
+<p>Snake achieves these aims though a combination of several advanced technical features:</p>
+<ul>
+<li>
+<p>A decentralised model - While the majority of malicious implants listen to and report back to a central node (i.e C2 or Command and Control Server) as part of a centralised infrastructure, Snake leverages a “decentralised” Peer-to-peer (P2P) network, supported by active implants residing on infected systems. As no centralised node acts as C2, commands and their output can be sent, received or retrieved all within the P2P network as nodes communicate with each other to route traffic and store information.</p>
+</li>
+<li>
+<p>Indistinguishable from legitimate traffic - FSB operators can ensure that all traffic to targeted machines follow the Snake custom HTTP protocol effectively blending with legitimate traffic when using a compromised HTTP server as part of the Snake P2P network.</p>
+</li>
+<li>
+<p>Numerous containerised tools and techniques – The implant conceals a plethora of tools, including network sniffers and keyloggers that can enable further compromise of target networks.</p>
+</li>
+<li>
+<p>Operating as a Kernel Driver (rootkit capabilities / kernel driver) – The aforementioned concealed techniques and tools can subsequently infect machines in Kernel Land while simultaneously leveraging active and passive operational mechanisms to achieve its aims.</p>
+</li>
+<li>
+<p>High degree of persistence – To achieve persistence Snake generally registers a service called &ldquo;WerFaultSvc&rdquo; that executes Snake&rsquo;s WerFault.exe located in &ldquo;%windows%\WinSxS\&rdquo;, which decrypts Snake&rsquo;s components and loads them into memory.</p>
+</li>
+</ul>
+<p>The fact that Snake is state sponsored also adds additional resourcing capability, motivation, persistence and potential impact, making this a particularly potent threat given Russian efforts to influence political processes, conduct espionage, and disrupt critical infrastructure.</p>
+<h1>How to detect Snake</h1><p>There are numerous threat hunting techniques that can be deployed to detect Snake. However, depending on the type of infrastructure or response mechanisms your organisation has in place, certain techniques may prove more or less effective.</p>
+<p>Here are some points to consider when prioritising how to detect Snake:</p>
+<ul>
+<li>
+<p><strong>Host-Based Detection</strong> - this type of detection is critical and should be performed regardless of the size of your enterprise. It is a high confidence set of rules, which are key to determining if any of Snake’s components are located on machines connected to the network.</p>
+</li>
+<li>
+<p><strong>Network based detection</strong> – these type of detection rules could be particularly useful for large scale identification of Snake communication protocols. Ideal for enterprises using intrusion detection systems or firewalls that support Suricata rules deployment.</p>
+</li>
+<li>
+<p><strong>Memory Analysis</strong> – Another technique to identify Snake is to investigate memory and see if it is executing at known locations. The CSA provides a useful Volatility plugin to perform this analysis. Unfortunately, this is less scalable and more time consuming, however, security researchers are developing alternatives that can help automating the process at larger scale.</p>
+</li>
+<li>
+<p><strong>Other Detection Mechanisms and Sigma Rules</strong> – Sigma rules and Yara rules are being constantly developed as we write and will help speed up and automate the process of hunting for the FSB’s malware. These can often be integrated in SOC/SIEM as well as IR tooling.</p>
+</li>
+<li>
+<p><strong>Purple Team and Atomic Test Cases</strong> – A highly efficient way of identifying and covering the detection gaps in your estate is to utilise a purple team approach, leveraging Atomic Red Team test cases which are being developed specifically for this implant.</p>
+</li>
+</ul>
+<p>JUMPSEC have detailed a number of implementable threat hunting detections which at risk organisations may wish to implement here at JUMPSEC Labs. We recommend using a combination of these approaches to effectively mitigate the threat and remove any reliance on a single point of failure.</p>
+<p><strong>JUMPSEC have not exhaustively detailed each known technique. Additional hunting tools and techniques</strong> <strong>may continue to be developed and JUMPSEC is actively monitoring NCSC and CISA detections to identify</strong> <strong>opportunities where IoCs or TTPs can be leveraged.</strong></p>
+<h2>Host-Based Detection<span class="absolute -mt-20" id="host-based-detection"></span>
+    <a href="#host-based-detection" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>While effective, host-based detections are not without shortcomings within certain environments.</p>
+<p>Host-based detections enable a high degree of confidence based on the totality of positive hits for host-based artifacts, however, many artifacts on the host are easily shifted to exist in a different location, or with a different name, as the files are fully encrypted and accurately identifying these files is difficult.</p>
+<p>To combat these limitations JUMPSEC advises that host-based detection is integration with further manual analysis of positive hits.</p>
+<p>Multiple Snake components can be detected running in the system using different Indicators of Compromise. For example, the Covert Store generated by the implant, can present the following hardcoded encryption key (not always, depending on the malware operator):</p>
+<blockquote>
+<p>A1 D2 10 B7 60 5E DA 0F A1 65 AF EF 79 C3 66 FA</p></blockquote>
+<p>And the same key can be retrieved from the following Windows Registry path when stored:</p>
+<blockquote>
+<p>SECURITY\Policy\Secrets\n</p></blockquote>
+<p>Furthermore, the following initial 8-byte sequences are known to be used by NTFS or FAT-16 filesystems as observed:</p>
+<blockquote>
+<p>EB 52 90 4E 54 46 53 20</p>
+<p>EB 5B 90 4E 54 46 53 20</p>
+<p>EB 3C 90 4D 53 44 4F 53</p>
+<p>EB 00 00 00 00 00 00 00</p></blockquote>
+<p>By encrypting each possible initial filesystem byte sequence with CAST-128 using the key obtained from the registry and searching for a file with a size that is an even multiple of 220, it is possible to efficiently detect Snake covert stores.</p>
+<p>Another component is the <strong>Registry Blob</strong> which might appear in the Windows registry when searching for a value of at least 0x1000 bytes in size and a High entropy value of at least 7.9. However, it can typically be found using the following information when its values are left as default:</p>
+<p><strong>Name:</strong> Unknown (RegBlob)</p>
+<p><strong>Registry Path:</strong> HKLM\SOFTWARE\Classes\.wav\OpenWithProgId</p>
+<p><strong>Characteristics:</strong> High Entropy</p>
+<p>Additionally, Snake’s Queue File can be located leveraging a file-system search with a Regular Expression together with searching for High Entropy files using the Yara Rule listed further below. Typically the Queue File can be found with the following information:</p>
+<p><strong>Typical Name:</strong> &lt; RANDOM_GUID &gt;.&lt;RANDOM_GUID&gt;.crmlog</p>
+<p><strong>Typical Path:</strong> %windows\registration\</p>
+<p><strong>Unique Characteristics:</strong> High Entropy, file attributes of hidden, system, and archive</p>
+<p><strong>Role:</strong> Snake Queue File</p>
+<p>The following Yara rule (named 1.yar) can be used in conjunction with the subsequently listed UNIX and PowerShell commands to detect instances of the Snake Queue FIle:</p>
+<p>1.yar</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>rule HighEntropy
+{
+    meta:
+        description = &#34;entropy rule&#34;
+
+    condition:
+        math.entropy(0, filesize) &gt;= 7.0
+}</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<p>UNIX command:</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>find /PATH/TO/WINDOWS_DIR -type f -regextype posix-egrep -iregex \
+    &#39;.*\/registration/(\{[0-9A-F]{8}\-([0-9A-F]{4}\-){3}[0-9A-F]{12}\}\.){2}crmlog&#39; \
+     -exec yara 1.yar {} \;</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<p>PowerShell command:</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>Get-ChildItem -Recurse -File -Path %WINDOWS% | Where-Object {
+  $_.FullName -match
+  &#39;(?i)/registration/(\{[0-9A-F]{8}\-([0-9A-F]{4}\-){3}[0-9A-F]{12}\}\.){2}crmlog$&#39;
+} | ForEach-Object {
+  yara 1.yar $_.FullName
+}</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<p>Moreover, we can use the Yara rules with the last two components that might indicate the malware running on the host machine: comadmin and werfault.</p>
+<p>Comadmin can be detected using the following information and the previously mentioned Yara rule (1.yar):</p>
+<p><strong>Name:</strong> comadmin.dat</p>
+<p><strong>Path:</strong> %windows%\system32\Com</p>
+<p><strong>Unique Characteristics:</strong> High Entropy</p>
+<p><strong>Role:</strong> Houses Snake’s kernel driver and the driver’s loader</p>
+<p>Leveraging the previously stated Yara rule (1.yar) we can use the following UNI or PowerShell commands:</p>
+<p>UNIX</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>find /PATH/TO/WINDOWS -type f -regextype posix-egrep -iregex \
+    &#39;.*\/system32/Com/comadmin\.dat&#39; \
+     -exec yara 1.yar {} \;</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<p>PowerShell</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>Get-ChildItem -Recurse -File -Path %WINDOWS% | Where-Object {
+    $_.FullName -match &#39;(?i)/system32/Com/comadmin\.dat$&#39;
+} | ForEach-Object {
+    yara 1.yar $_.FullName
+}</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<p>On the other end, the Werfault executable can be retrieved due to its use of non-standard icon-size and by using the information and the Yara rule stated below:</p>
+<p><strong>Name:</strong> Werfault.exe</p>
+<p><strong>Path:</strong> %windows%\WinSxS\x86_microsoft-windows-errorreportingfaults_31bf3856ad364e35_4.0.9600.16384_none_a13f7e283339a0502\</p>
+<p><strong>Unique Characteristics:</strong> Icon is different than that of a valid Windows Werfault.exe file</p>
+<p><strong>Role:</strong> Persistence mechanism</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>rule PeIconSizes
+{
+    meta:
+        description = &#34;werfault rule&#34;
+
+    condition:
+        pe.is_pe 
+        and 
+        for any rsrc in pe.resources:
+            (rsrc.type == pe.RESOURCE_TYPE_ICON and rsrc.length == 3240)
+        and
+        for any rsrc in pe.resources:
+            (rsrc.type == pe.RESOURCE_TYPE_ICON and rsrc.length == 1384)
+        and
+        for any rsrc in pe.resources:
+            (rsrc.type == pe.RESOURCE_TYPE_ICON and rsrc.length == 7336)
+}</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<p>Several tools can be used for the above-mentioned rules. Often SOC/SIEM platforms offer capabilities to automate this process once a blueprint of the hunt has been developed and integrated.</p>
+<p>If you currently don&rsquo;t have any detection and response tooling, we recommend deploying one of the excellent open-source tools available online (we regularly use <a href="https://github.com/Velocidex/velociraptor" target="_blank" rel="noopener">Velociraptor</a>) to perform a hunt in your estate can integrate well with host-based hunting, allowing you to identify and respond to threats in conjunction with the techniques and rules mentioned above.</p>
+<h2>Network-based Detection<span class="absolute -mt-20" id="network-based-detection"></span>
+    <a href="#network-based-detection" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Network-based detection enables high-confidence for large-scale (network-wide) detection of custom Snake communication protocols. However, there is low visibility of Snake implant operations and encrypted data in transit.  Snake http, http2, and tcp signatures also potentially produce false positives and Snake operators can easily change network-based signatures.</p>
+<p>To counteract this, JUMPSEC recommend implementing Suricata rules to your NIDS appliances the following rules will enable you to detect http, http2 and tcp communication as leveraged by the implant. Further details can also be found within the <a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-129a" target="_blank" rel="noopener">advisory</a>.</p>
+<h3>Snake http rule<span class="absolute -mt-20" id="snake-http-rule"></span>
+    <a href="#snake-http-rule" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>The following RegEx can be used to build rules matching the http and http2 traffic contained within the HTTP header field.</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>^[0-9A-Za-z]{10}[0-9A-Za-z/\&#43;]{11}=</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<p>Which can be used in a Suricata rule as follows:</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>alert http any any -&gt; any any (msg: &#34;http rule (Cookie)&#34;;\
+    pcre:&#34;/[0-9A-Za-z]{10}[0-9A-Za-z\/\&#43;]{11}=/C&#34;;\
+    flow: established, to_server;\
+    sid: 7; rev: 1;)
+alert http any any -&gt; any any (msg: &#34;http rule (Other Header)&#34;;\
+    pcre:&#34;/[0-9A-Za-z]{10}[0-9A-Za-z\/\&#43;]{11}=/H&#34;;\
+    flow: established, to_server;\
+    sid: 8; rev: 1;)</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<h3>Snake http2 rule<span class="absolute -mt-20" id="snake-http2-rule"></span>
+    <a href="#snake-http2-rule" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>For http2, the implant’s header is encoded using base62 with non-extraneous characters. The following RegEx should be able to identify matches of such a header:</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>      ^[0-9A-Za-z]{22}[0-9A-Za-z/;_=]{11}
+alert http any any -&gt; any any (msg: &#34;http2 rule (Cookie)&#34;;\
+    pcre:&#34;/[0-9A-Za-z]{22}[0-9A-Za-z\/_=\;]{11}/C&#34;;\
+    flow: established, to_server;\
+    sid: 9; rev: 1;)
+alert http any any -&gt; any any (msg: &#34;http2 rule (Other Header)&#34;;\
+    pcre:&#34;/[0-9A-Za-z]{22}[0-9A-Za-z\/_=\;]{11}/H&#34;;\
+    flow: established, to_server;\
+    sid: 10; rev: 1;)</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<h3>Snake tcp rule<span class="absolute -mt-20" id="snake-tcp-rule"></span>
+    <a href="#snake-tcp-rule" class="subheading-anchor" aria-label="Permalink for this section"></a></h3><p>The following rule helps capture the signature set during the client-to-server communication for tcp, which usually starts with “ustart”, as well as subsequent data flows that match the malware’s behaviour.</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code>alert tcp any any -&gt; any any (msg: &#34;tcp rule&#34;;\
+    content: &#34;|00 00 00 08|&#34;; startswith; dsize: 12;\
+    flow: established, to_server; flowbits: set, a8; flowbits: noalert;\
+    sid: 1; rev: 1;)
+alert tcp any any -&gt; any any (msg: &#34;tcp rule&#34;;\
+    content: &#34;|00 00 00 04|&#34;; startswith; dsize:8;\
+    flow: established, to_server; flowbits: isset, a8; flowbits: unset, a8;\
+    flowbits: set, a4; flowbits: noalert;\
+    sid: 2; rev: 1;)
+alert tcp any any -&gt; any any (msg: &#34;tcp rule&#34;;\
+    content: &#34;|00 00 00 08|&#34;; startswith; dsize: 4;\
+    flow: established, to_client; flowbits: isset, a4; flowbits: unset, a4;\
+    flowbits: set, b81; flowbits: noalert;\
+    sid: 3; rev: 1;)
+alert tcp any any -&gt; any any (msg: &#34;tcp rule&#34;;\
+    dsize: 8; flow: established, to_client; flowbits: isset, b81;\
+    flowbits: unset, b81; flowbits: set, b8; flowbits: noalert;\
+    sid: 4; rev: 1;)
+alert tcp any any -&gt; any any (msg: &#34;tcp rule&#34;;\
+    content: &#34;|00 00 00 04|&#34;; startswith; dsize: 4;\
+    flow: established, to_client; flowbits: isset, b8; flowbits: unset, b8;\
+    flowbits: set, b41; flowbits: noalert;\
+    sid: 5; rev: 1;)
+alert tcp any any -&gt; any any (msg: &#34;tcp rule&#34;;\
+    dsize: 4; flow: established, to_client; flowbits: isset, b41;\
+    flowbits: unset, b41;\
+    sid: 6; rev: 1;)</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<h2>Memory Analysis<span class="absolute -mt-20" id="memory-analysis"></span>
+    <a href="#memory-analysis" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Memory analysis also enables a high degree of detection confidence as memory provides the greatest level of visibility into Snake’s behaviour and artifacts. However, it has the potential to impact system stability, is difficult to scale, and can be a time-consuming process.</p>
+<p>The joint advisory suggests the following as the most effective approach to detect the implant on an infected host and it provides a script to be used alongside Volatility and a memory dump of the target infected machine.</p>
+<div class="code-block relative mt-6 first:mt-0 group/code"><pre><code># This plugin to identify the injected usermode component of Snake is based 
+# on the malfind plugin released with Volatility3
+#
+# This file is Copyright 2019 Volatility Foundation and licensed under the 
+# Volatility Software License 1.0
+# which is available at https://www.volatilityfoundation.org/license/vsl-v1.0
+import logging
+from typing import Iterable, Tuple
+from volatility3.framework import interfaces, symbols, exceptions, renderers
+from volatility3.framework.configuration import requirements
+from volatility3.framework.objects import utility
+from volatility3.framework.renderers import format_hints
+from volatility3.plugins.windows import pslist, vadinfo
+vollog = logging.getLogger(__name__)
+class snake(interfaces.plugins.PluginInterface):
+    _required_framework_version = (2, 4, 0)
+    
+    @classmethod
+    def get_requirements(cls):
+        return [
+            requirements.ModuleRequirement(name = &#39;kernel&#39;, 
+            description = &#39;Windows kernel&#39;, 
+            architectures = [&#34;Intel32&#34;, &#34;Intel64&#34;]),
+            requirements.VersionRequirement(name = &#39;pslist&#39;, 
+            component = pslist.PsList, version = (2, 0, 0)),
+            requirements.VersionRequirement(name = &#39;vadinfo&#39;, 
+            component = vadinfo.VadInfo, version = (2, 0, 0))]
+
+    @classmethod
+    def list_injections(
+            cls, context: interfaces.context.ContextInterface, 
+            kernel_layer_name: str, symbol_table: str,
+            proc: interfaces.objects.ObjectInterface) -&gt; Iterable[
+            Tuple[interfaces.objects.ObjectInterface, bytes]]:
+        proc_id = &#34;Unknown&#34;
+        try:
+            proc_id = proc.UniqueProcessId
+            proc_layer_name = proc.add_process_layer()
+        except exceptions.InvalidAddressException as excp:
+            vollog.debug(&#34;Process {}: invalid address {} in layer {}&#34;.
+            format(proc_id, excp.invalid_address, excp.layer_name))
+            return
+        proc_layer = context.layers[proc_layer_name]
+        for vad in proc.get_vad_root().traverse():
+            protection_string = vad.get_protection(vadinfo.VadInfo.
+            protect_values(context, kernel_layer_name, symbol_table), 
+            vadinfo.winnt_protections)
+            if not &#34;PAGE_EXECUTE_READWRITE&#34; in protection_string:
+                continue
+
+            if (vad.get_private_memory() == 1
+                    and vad.get_tag() == &#34;VadS&#34;) or (vad.get_private_memory() 
+                    == 0 and protection_string != 
+                    &#34;PAGE_EXECUTE_WRITECOPY&#34;):
+                data = proc_layer.read(vad.get_start(), 
+                vad.get_size(), pad = True)
+                if data.find(b&#39;\x4d\x5a&#39;) != 0:
+                    continue
+                yield vad, data
+
+    def _generator(self, procs):
+        kernel = self.context.modules[self.config[&#39;kernel&#39;]]
+        is_32bit_arch = not symbols.symbol_table_is_64bit(self.context, 
+        kernel.symbol_table_name)
+        for proc in procs:
+            process_name = utility.array_to_string(proc.ImageFileName)
+            for vad, data in self.list_injections(self.context, 
+            kernel.layer_name, kernel.symbol_table_name, proc):
+                strings_to_find = [b&#39;\x25\x73\x23\x31&#39;,b&#39;\x25\x73\x23\x32&#39;,
+                b&#39;\x25\x73\x23\x33&#39;,b&#39;\x25\x73\x23\x34&#39;, 
+                b&#39;\x2e\x74\x6d\x70&#39;, b&#39;\x2e\x73\x61\x76&#39;,
+                b&#39;\x2e\x75\x70\x64&#39;]
+                if not all(stringToFind in data for 
+                stringToFind in strings_to_find):
+                    continue
+                yield (0, (proc.UniqueProcessId, process_name, 
+                format_hints.Hex(vad.get_start()),
+                           format_hints.Hex(vad.get_size()),
+                           vad.get_protection(
+                               vadinfo.VadInfo.protect_values(self.context, 
+                kernel.layer_name, kernel.symbol_table_name), 
+                vadinfo.winnt_protections)))
+                return
+
+    def run(self):
+        kernel = self.context.modules[self.config[&#39;kernel&#39;]]
+        return renderers.TreeGrid([(&#34;PID&#34;, int), (&#34;Process&#34;, str), 
+        (&#34;Address&#34;, format_hints.Hex), (&#34;Length&#34;, format_hints.Hex), 
+        (&#34;Protection&#34;, str)], self._generator(pslist.PsList.list_processes(
+        context = self.context, layer_name = kernel.layer_name,  
+        symbol_table = kernel.symbol_table_name)))</code></pre><div class="opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0">
+    <button
+      class="code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50"
+      title="Copy code"
+    >
+      <div class="group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4"></div>
+      <div class="hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4"></div>
+    </button>
+  </div>
+</div>
+<p>Security researchers are currently developing detections and rules to speed up the memory analysis process. For example, Matt Suiche, Director of Incident Response R&amp;D at Magnet Forensics (MAGT:TO), has recently developed a <a href="https://gist.github.com/msuiche/8c8fd278430dda0292b4cfdfc549ca2d" target="_blank" rel="noopener">YARA rule</a> based on the above Volatility plugin to look into memory and identify snake.</p>
+<h2>Other Detection Mechanisms and Sigma Rules<span class="absolute -mt-20" id="other-detection-mechanisms-and-sigma-rules"></span>
+    <a href="#other-detection-mechanisms-and-sigma-rules" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>Researchers at the open-source project SigmaHQ have also started developed rules that will help hunt for the malware and detect when it performs malicious operations in the network which can be found <a href="https://github.com/SigmaHQ/sigma/pull/4231/files" target="_blank" rel="noopener">here</a>.</p>
+<p>As of now, the rules currently developed include:</p>
+<ul>
+<li>
+<p>SNAKE Malware Kernel Driver File Indicator</p>
+</li>
+<li>
+<p>Malware Installer Name Indicators</p>
+</li>
+<li>
+<p>Malware WerFault Persistence File Creation</p>
+</li>
+<li>
+<p>Potential SNAKE Malware Installation CLI Arguments Indicator</p>
+</li>
+<li>
+<p>SNAKE Malware Installation Binary Indicator</p>
+</li>
+<li>
+<p>Potential SNAKE Malware Persistence Service Execution</p>
+</li>
+<li>
+<p>SNAKE Malware Covert Store Registry Key</p>
+</li>
+<li>
+<p>Potential Encrypted Registry Blob Related To SNAKE Malware</p>
+</li>
+<li>
+<p>SNAKE Malware Service Persistence</p>
+</li>
+</ul>
+<p>Should a different set of rules be needed for your specific EDR or SOC/SIEM it is possible to utilise the extremely helpful open-source resource <a href="https://uncoder.io/" target="_blank" rel="noopener">Uncoder</a> to convert rules.</p>
+<h1>Long-term prevention</h1><p>If you believe your organisation is at risk, JUMPSEC recommends building an Incident Response Plan and a dedicated team to monitor and effectively respond to the threats posed by Snake, in order to meaningfully utilise and validate the detection techniques outlined above.</p>
+<p>To ensure that implemented detections are effective JUMPSEC recommends:</p>
+<ul>
+<li>
+<p>Using Atomic Red Team and Purple Team approaches to ingest and execute techniques used by Snake in your network to identify gaps in detection capabilities. For Purple Team Testing, security researchers at Red Canary have already started developing open-source Atomic Red Team test cases to simulate Snake which can be found <a href="https://github.com/redcanaryco/atomic-red-team/pull/2418" target="_blank" rel="noopener">here</a>.</p>
+</li>
+<li>
+<p>Actively hunting for Snake malware using endpoint and network detection tooling. Third party security providers such as JUMPSEC can assist with deployment and integration with existing detection and response platforms to monitor and prioritise critical instances of malicious activity.</p>
+</li>
+<li>
+<p>Deploying Canary Tokens in your estate where possible. Canary Tokens can serve as early warning systems as part of your organisations broader security strategy.</p>
+</li>
+<li>
+<p>Ensuring you have an adequate incident response plan that is ready to deploy. This may include baselining or reviewing existing response processes and procedures. In the event that a Snake is identified, incident response plans can be triggered, affected hosts quarantined, back-up systems deployed, and any other steps deemed necessary to secure the environment can be taken.</p>
+</li>
+</ul>
+<p>Additionally, Snake typically achieves network intrusion by exploiting vulnerable, publicly available infrastructure via targeted phishing and social engineering campaigns, meaning that organisations should rigorously review potential vulnerabilities in externally facing assets.</p>
+<h2>MFA and credential management<span class="absolute -mt-20" id="mfa-and-credential-management"></span>
+    <a href="#mfa-and-credential-management" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><p>As an FSB espionage tool gathering credentials for up to 20 years, JUMPSEC would additionally echo that organisations who have not already embedded standard best practice when it comes to MFA and credential management should implement appropriate measures. For example:</p>
+<ul>
+<li>
+<p>Change account credentials to values which cannot be brute forced or guessed based on old passwords, requiring minimum password strengths and unique credentials for every account.</p>
+</li>
+<li>
+<p>Use appropriate role separation, account permissions and separate user and privileged accounts.</p>
+</li>
+<li>
+<p>Implement phishing-resistant MFA or go passwordless if possible (Biometrics and FIDO2 keys).</p>
+</li>
+<li>
+<p>Deploy digitally signed Security.txt files to all public facing web domains which conform to the recommendations in RFC 9118.</p>
+</li>
+</ul>
+<p>As a final note, JUMPSEC recommend reporting any Indicators of Compromise (IoCs) to the relevant authorities (NCSC for UK based organisations), as well as the wider security community where appropriate.</p>
+<h2>Helpful Links<span class="absolute -mt-20" id="helpful-links"></span>
+    <a href="#helpful-links" class="subheading-anchor" aria-label="Permalink for this section"></a></h2><ul>
+<li>CISA Advisory - <a href="https://www.cisa.gov/sites/default/files/2023-05/aa23-129a" target="_blank" rel="noopener">https://www.cisa.gov/sites/default/files/2023-05/aa23-129a</a>_snake_malware_1.pdf</li>
+<li>RFC 9118 - <a href="https://datatracker.ietf.org/doc/rfc9118/" target="_blank" rel="noopener">https://datatracker.ietf.org/doc/rfc9118/</a></li>
+<li>Canary Tokens - <a href="https://canarytokens.org/generate" target="_blank" rel="noopener">https://canarytokens.org/generate</a></li>
+<li>Guide to setup security.exe - <a href="https://securitytxt.org/" target="_blank" rel="noopener">https://securitytxt.org/</a></li>
+<li>Mitre - <a href="https://attack.mitre.org/" target="_blank" rel="noopener">https://attack.mitre.org/</a></li>
+<li>SigmaHQ rules - <a href="https://github.com/SigmaHQ/sigma" target="_blank" rel="noopener">https://github.com/SigmaHQ/sigma</a></li>
+</ul>
+
+            </div>
+            <div class="mt-16"></div>
+            
+            <div class="mb-8 flex items-center border-t pt-8 dark:border-neutral-800 contrast-more:border-neutral-400 dark:contrast-more:border-neutral-400 print:hidden"><a
+        href="/articles/2023/05/2023-05-23-advisory-cve-2023-30382-half-life-local-privilege-escalation/"
+        title="&lt;strong&gt;Advisory CVE-2023-30382 – Half-Life Local Privilege Escalation&lt;/strong&gt;"
+        class="flex max-w-[50%] items-center gap-1 py-4 text-base font-medium text-gray-600 transition-colors [word-break:break-word] hover:text-primary-600 dark:text-gray-300 md:text-lg ltr:pr-4 rtl:pl-4"
+      ><svg class="inline h-5 shrink-0 ltr:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>&lt;strong&gt;Advisory CVE-2023-30382 – Half-Life Local Privilege Escalation&lt;/strong&gt;</a><a
+        href="/articles/2023/06/2023-06-09-ligolo-quality-of-life-on-red-team-engagements/"
+        title="Ligolo: Quality of Life on Red Team Engagements"
+        class="flex max-w-[50%] items-center gap-1 py-4 text-base font-medium text-gray-600 transition-colors [word-break:break-word] hover:text-primary-600 dark:text-gray-300 md:text-lg ltr:ml-auto ltr:pl-4 ltr:text-right rtl:mr-auto rtl:pr-4 rtl:text-left"
+      >Ligolo: Quality of Life on Red Team Engagements<svg class="inline h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></a></div>
+            
+        </main>
+    </article>
+</div>
+
+      <footer class="hextra-footer bg-gray-100 pb-[env(safe-area-inset-bottom)] dark:bg-neutral-900 print:bg-transparent"><div
+            class="max-w-screen-xl mx-auto flex justify-center py-12 pl-[max(env(safe-area-inset-left),1.5rem)] pr-[max(env(safe-area-inset-right),1.5rem)] text-gray-600 dark:text-gray-400 md:justify-start"
+    >
+        <div class="flex w-full flex-col items-center sm:items-start">
+            <div class="flex w-4 flex-col items-center sm:items-start">
+                <div class="social-links">
+                    <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://twitter.com/JumpsecLabs" title="Twitter"><svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"></path></svg><span class="sr-only">Twitter</span></a>
+                    <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.linkedin.com/company/jumpsec/" title="LinkedIn"><svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037c-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85c3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065a2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg><span class="sr-only">LinkedIn</span></a>
+                    <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.youtube.com/channel/UCXSbS5DNUZA2LNidrb67tvw" title="YouTube"><svg height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="currentColor" d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104l.022.26l.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105l-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006l-.087-.004l-.171-.007l-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103l.003-.052l.008-.104l.022-.26l.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007l.172-.006l.086-.003l.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"></path></svg><span class="sr-only">YouTube</span></a>
+                    <a class="p-2 text-current" target="_blank" rel="noreferer" href="https://www.github.com/JUMPSECLabs" title="GitHub"><svg height="24" fill="currentColor" viewBox="3 3 18 18"><path d="M12 3C7.0275 3 3 7.12937 3 12.2276C3 16.3109 5.57625 19.7597 9.15374 20.9824C9.60374 21.0631 9.77249 20.7863 9.77249 20.5441C9.77249 20.3249 9.76125 19.5982 9.76125 18.8254C7.5 19.2522 6.915 18.2602 6.735 17.7412C6.63375 17.4759 6.19499 16.6569 5.8125 16.4378C5.4975 16.2647 5.0475 15.838 5.80124 15.8264C6.51 15.8149 7.01625 16.4954 7.18499 16.7723C7.99499 18.1679 9.28875 17.7758 9.80625 17.5335C9.885 16.9337 10.1212 16.53 10.38 16.2993C8.3775 16.0687 6.285 15.2728 6.285 11.7432C6.285 10.7397 6.63375 9.9092 7.20749 9.26326C7.1175 9.03257 6.8025 8.08674 7.2975 6.81794C7.2975 6.81794 8.05125 6.57571 9.77249 7.76377C10.4925 7.55615 11.2575 7.45234 12.0225 7.45234C12.7875 7.45234 13.5525 7.55615 14.2725 7.76377C15.9937 6.56418 16.7475 6.81794 16.7475 6.81794C17.2424 8.08674 16.9275 9.03257 16.8375 9.26326C17.4113 9.9092 17.76 10.7281 17.76 11.7432C17.76 15.2843 15.6563 16.0687 13.6537 16.2993C13.98 16.5877 14.2613 17.1414 14.2613 18.0065C14.2613 19.2407 14.25 20.2326 14.25 20.5441C14.25 20.7863 14.4188 21.0746 14.8688 20.9824C16.6554 20.364 18.2079 19.1866 19.3078 17.6162C20.4077 16.0457 20.9995 14.1611 21 12.2276C21 7.12937 16.9725 3 12 3Z"></path></svg><span class="sr-only">GitHub</span></a>
+                </div>
+
+                JUMPSEC, Unit 3E - 3F, 33 - 34 Westpoint,<br>
+                Warple Way, Acton<br>
+                W3 ORG
+            </div>
+            <div class="flex w-4 flex-col items-center sm:items-start">
+            </div>
+            <div class="flex w-4 flex-col items-center sm:items-start">
+                To learn more about JUMPSEC's services please get in touch:
+                <br><br>
+                <span>Give us a call: <a href="tel:03339398080" title="0333 939 8080">0333 939 8080</a></span>
+                <br>
+                <span>Send us a message: <a href="mailto:hello@jumpsec.com">hello@jumpsec.com</a></span>
+                <br>
+                <span><a href="https://www.jumpsec.com/careers/" title="Careers">Careers</a></span>
+            </div>
+    </div>
+</footer>
+    
+  </body>
+  <script defer src="/js/main.js" integrity=""></script>
+
+
+<script defer src="/lib/flexsearch/flexsearch.bundle.min.0425860527cc9968f9f049421c7a56b39327d475e2e3a8f550416be3a9134327.js" integrity="sha256-BCWGBSfMmWj58ElCHHpWs5Mn1HXi46j1UEFr46kTQyc="></script>
+    <script defer src="/en.search.js" integrity=""></script>
+
+
+</html>

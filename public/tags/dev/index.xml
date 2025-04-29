@@ -1,0 +1,196 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JUMPSEC – Dev</title>
+    <link>//localhost:1313/tags/dev/</link>
+    <description>Recent content in Dev on JUMPSEC</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <lastBuildDate>Tue, 06 Aug 2024 00:00:00 +0000</lastBuildDate>
+    
+	  <atom:link href="//localhost:1313/tags/dev/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+        
+      
+    
+    
+    <item>
+      <title>How to Handle Development Projects in a Pentest Company</title>
+      <link>//localhost:1313/articles/2024/08/2024-08-06-how-to-handle-development-projects-in-a-pentest-company/</link>
+      <pubDate>Tue, 06 Aug 2024 00:00:00 +0000</pubDate>
+      
+      <guid>//localhost:1313/articles/2024/08/2024-08-06-how-to-handle-development-projects-in-a-pentest-company/</guid>
+      <description>
+        
+        
+        &lt;p&gt;&lt;figure&gt;
+    &lt;img src=&#34;images/stallions.gif&#34; title=&#34;stallions&#34; alt=&#34;stallions&#34; loading=&#34;lazy&#34; /&gt;
+    &lt;figcaption&gt;stallions&lt;/figcaption&gt;
+  &lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;If you are a pentester you probably never really think about programming. Instead you are testing what others have developed. However, every now and then a quick python or bash script is needed to exploit some stuff you have found, or automate a certain process you are using. &lt;/p&gt;
+&lt;p&gt;Things become interesting when you are in a penetration testing company that has many strong penetration testers and everyone writes these scripts. Clearly each script solves a particular problem, either for the tester or the team. So how do we ensure, that:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;No time is wasted on writing the same scripts others have already written&lt;/li&gt;
+&lt;li&gt;We keep the knowledge available when team members leave the business&lt;/li&gt;
+&lt;li&gt;Ensure that any code is understandable for everyone&lt;/li&gt;
+&lt;li&gt;Ensure that the knowledge in regards to the script is preserved for others to use.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The more scripts that are written, the more knowledge goes into code. Code needs maintenance. Suddenly we find ourselves in the same situation as any other software development company. With a difference though, the life expectancy for a script is often just for a single project that lasts up to one month. Meaning, the code goes into hibernation, people forget about it or someone might remember it eight months later on another project. What you might end up with is an unmaintained self hosted gitlab instance with 200 projects, that no one knows anything about. What makes it even more chaotic is the usage of different languages that testers are comfortable with. Some might have a stronger background in Ruby, some really like using Golang. Others might write Typescript instead of Javascript. Don’t forget about Rust, all the C languages and maybe even some good old PHP. &lt;/p&gt;
+&lt;p&gt;I want to share my knowledge about these issues and how we tackle them at JUMPSEC. We are fortunate enough to have a dedicated development team given we work on larger projects, such as our proprietary solution that is the backbone to our Continuous Attack Surface Management service. &lt;/p&gt;
+&lt;h1&gt;Understanding the basics&lt;/h1&gt;&lt;p&gt;Before we tackle anything, we must understand the root cause for any problem. You might want to skip this section and jump straight into the solution areas below as this is non technical and very dry. &lt;/p&gt;
+&lt;p&gt;At the very top, we should understand how important development is and understand the differences and challenges a penetration testing company has. &lt;/p&gt;
+&lt;p&gt;In general, a developer gets paid to work on a product that solves a problem for a customer. They do not get paid to write code, as plenty of juniors might think. A penetration tester is getting paid to write a report that outlines the security issues a client has. In the background a developer must write code to make their product usable, while a security expert chooses to make use of programming to help with a certain problem (but might never need to). &lt;/p&gt;
+&lt;p&gt;If we look at this from a very high level, it should be clear that a developer has much more experience handling code, compared to a general security researcher, simply due to the time they spend on programming. There are of course exceptions, where you have a team member that moved from development to cyber security in their professional career. But remember, you are only as strong as the weakest link. &lt;/p&gt;
+&lt;p&gt;Which brings us directly to the &lt;em&gt;people problem&lt;/em&gt;. It is already difficult to find new employees for a penetration testing company. The pool of experts is small and there is a worldwide shortage. Why would one make the pool even smaller, by requiring from a potential candidate that they know 10 different programming languages that might be used within the business? &lt;/p&gt;
+&lt;p&gt;This brings us to some very important and specific requirements for our solution: &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;We must define what programming languages are used amongst the team&lt;/li&gt;
+&lt;li&gt;Our solution cannot prohibit us from reducing the number of candidates &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Lets focus on the level of expertise and what we do with the weakest link and the most experienced developer on our pentest team. &lt;/p&gt;
+&lt;p&gt;Generally, from my experience, penetration testers are not shy to play around with technology and are not afraid to break things. It is kinda part of the job description. So setting up a new environment for a project, like a C2 infrastructure is not really scarce. &lt;/p&gt;
+&lt;p&gt;However, the approach between a developer, possibly with fullstack and devops experience, will differ from that of a security researcher. &lt;/p&gt;
+&lt;p&gt;I believe in the year 2024 it is basic knowledge to set up stuff with docker and docker compose. However, I also think that it is not common to know your way around k8s, minicube and helm. Let alone I would never expect a pentester to be able to setup a full infrastructure as code project with Terraform, Ansible and Azure. Most certainly, not in an ad hoc situation for an adversarial simulation or similar pentest project. &lt;/p&gt;
+&lt;p&gt;What if some members of the team are able to do that though? Well, the moment you start deploying projects in a very professional manner with lots of experience behind it, it becomes only manageable by the people that have that experience and exposure to the project. In other words, if your person leaves the business you start to have an unknown skeleton on your infrastructure, in some cases people might not even be able to login because of missing SSH keys. &lt;/p&gt;
+&lt;p&gt;This brings us to the requirements:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Technology used must be easy to learn and should not require lots of specialised expertise&lt;/li&gt;
+&lt;li&gt;Must have the resources to onboard new team members quickly&lt;/li&gt;
+&lt;li&gt;The goal must be that everyone in the business is able to jump on the maintenance call and get stuff solved&lt;/li&gt;
+&lt;li&gt;Do not become dependent on a single person in the business&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1&gt;The solution&lt;/h1&gt;&lt;p&gt;As we know from security and specifically ISO 27001 certifications, it&amp;rsquo;s all fine and great to have documents everywhere, but unless it really becomes the culture of the business, documents are useless. &lt;/p&gt;
+&lt;p&gt;Unfortunately, we won’t be able to make it a culture without a document that clearly defines some processes and gives guidance to new members quickly. &lt;/p&gt;
+&lt;p&gt;Quite frankly, a very well written document can speed up many different areas. &lt;/p&gt;
+&lt;p&gt;Let’s call this document The Developer Handbook. &lt;/p&gt;
+&lt;p&gt;If you have a look around the internet you will find many guides on how to write one. I would like to share with you our, real &amp;amp; currently in use, developer handbook. Furthermore, I will go into some details of some sections going forward. &lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s look into the sections that I believe are required for a successful document.&lt;/p&gt;
+&lt;h2&gt;Format &amp;amp; Location&lt;span class=&#34;absolute -mt-20&#34; id=&#34;format--location&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#format--location&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Documentation for development projects quickly gets outdated, let&amp;rsquo;s start by hosting it on Github and writing it in markdown, so any IDE / text editor can handle it. &lt;/p&gt;
+&lt;p&gt;Versioning is also taken care of by working with git. After all, everyone that does coding should be familiar with some version control system. &lt;/p&gt;
+&lt;p&gt;We will use pandoc to convert the markdown to a PDF version, and in fact an HTML version as well. &lt;/p&gt;
+&lt;h2&gt;Section 1 - Introduction&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-1---introduction&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-1---introduction&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;This section should cover the purpose of the document. Making it clear why people should read it and what the overall expectations are (both for the document and the users).&lt;/p&gt;
+&lt;h2&gt;Section 2- Code of Conduct&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-2--code-of-conduct&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-2--code-of-conduct&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;As we are often building tools that make you think “what if this gets into the wrong hands”, we should remind ourselves why we do it. At the end of the day we are professional researchers that focus on security related subjects. The tools we write are there to make software behave in unintended ways, exploit vulnerabilities or make our life easier. &lt;/p&gt;
+&lt;h2&gt;Section 3 - Defining Programming Languages&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-3---defining-programming-languages&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-3---defining-programming-languages&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;In this section we should emphasise on our ability and set some limits. Sure it&amp;rsquo;s fun to explore new programming languages as a technical person. Frink, Rebol and Forth languages might look interesting during a weekend, but how many other people in the team could help out with those code bases? How quickly can issues be resolved by falling back to Stackoverflow and Google? Just because AI can help you with it, doesn’t mean it makes sense to use it in a business context. Keep those things to personal projects and find a common language everyone feels comfortable with. Usually that is: bash scripting, Python, sometimes Golang and lately more and more people are getting into Rust. &lt;/p&gt;
+&lt;h2&gt;Section 4 - Code Styles&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-4---code-styles&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-4---code-styles&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;This one is probably the most overlooked subject of all. However, it is incredibly useful &amp;amp; helpful to define a coding style for the entire team. It helps a lot, when everyone follows the same code style and no one needs to “adjust their way of reading”. &lt;/p&gt;
+&lt;h2&gt;Section 5 - Editors&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-5---editors&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-5---editors&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Isn’t everyone on Sublime these days? Ah no, Atom looked so much nicer. What about Netbeans, PHPStorm, Eclipse (eh), vim, nano.  Well, and then there is VSCode. &lt;/p&gt;
+&lt;p&gt;At the end of the day it doesn’t really matter which editor you use to write code in. What is more important is the set of features it can provide you to save time by automating tasks, such as formatting code to your set coding style. &lt;/p&gt;
+&lt;p&gt;We went with VSCode. It is available in various “editions”, what matters for us is the extension ecosystem. We make heavy use of mypy, formatting and automated docstrings. solved within the editor and not just via pre-commit.&lt;/p&gt;
+&lt;p&gt;If you are using VSCode, this would also be a good place to have specific configurations shared, including default configurations for developer containers.&lt;/p&gt;
+&lt;h2&gt;Section 6 - Version Control&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-6---version-control&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-6---version-control&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;First of all you want to specify what version control system you want to use. Whether it is git or svn. However, it is more important that this section can help as a “tutorial” on some processes. Sure you would expect everyone to know “git clone”, “git pull”, “git add” and “git commit”. But how about merging? Is this something you expect every consultant to know? What about the language of git? Staging &amp;amp; Stashing are probably the easiest ones. However, never assume that everyone is on the same page as you are. Specifically with development, things can go wrong or be done in many different ways. How do we delete files from the git history again so we don’t expose some secrets? Should we squash and if so when? How to do things and when to do them, without going over the entire git manual is probably a good starting point for this section.&lt;/p&gt;
+&lt;h2&gt;Section 7 - Project Setup&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-7---project-setup&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-7---project-setup&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;The project setup section should cover a few things such as how a project should be structured both in terms of files, how dependencies are managed, what type of files are required. Best practices for public Github repositories, and generally how a project should be managed. &lt;/p&gt;
+&lt;p&gt;Given that we are in a git environment, why not create an example project folder as well? &lt;/p&gt;
+&lt;h2&gt;Section 8 - Testing&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-8---testing&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-8---testing&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;There are many types of tests that can be written for any software project. Most likely performance tests are not the most important ones for pentesting software. However, this section should give some guidelines on what is expected and what testing suite should be used. &lt;/p&gt;
+&lt;p&gt;It can also explain how to set up testing in a new project. How to use setUp and tearDown methods. &lt;/p&gt;
+&lt;h2&gt;Section 9 - CI &amp;amp; CD&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-9---ci--cd&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-9---ci--cd&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Not every project needs a CI/CD process, however, whenever there is one it is imperative that certain actions are being executed. The section should talk about some limits in terms of resources to the company (not everyone has Github Enterprise with thousands of hours of worker times). Which workers should be used, what the authentication process looks like and how images need to be tagged.&lt;/p&gt;
+&lt;h2&gt;Section 10 - Documentation&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-10---documentation&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-10---documentation&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We are entering the inception phase with this one. Writing documentation and guidelines on how to document projects. However, it is a very important subject, as documentation often gets outdated very quickly. &lt;/p&gt;
+&lt;p&gt;There are some solutions, such as self explaining code, building documentation automatically based on docstrings, comments etc. Rather than writing a handbook for each project, the time should be spent on the quality of the project. There might be a specific process that is involved to create documentation files automatically within the CI/CD as new versions are published. &lt;/p&gt;
+&lt;h2&gt;Section 11 - Security&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-11---security&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-11---security&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;Every programming language has some pitfalls. Specifically junior developers might fall for them. An obvious one might be the concatenation of strings rather than using f-strings. There are however many more and often some sort of approach or “library” should be established by developers within your company. Often code is reused, copy &amp;amp; pasted into new projects and simply adjusted. How do we check for security issues? What static code analysers should be used? Are there any requirements in the configuration of these? &lt;/p&gt;
+&lt;h2&gt;Section 12 - Performance&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-12---performance&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-12---performance&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;The performance section is quite an interesting one. Here, it is really up to you how deep you want to go  and how important performance considerations are. They certainly do matter, however, given that as a pentesting company your tools/products don’t serve 100 million end users it makes sense to show some approaches that might be better than introducing more advanced concepts such as multithreaded, multi core, async operations. Of course there are exceptions for certain tools. I suggest not to limit the section to pure technology based performance patterns, but also talk about general performance improvements within coding projects, such as best practices for code maintainability, documentation, dependencies, refactoring and so on.&lt;/p&gt;
+&lt;h2&gt;Section 13 - Accessibility&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-13---accessibility&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-13---accessibility&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We kept this section very short. We do not support any accessibility. All tools must be in English, no translations needed. Nor special support for operation systems, screen readers etc. Our tools are not for “real end users”, they are for the tech community and our team. &lt;/p&gt;
+&lt;p&gt;However, if you do publish something that goes out to clients or end users, it might make sense to think about this section in more depth. &lt;/p&gt;
+&lt;h2&gt;Section 99 - Learning Resources&lt;span class=&#34;absolute -mt-20&#34; id=&#34;section-99---learning-resources&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#section-99---learning-resources&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;This is probably the most important section for new team members, junior team members and anyone that is starting on a project. The handbook should provide some valuable links and collections to tutorials and courses that the team can use to understand certain subjects. There is no harm to also link to your own blog posts. &lt;/p&gt;
+&lt;h1&gt;Give me a real example&lt;/h1&gt;&lt;p&gt;Now that you have an idea of what sections there should be in a handbook, have a look at ours:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/JumpsecLabs/Developer.Handbook&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/JumpsecLabs/Developer.Handbook&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;Final Words&lt;/h1&gt;&lt;p&gt;A developer handbook is a constantly evolving document. The main purpose is to give guidance and contribute to the quality of development related work within a company. It should be adjusted every now and then, and it should never be considered a “finished product”. &lt;/p&gt;
+&lt;p&gt;You will need to put the effort in yourself to create something that works for you and your team. This depends completely on the expertise of your team and what is important to your projects. There should be discussions with the team and every team member should be able to make changes to the document (remember section 99).&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;h1&gt;Bonus Section&lt;/h1&gt;&lt;h2&gt;Github automation&lt;span class=&#34;absolute -mt-20&#34; id=&#34;github-automation&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#github-automation&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;To give you a bit of technology in this blog post I figured it is best to quickly go over Github actions so that you can automatically generate the latest PDF version of the markdown files which you can then share with your team or store them somewhere for your ISO audit. &lt;/p&gt;
+&lt;p&gt;We are using [pandoc](&lt;a href=&#34;https://pandoc.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://pandoc.org/&lt;/a&gt;) to automatically merge the different sections to a PDF. However, we cannot directly make it a PDF, we first must make a final HTML version. &lt;/p&gt;
+&lt;p&gt;You can go over each step by reviewing the file: &lt;a href=&#34;https://github.com/JumpsecLabs/Developer.Handbook/blob/main/.github/workflows/build-pdf.yml&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/JumpsecLabs/Developer.Handbook/blob/main/.github/workflows/build-pdf.yml&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;There are two jobs involved: &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Building the final PDF version&lt;/li&gt;
+&lt;li&gt;Releasing it under the release tab on Github&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Building a PDF&lt;span class=&#34;absolute -mt-20&#34; id=&#34;building-a-pdf&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#building-a-pdf&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We cannot directly go from markdown to PDF with pandoc. Hence we must create an HTML version first. &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;pandoc -t html --include-before-body=./version.md -s -o developer_handbook.html --toc --number-sections --wrap=none $(cat pandoc_order.txt)&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;This command takes all the files and in the same order as specified in the pandoc_order.txt file and converts them into a single standalone html file. &lt;/p&gt;
+&lt;p&gt;Mind you, for the HTML version, we also have a css.md file, that allows us to make some nice colouring changes. &lt;/p&gt;
+&lt;p&gt;Once we have the HTML version we run the converter to PDF&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;pandoc developer_handbook.html -s --pdf-engine=pdflatex -o developer_handbook.pdf -t pdf -f html&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt;Have a look at the step “Install pandoc” in case you have issues here.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;    - name: Install pandoc
+      run: |
+        sudo apt-get install texlive-latex-base texlive-latex-extra texlive-fonts-recommended pandoc -y&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;p&gt;We are running this workflow on a base Ubuntu image and therefore need to install the latex package required for the pdf-engine. There are other engines as well, but we had some issues that pandoc did not find. In addition to the base installation some extras are necessary and for good measure we also put the fonts package in there. &lt;/p&gt;
+&lt;p&gt;There is an texlive-fonts-extra package for fonts, however that increases the running time for the installing step immensely. &lt;/p&gt;
+&lt;p&gt;There is an alternative way of doing this, and it is also documented on the official pandoc website: &lt;a href=&#34;https://pandoc.org/installing.html#github-actions&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://pandoc.org/installing.html#github-actions&lt;/a&gt; &lt;/p&gt;
+&lt;h3&gt;Releasing the PDF&lt;span class=&#34;absolute -mt-20&#34; id=&#34;releasing-the-pdf&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#releasing-the-pdf&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We keep the approach very simple. We have a version.md file which we can update at our own will and bump the version manually. &lt;/p&gt;
+&lt;p&gt;If you look closely at the “Extract Version” step in the release job you can see we extract it and later use it to tag our release upload on Github.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;div class=&#34;code-block relative mt-6 first:mt-0 group/code&#34;&gt;&lt;pre&gt;&lt;code&gt;- name: Extract version
+      id: extract_version
+      run: |
+        version=$(grep -oP &amp;#39;Version: \K[0-9]&amp;#43;\.[0-9]&amp;#43;\.[0-9]&amp;#43;&amp;#39; docs/version.md)
+        echo &amp;#34;::set-output name=version::$version&amp;#34;&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;opacity-0 transition group-hover/code:opacity-100 flex gap-1 absolute m-[11px] right-0 top-0&#34;&gt;
+    &lt;button
+      class=&#34;code-copy-btn group/copybtn transition-all active:opacity-50 bg-primary-700/5 border border-black/5 text-gray-600 hover:text-gray-900 rounded-md p-1.5 dark:bg-primary-300/10 dark:border-white/10 dark:text-gray-400 dark:hover:text-gray-50&#34;
+      title=&#34;Copy code&#34;
+    &gt;
+      &lt;div class=&#34;group-[.copied]/copybtn:hidden copy-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+      &lt;div class=&#34;hidden group-[.copied]/copybtn:block success-icon pointer-events-none h-4 w-4&#34;&gt;&lt;/div&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/blockquote&gt;
+&lt;h2&gt;Useful VSCode extensions&lt;span class=&#34;absolute -mt-20&#34; id=&#34;useful-vscode-extensions&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#useful-vscode-extensions&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;There are only two VSCode extensions I would recommend for this specific project type. &lt;/p&gt;
+&lt;h3&gt;Markdown All in One &lt;span class=&#34;absolute -mt-20&#34; id=&#34;markdown-all-in-one&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#markdown-all-in-one&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;This one should be a no-brainer to everyone. However, did you know it can generate a table of contents for you? Open the command palette and run the command “&lt;strong&gt;Create Table of Contents”.&lt;/strong&gt; &lt;/p&gt;
+&lt;h3&gt;Markdown as PDF&lt;span class=&#34;absolute -mt-20&#34; id=&#34;markdown-as-pdf&#34;&gt;&lt;/span&gt;
+    &lt;a href=&#34;#markdown-as-pdf&#34; class=&#34;subheading-anchor&#34; aria-label=&#34;Permalink for this section&#34;&gt;&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;This one is a nice one if you want to create a quick PDF out of an MD file.&lt;/p&gt;
+
+      </description>
+    </item>
+    
+  </channel>
+</rss>
