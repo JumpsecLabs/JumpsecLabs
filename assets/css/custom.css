@@ -409,7 +409,11 @@ h1, a {
 	margin-left: 0;
 	border-radius: initial;
 	color: red;
-}#
+}
+
+.dark .content a{
+	color: red;
+}
 
 .nav-container .search-input::placeholder {
 	color: black;
@@ -768,7 +772,7 @@ article main:not(.single, .home) h3 a {
 .dark article main:not(.single, .home) h3 a {
 	color: white;
 }
-.dark article main:not(.list, .home) h1,
+,
 .dark article main h2,
 .dark article main div,
 .dark article main h3 {
@@ -795,6 +799,10 @@ article main:not(.single, .home) h3 a {
 .dark .continue-reading, 
 .dark .continue-reading strong{
 	color: red;
+}
+
+.dark .category-list-headline{
+	color: black;
 }
 
 @media (prefers-color-scheme: dark) {
