@@ -119,11 +119,11 @@ params:
     toLower: false
 
   taxonomies:
-    categories: categories
+    category: categories
     tag: tags
 
-  permalinks:
-    categories:  "/:category/:slug"
-    tags: "/:section/:slug"
+  #permalinks:
+  #  categories:  "/:category/:slug"
+  #  tags: "/:section/:slug"
 
 
