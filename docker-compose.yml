@@ -1,0 +1,25 @@
+services:
+  hugo:
+    image: "jumpsec-labs/hugo:${HUGO_VERSION:-latest}"
+    build:
+      context: .
+      args:
+        HUGO_VERSION: ${HUGO_VERSION:-latest}
+    restart: always
+    env_file: dev.env
+    ports:
+      - "127.0.0.1:${HUGO_PORT:-9000}:${HUGO_PORT:-9000}/tcp"
+    volumes:
+      - "./:/labs"
+    entrypoint:
+      [
+        "hugo",
+        "server",
+        "--logLevel",
+        "debug",
+        "--disableFastRender",
+        "-p",
+        "${HUGO_PORT:-9000}",
+        "--bind",
+        "0.0.0.0",
+      ]
