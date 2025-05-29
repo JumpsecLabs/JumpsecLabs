@@ -42,7 +42,7 @@ The dev environment uses [Docker Compose](https://docs.docker.com/compose/).
 ```sh
 cd JumpsecLabs
 
-docker compose up --build
+docker compose --env-file dev.env up --build
 ```
 
 Once running, with default settings, the Labs website will be available
